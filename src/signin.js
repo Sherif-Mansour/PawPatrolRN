@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { View, Text, Image, TextInput, TouchableOpacity } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { signInWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '../configuration/firebase'
+import { auth } from '../config/firebase'
 
 
 
