@@ -8,12 +8,18 @@
 
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { PaperProvider, BottomNavigation } from 'react-native-paper';
+import { PaperProvider, BottomNavigation, MD3LightTheme as DefaultTheme } from 'react-native-paper';
 import HomeScreen from './src/screens/Homescreen';
 import Favorites from './src/screens/Favorites';
 import Calendar from './src/screens/Calendar';
 import Messages from './src/screens/Messages';
 import Settings from './src/screens/Settings';
+import customScheme from './assets/themes/customScheme.json';
+
+const theme = {
+  ...DefaultTheme,
+  colors: { ...customScheme.colors }
+}
 
 function App() {
 
@@ -36,11 +42,14 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <PaperProvider>
+      <PaperProvider theme={theme}>
         <BottomNavigation
           navigationState={{ index, routes }}
           onIndexChange={setIndex}
           renderScene={renderScene}
+          barStyle={{ backgroundColor: theme.colors.primary }}
+          activeColor={ theme.colors.onPrimary }
+          inactiveColor={ theme.colors.onPrimary }
         />
       </PaperProvider>
     </SafeAreaProvider>
