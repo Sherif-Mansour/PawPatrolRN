@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /**
  * Sample React Native App
  * https://github.com/facebook/react-native
@@ -6,109 +7,53 @@
  */
 
 import React from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { PaperProvider, BottomNavigation, MD3LightTheme as DefaultTheme } from 'react-native-paper';
+import HomeScreen from './src/screens/Homescreen';
+import Favorites from './src/screens/Favorites';
+import Calendar from './src/screens/Calendar';
+import Messages from './src/screens/Messages';
+import Settings from './src/screens/Settings';
+import customScheme from './assets/themes/customScheme.json';
 
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-function Section({children, title}) {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+const theme = {
+  ...DefaultTheme,
+  colors: { ...customScheme.colors }
 }
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  const [index, setIndex] = React.useState(0);
+  const [routes] = React.useState([
+    { key: 'main', title: 'Home', focusedIcon: 'home-circle', unfocusedIcon: 'home-circle-outline' },
+    { key: 'saved', title: 'Favorites', focusedIcon: 'heart', unfocusedIcon: 'heart-outline' },
+    { key: 'calendar', title: 'Calendar', focusedIcon: 'calendar-month', },
+    { key: 'messages', title: 'Chat', focusedIcon: 'chat', unfocusedIcon: 'chat-outline', },
+    { key: 'settings', title: 'Account', focusedIcon: 'account-circle', unfocusedIcon: 'account-circle-outline', },
+  ]);
+
+  const renderScene = BottomNavigation.SceneMap({
+    main: () => <HomeScreen />,
+    saved: () => <Favorites />,
+    calendar: () => <Calendar />,
+    messages: () => <Messages />,
+    settings: () => <Settings />,
+  });
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <PaperProvider theme={theme}>
+        <BottomNavigation
+          navigationState={{ index, routes }}
+          onIndexChange={setIndex}
+          renderScene={renderScene}
+          barStyle={{ backgroundColor: theme.colors.primary }}
+          activeColor={ theme.colors.onPrimary }
+          inactiveColor={ theme.colors.onPrimary }
+        />
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
