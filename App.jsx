@@ -16,17 +16,20 @@ import Messages from './src/screens/Messages';
 import Settings from './src/screens/Settings';
 import customScheme from './assets/themes/customScheme.json';
 
+// https://callstack.github.io/react-native-paper/docs/guides/theming
+
 const theme = {
   ...DefaultTheme,
   colors: { ...customScheme.colors }
-}
+};
 
 function App() {
 
   const [index, setIndex] = React.useState(0);
 
   // https://youtu.be/Cr5eXyr6CJ4?list=LL "Introduction to React Native and React Native Paper" 36:03
-  
+  // https://callstack.github.io/react-native-paper/docs/components/BottomNavigation/ "React Native Paper - Bottom Navigation"
+
   const [routes] = React.useState([
     { key: 'main', title: 'Home', focusedIcon: 'home-circle', unfocusedIcon: 'home-circle-outline' },
     { key: 'saved', title: 'Favorites', focusedIcon: 'heart', unfocusedIcon: 'heart-outline' },
