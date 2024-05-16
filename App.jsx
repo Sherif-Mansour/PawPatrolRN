@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /**
  * Sample React Native App
  * https://github.com/facebook/react-native
@@ -6,9 +7,13 @@
  */
 
 import React from 'react';
-import { Text } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PaperProvider, BottomNavigation } from 'react-native-paper';
+import HomeScreen from './src/screens/Homescreen';
+import Favorites from './src/screens/Favorites';
+import Calendar from './src/screens/Calendar';
+import Messages from './src/screens/Messages';
+import Settings from './src/screens/Settings';
 
 function App() {
 
@@ -22,11 +27,11 @@ function App() {
   ]);
 
   const renderScene = BottomNavigation.SceneMap({
-    main: () => <Text>Home</Text>,
-    saved: () => <Text>Favorites</Text>,
-    calendar: () => <Text>Calendar</Text>,
-    messages: () => <Text>Chat</Text>,
-    settings: () => <Text>Account</Text>,
+    main: () => <HomeScreen />,
+    saved: () => <Favorites />,
+    calendar: () => <Calendar />,
+    messages: () => <Messages />,
+    settings: () => <Settings />,
   });
 
   return (
