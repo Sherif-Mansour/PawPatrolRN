@@ -15,6 +15,8 @@ import Calendar from './src/screens/Calendar';
 import Messages from './src/screens/Messages';
 import Settings from './src/screens/Settings';
 import customScheme from './assets/themes/customScheme.json';
+import SignInScreen from './src/screens/SignIN';  
+import SignUpScreen from './src/screens/SignUP';
 
 // https://callstack.github.io/react-native-paper/docs/guides/theming
 
@@ -23,12 +25,23 @@ const theme = {
   colors: { ...customScheme.colors }
 };
 
+
+
 function App() {
 
   const [index, setIndex] = React.useState(0);
 
   // https://youtu.be/Cr5eXyr6CJ4?list=LL "Introduction to React Native and React Native Paper" 36:03
   // https://callstack.github.io/react-native-paper/docs/components/BottomNavigation/ "React Native Paper - Bottom Navigation"
+
+  return (
+    <NavigationContainer>
+        <Stack.Navigator initialRouteName="SignIn">
+            <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
+        </Stack.Navigator>
+    </NavigationContainer>
+);
 
   const [routes] = React.useState([
     { key: 'main', title: 'Home', focusedIcon: 'home-circle', unfocusedIcon: 'home-circle-outline' },
