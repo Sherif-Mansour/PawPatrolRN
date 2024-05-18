@@ -1,76 +1,63 @@
-import { View, Text, Image, TextInput, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '../configuration/firebase'
-
-
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../configuration/firebase';
 
 export default function SignInScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const {userLoading} = useSelector(state=> state.user);
-    const navigation = useNavigation();
-    const dispatch = useDispatch();
+    const { userLoading } = useSelector(state => state.user); // Assuming you have useSelector imported from react-redux
+    const dispatch = useDispatch(); // Assuming you have useDispatch imported from react-redux
 
-    const handleSubmit = async ()=>{
-        if(email && password){
-            // good to go
-            // navigation.goBack();
-            // navigation.navigate('Home');
-            
-            try{
-                dispatch(setUserLoading(true));
+    const handleSubmit = async () => {
+        if (email && password) {
+            try {
+                dispatch(setUserLoading(true)); // Assuming setUserLoading action is imported and dispatched
                 await createUserWithEmailAndPassword(auth, email, password);
                 dispatch(setUserLoading(false));
-            }catch(e){
+            } catch (e) {
                 dispatch(setUserLoading(false));
                 Snackbar.show({
                     text: e.message,
                     backgroundColor: 'red'
                 });
             }
-        }else{
-            // show error
+        } else {
             Snackbar.show({
                 text: 'Email and Password are required!',
                 backgroundColor: 'red'
             });
         }
-    }
-  return (
-    <ScreenWrapper>
-      <View className="flex justify-between h-full mx-4">
-        <View>
-            <View className="relative">
-                <View className="absolute top-0 left-0 z-10">
-                    <BackButton />
-                </View>
-                
-                <Text className={`${colors.heading} text-xl font-bold text-center`}>Sign Up</Text>
-            </View>
-            
+    };
 
-            <View className="space-y-2 mx-2">
-                <Text className={`${colors.heading} text-lg font-bold`}>Email</Text>
-                <TextInput value={email} onChangeText={value=> setEmail(value)} className="p-4 bg-white rounded-full mb-3" />
-                <Text  className={`${colors.heading} text-lg font-bold`}>New Password</Text>
-                <TextInput value={password} secureTextEntry onChangeText={value=> setPassword(value)} className="p-4 bg-white rounded-full mb-3" />
-                </View>
+    return (
+        <View style={{ flex: 1, justifyContent: 'center', padding: 16 }}>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>Sign Up</Text>
+
+            <View style={{ marginBottom: 16 }}>
+                <Text>Email</Text>
+                <TextInput
+                    value={email}
+                    onChangeText={value => setEmail(value)}
+                    style={{ padding: 8, borderWidth: 1, borderRadius: 8, marginBottom: 12 }}
+                />
+            </View>
+
+            <View style={{ marginBottom: 16 }}>
+                <Text>New Password</Text>
+                <TextInput
+                    value={password}
+                    secureTextEntry
+                    onChangeText={value => setPassword(value)}
+                    style={{ padding: 8, borderWidth: 1, borderRadius: 8, marginBottom: 12 }}
+                />
+            </View>
+
+            <TouchableOpacity onPress={handleSubmit} style={{ backgroundColor: 'blue', padding: 12, borderRadius: 8 }}>
+                <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
+                    {userLoading ? 'Loading...' : 'Sign Up'}
+                </Text>
+            </TouchableOpacity>
         </View>
-        
-        <View>
-            {
-                userLoading? (
-                    <Loading />
-                ):(
-                    <TouchableOpacity onPress={handleSubmit} style={{backgroundColor: colors.button}} className="my-6 rounded-full p-3 shadow-sm mx-2">
-                        <Text className="text-center text-white text-lg font-bold">Sign Up</Text>
-                    </TouchableOpacity>
-                )
-            }
-            
-        </View>
-      </View>
-    </ScreenWrapper>
-  )
+    );
 }
