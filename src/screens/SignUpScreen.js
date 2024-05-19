@@ -12,14 +12,17 @@ import Snackbar from 'react-native-snackbar';
 export default function SignInScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [fname, setFname] = useState('');
+    const [lname, setLname] = useState(''); 
+    const [phone, setPhone] = useState('');
 
 
     const navigation = useNavigation();
 
     const handleSubmit = async ()=>{
-        if(email && password){
+        if(email && password && fname && lname && phone){
             // good to go
-
+            navigation.goBack();
             navigation.navigate('Home');
             
         }else{
@@ -41,16 +44,16 @@ export default function SignInScreen() {
                         <Text>Sign Up</Text>
                     </View>
                     <Text>Enter First Name</Text>
-                    <TextInput />
+                    <TextInput value={fname} onChangeText={value=> setFname(value)} className="p-4 bg-white rounded-full mb-3" />
                     <Text>Enter Last Name</Text>
-                    <TextInput />
+                    <TextInput value={lname} onChangeText={value=> setLname(value)} className="p-4 bg-white rounded-full mb-3" />
                     <Text>Enter Phone Number</Text>
-                    <TextInput />
+                    <TextInput value={phone} onChangeText={value=> setPhone(value)} className="p-4 bg-white rounded-full mb-3" />
                     <Text>Enter Email</Text>
-                    <TextInput />
+                    <TextInput value={email} onChangeText={value=> setEmail(value)} className="p-4 bg-white rounded-full mb-3" />
                     <Text>Enter Password</Text>
-                    <TextInput />
-                </View>
+                    <TextInput value={password} secureTextEntry onChangeText={value=> setPassword(value)} className="p-4 bg-white rounded-full mb-3" />
+                    </View>
                 <View>
 
                 </View>

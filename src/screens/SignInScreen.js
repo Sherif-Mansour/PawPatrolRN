@@ -17,9 +17,9 @@ export default function SignInScreen() {
     const navigation = useNavigation();
 
     const handleSubmit = async ()=>{
-        if(email && password){
+        if(email && password ){
             // good to go
-
+            navigation.goBack();
             navigation.navigate('Home');
             
         }else{
@@ -41,9 +41,12 @@ export default function SignInScreen() {
                         <Text>Sign In</Text>
                     </View>
                     <Text>Enter Email</Text>
-                    <TextInput />
+                    <TextInput value={email} onChangeText={value=> setEmail(value)} className="p-4 bg-white rounded-full mb-3" />
                     <Text>Enter Password</Text>
-                    <TextInput />
+                    <TextInput value={password} secureTextEntry onChangeText={value=> setPassword(value)} className="p-4 bg-white rounded-full mb-3" />
+                    <TouchableOpacity className="flex-row justify-end">
+                    <Text>Forget Password?</Text>
+                </TouchableOpacity>
                 </View>
                 <View>
 

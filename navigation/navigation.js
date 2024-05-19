@@ -13,6 +13,7 @@ function AppNavigation() {
         <NavigationContainer>
             <Stack.Navigator initialRouteName="Welcome">
                 <Stack.Screen options={{ headerShown: false }} name="Welcome" component={WelcomeScreen} />
+                <Stack.Screen options={{headerShown: false}} name="Home" component={HomeScreen} />
                 <Stack.Screen options={{ headerShown: false, presentation: 'modal' }} name="SignIn" component={SignInScreen} />
                 <Stack.Screen options={{ headerShown: false, presentation: 'modal' }} name="SignUp" component={SignUpScreen} />
             </Stack.Navigator>
