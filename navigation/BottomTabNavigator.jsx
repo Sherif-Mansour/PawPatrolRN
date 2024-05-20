@@ -8,11 +8,11 @@
 
 import React, { useState } from 'react';
 import {BottomNavigation, MD3LightTheme as DefaultTheme} from 'react-native-paper';
-import HomeScreen from '../src/screens/HomeScreen';
-import Favorites from '../src/screens/Favorites';
-import BookingScreen from '../src/screens/BookingScreen';
-import Messages from '../src/screens/Messages';
-import Settings from '../src/screens/Settings';
+import HomeScreen from '../src/screens/_03HomeScreen';
+import Favorites from '../src/screens/_04FavoritesScreen';
+import BookingScreen from '../src/screens/_05BookingScreen';
+import Messages from '../src/screens/_06Messages';
+import Settings from '../src/screens/_07Settings';
 import customScheme from '../assets/themes/customScheme.json';
 
 // https://callstack.github.io/react-native-paper/docs/guides/theming

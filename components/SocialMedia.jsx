@@ -28,11 +28,7 @@ const styles = StyleSheet.create({
     image: {
       height: 40,
       width: 40,
-    },
-    twitterIcon: {
-      height: 60,
-      width: 60,
-      marginTop: 15,
+      borderRadius: 15,
     },
     container: {
       flexDirection: 'row',

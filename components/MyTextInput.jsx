@@ -1,27 +1,26 @@
-import { StyleSheet, TextInput, View } from "react-native";
 import React from "react";
+import { TextInput, View, StyleSheet } from "react-native";
+import { useTheme } from "react-native-paper";
 
-const myTextInput = (props) => {
+const MyTextInput = (props) => {
+    const theme = useTheme();
+
     return (
-        <View style={styles.container}>
-            <TextInput style={styles.input} {...props} />
+        <View>
+            <TextInput {...props} placeholderTextColor={'white'} color='white' style={[styles.input, {color: theme.colors.onSurface, borderBottomColor: theme.colors.primary}]} />
             <View style={styles.border} />
         </View>
     );
 };
 
-export default myTextInput;
+export default MyTextInput;
 
 const styles = StyleSheet.create({
-    container: {
-        margin: 10,
-    },
     input: {
         height: 40,
         borderBottomWidth: 1,
     },
     border: {
         height: 1,
-        backgroundColor: "black",
     },
 });
