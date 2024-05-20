@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "525365467776",
+    "project_id": "petpal-1a8a0",
+    "storage_bucket": "petpal-1a8a0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:525365467776:android:da23d52dd35f216b2be465",
+        "android_client_info": {
+          "package_name": "com.pawpatrolrn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "525365467776-51pa7b91tgeukpb4kgju4490at5mbgkr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pawpatrolrn",
+            "certificate_hash": "d25d22e62bb99852e5c24d99b58fc6543d1c539b"
+          }
+        },
+        {
+          "client_id": "525365467776-38jgkirtmtklit7e8srik0nheq8fagvs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMmlNExl86zceWTM0vfYKEkY1HJ-neIWk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "525365467776-38jgkirtmtklit7e8srik0nheq8fagvs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
