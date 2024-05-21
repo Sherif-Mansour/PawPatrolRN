@@ -30,7 +30,7 @@ const BottomTabNavigator = () => {
     const [routes] = useState([
         { key: 'home', title: 'Home', focusedIcon: 'home-circle', unfocusedIcon: 'home-circle-outline' },
         { key: 'favorites', title: 'Favorites', focusedIcon: 'heart', unfocusedIcon: 'heart-outline' },
-        { key: 'booking', title: 'booking', focusedIcon: 'calendar-month' },
+        { key: 'booking', title: 'Booking', focusedIcon: 'calendar-month' },
         { key: 'messages', title: 'Messages', focusedIcon: 'chat', unfocusedIcon: 'chat-outline' },
         { key: 'settings', title: 'Settings', focusedIcon: 'account-circle', unfocusedIcon: 'account-circle-outline' },
     ]);

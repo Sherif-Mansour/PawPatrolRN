@@ -7,7 +7,7 @@ const MyTextInput = (props) => {
 
     return (
         <View>
-            <TextInput {...props} placeholderTextColor={'white'} color='white' style={[styles.input, {color: theme.colors.onSurface, borderBottomColor: theme.colors.primary}]} />
+            <TextInput {...props} placeholderTextColor={'white'} color='white' style={[styles.input, {color: theme.colors.onSurface, borderBottomColor: theme.colors.onPrimary}]} />
             <View style={styles.border} />
         </View>
     );
@@ -22,5 +22,6 @@ const styles = StyleSheet.create({
     },
     border: {
         height: 1,
+        marginBottom: 10,
     },
 });
