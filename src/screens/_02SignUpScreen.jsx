@@ -84,8 +84,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',        
     },
     logoImage: {
-        height: 40,
-        width: '50%',
+        height: 60,
+        width: '70%',
         resizeMode: 'contain',
         alignSelf: 'center',
     }, 
