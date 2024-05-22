@@ -1,18 +1,51 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+// screens/SettingsScreen.js
 
-const Settings = () => {
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+
+
+
+const SettingsScreen = ({ navigation }) => {
   return (
-    <SafeAreaProvider>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'black'}}>
-        <Text>This is a placeholder</Text>
-      </View>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'black'}}>
-        <Text>This is a placeholder</Text>
-      </View>
-    </SafeAreaProvider>
-  )
-}
+    <View style={styles.container}>
+      
+      <TouchableOpacity onPress={()=> navigation.navigate('ProfileSettings')}>
+        <Text style={styles.item}>Profile Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('NotificationSettings')}>
+        <Text style={styles.item}>Notification Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('PrivacySettings')}>
+        <Text style={styles.item}>Privacy Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('PaymentSettings')}>
+        <Text style={styles.item}>Payment Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('BookingSettings')}>
+        <Text style={styles.item}>Booking Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('AppPreferences')}>
+        <Text style={styles.item}>App Preferences</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('Support')}>
+        <Text style={styles.item}>Support</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
+        <Text style={styles.item}>Legal & About</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
-export default Settings
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  item: {
+    fontSize: 18,
+    paddingVertical: 10,
+  },
+});
+
+export default SettingsScreen;
