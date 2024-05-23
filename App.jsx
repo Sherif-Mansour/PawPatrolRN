@@ -4,6 +4,7 @@ import { PaperProvider, MD3LightTheme as DefaultTheme } from 'react-native-paper
 import messaging from '@react-native-firebase/messaging';
 import customScheme from './assets/themes/customScheme.json';
 import AppNavigator from './navigation/AppNavigator';
+import { UserProvider } from './utils/UserContext';
 
 const theme = {
   ...DefaultTheme,
@@ -36,7 +37,9 @@ const App = () => {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
-        <AppNavigator />
+        <UserProvider>
+          <AppNavigator />
+        </UserProvider>
       </PaperProvider>
     </SafeAreaProvider>
   );
