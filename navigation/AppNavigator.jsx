@@ -10,6 +10,9 @@ import SettingsScreen from '../src/screens/_07Settings';
 import ProfileSettingsScreen from '../src/screens/_071ProfileScreen';
 import NotificationSettingsScreen from '../src/screens/_072NotificationScreen';
 import PrivacySettingsScreen from '../src/screens/_073PrivacyScreen';
+import PaymentSettingsScreen from '../src/screens/_074PaymentOptionScreen';
+import BookingSettingsScreen from '../src/screens/_075BookingsScreen';
+import AppPreferencesScreen from '../src/screens/_076Apppreference';
 
 
 const Stack = createStackNavigator();
@@ -26,6 +29,8 @@ const AppNavigator = () => {
                 <Stack.Screen name="ProfileSettings" component={ProfileSettingsScreen} />
                 <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
                 <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} />
+                <Stack.Screen name="Payment" component={PaymentSettingsScreen} />
+                <Stack.Screen name="AppPreferences" component={AppPreferencesScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );
