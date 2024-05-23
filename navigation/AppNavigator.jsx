@@ -12,6 +12,7 @@ import PrivacySettingsScreen from '../src/screens/_10PrivacyScreen';
 import SplashScreen from './../src/screens/_00SplashScreen';
 import AppHeader from '../components/Header';
 
+
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {

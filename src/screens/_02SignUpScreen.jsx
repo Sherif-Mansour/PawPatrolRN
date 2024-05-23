@@ -16,8 +16,8 @@ const SignUpScreen = ({navigation}) => {
         auth()
             .createUserWithEmailAndPassword(email, password)
             .then(() => {
-                Alert.alert('User created successfully! Proceed to Login.');
-                navigation.navigate('Login');
+                Alert.alert('User created successfully! Proceed to Sign In.');
+                navigation.navigate('SignIn');
             })
             .catch(err => {
                 console.log(err.nativeErrorMessage);
