@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "525365467776-51pa7b91tgeukpb4kgju4490at5mbgkr.apps.googleusercontent.com",
+          "client_id": "525365467776-3pdlau96thno080l1nbn04n1at6rqhd6.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.pawpatrolrn",
-            "certificate_hash": "d25d22e62bb99852e5c24d99b58fc6543d1c539b"
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
           }
         },
         {
