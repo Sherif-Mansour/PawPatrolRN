@@ -2,7 +2,6 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
-import { createDrawerNavigator } from '@react-navigation/drawer';
 import SignUpScreen from '../src/screens/_02SignUpScreen';
 import LoginScreen from '../src/screens/_01LoginScreen';
 import BottomTabNavigator from './BottomTabNavigator';
@@ -14,7 +13,6 @@ import SplashScreen from './../src/screens/_00SplashScreen';
 import AppHeader from '../components/Header';
 
 const Stack = createStackNavigator();
-const Drawer = createDrawerNavigator();
 
 const AppNavigator = () => {
     return (
