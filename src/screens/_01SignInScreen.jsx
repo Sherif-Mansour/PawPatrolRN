@@ -1,36 +1,15 @@
 import React, {useState} from 'react';
-import {
-  Image,
-  ImageBackground,
-  StyleSheet,
-  Platform,
-  View,
-  Text,
-  Alert,
-} from 'react-native';
+import {Image, ImageBackground, StyleSheet, View, Text} from 'react-native';
 import MyTextInput from '../../components/MyTextInput';
 import SocialMedia from '../../components/SocialMedia';
-import auth from '@react-native-firebase/auth';
 import {Button, useTheme} from 'react-native-paper';
+import {useUser} from '../../utils/UserContext';
 
-const SignUpScreen = ({navigation}) => {
+const SignInScreen = ({navigation}) => {
+  const {signInWithEmailAndPass, onGoogleButtonPress} = useUser();
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-
-  const singUpTestFn = () => {
-    auth()
-      .createUserWithEmailAndPassword(email, password)
-      .then(() => {
-        Alert.alert('User created successfully! Proceed to Sign In.');
-        navigation.navigate('SignIn');
-      })
-      .catch(err => {
-        console.log(err.nativeErrorMessage);
-        Alert.alert(err.nativeErrorMessage);
-      });
-  };
 
   return (
     <View style={styles.container}>
@@ -44,44 +23,41 @@ const SignUpScreen = ({navigation}) => {
           />
         </View>
 
-        {/* <Text style={styles.title}>PetPal</Text> */}
-
         <View style={[styles.inputsContainer]}>
           <MyTextInput
             value={email}
             onChangeText={text => setEmail(text)}
             placeholder="Enter Email"
-            style={styles.input} // Apply styles from the theme
+            style={styles.input}
           />
           <MyTextInput
             value={password}
             onChangeText={text => setPassword(text)}
             placeholder="Enter Password"
             secureTextEntry={true}
-            style={styles.input} // Apply styles from the theme
-          />
-          <MyTextInput
-            value={confirmPassword}
-            onChangeText={text => setConfirmPassword(text)}
-            placeholder="Confirm Password"
-            secureTextEntry={true}
-            style={styles.input} // Apply styles from the theme
           />
 
-          <Button mode="contained" buttonColor="#009B7D" onPress={singUpTestFn}>
-            Sign Up
+          <Text
+            style={styles.textDontHave}
+            onPress={() => navigation.navigate('SignUp')}>
+            Don't have an account?{' '}
+            <Text style={{textDecorationLine: 'underline'}}>Sign Up</Text>
+          </Text>
+          <Button
+            mode="contained"
+            buttonColor="#FFBF5D"
+            onPress={() => signInWithEmailAndPass(email, password, navigation)}>
+            Sign In
           </Button>
-
           <Text style={styles.orText}>OR</Text>
-
-          <SocialMedia />
+          <SocialMedia onGooglePress={() => onGoogleButtonPress(navigation)} />
         </View>
       </ImageBackground>
     </View>
   );
 };
 
-export default SignUpScreen;
+export default SignInScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -107,12 +83,14 @@ const styles = StyleSheet.create({
     padding: 20,
     margin: 20,
     marginTop: 350,
-
     borderRadius: 10,
   },
   orText: {
     textAlign: 'center',
     marginVertical: 10,
+    color: 'white',
+  },
+  textDontHave: {
     color: 'white',
   },
 });
