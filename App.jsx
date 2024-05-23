@@ -5,6 +5,8 @@ import messaging from '@react-native-firebase/messaging';
 import customScheme from './assets/themes/customScheme.json';
 import AppNavigator from './navigation/AppNavigator';
 
+// https://callstack.github.io/react-native-paper/docs/guides/theming
+
 const theme = {
   ...DefaultTheme,
   colors: { ...customScheme.colors }
