@@ -10,8 +10,8 @@ import SettingsScreen from '../src/screens/_07Settings';
 import ProfileSettingsScreen from '../src/screens/_08ProfileScreen';
 import NotificationSettingsScreen from '../src/screens/_09NotificationScreen';
 import PrivacySettingsScreen from '../src/screens/_10PrivacyScreen';
+import SplashScreen from './../src/screens/_00SplashScreen';
 import AppHeader from '../components/Header';
-
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -19,7 +19,8 @@ const Drawer = createDrawerNavigator();
 const AppNavigator = () => {
     return (
         <NavigationContainer>
-            <Stack.Navigator initialRouteName="Login">
+            <Stack.Navigator initialRouteName="SplashScreen">
+                <Stack.Screen name="SplashScreen" component={SplashScreen} options={{ headerShown: false }} />
                 <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false}} />
                 <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false}}/>
                 <Stack.Screen name="Home" component={BottomTabNavigator} options={{ header: () => <AppHeader showBackButton={false} /> }} />
