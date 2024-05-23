@@ -6,7 +6,6 @@ import AppHeader from '../../components/Header';
 const HomeScreen = () => {
   return (
     <SafeAreaProvider>
-      <AppHeader />
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'black'}}>
         <Text>This is a placeholder</Text>
       </View>
