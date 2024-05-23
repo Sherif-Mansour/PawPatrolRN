@@ -18,7 +18,7 @@ const SplashScreen = () => {
                     <Button mode='contained' buttonColor='#009B7D' contentStyle={{ width: '100%' }} onPress={() => navigation.navigate('SignUp')}>CREATE ACCOUNT</Button>
                 </View>
                 <View style={{ width: '72%', marginTop: 6 }}>
-                    <Button mode='contained' buttonColor='#FFBF5D'  contentStyle={{ width: '100%' }} onPress={() => navigation.navigate('Login')}>LOGIN</Button>
+                    <Button mode='contained' buttonColor='#FFBF5D'  contentStyle={{ width: '100%' }} onPress={() => navigation.navigate('SignIn')}>LOGIN</Button>
                 </View>
             </View>
         </SafeAreaProvider>

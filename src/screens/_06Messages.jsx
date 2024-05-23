@@ -1,12 +1,10 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import AppHeader from '../../components/Header';
 
 const Messages = () => {
   return (
     <SafeAreaProvider>
-      <AppHeader />
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'black'}}>
         <Text>This is a placeholder</Text>
       </View>
