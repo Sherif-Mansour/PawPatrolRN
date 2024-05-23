@@ -1,18 +1,28 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+// screens/SettingsScreen.js
 
-const Settings = () => {
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
+export default function SettingsScreen() {
+  const navigation = useNavigation();
+
   return (
-    <SafeAreaProvider>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'black'}}>
-        <Text>This is a placeholder</Text>
-      </View>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'black'}}>
-        <Text>This is a placeholder</Text>
-      </View>
-    </SafeAreaProvider>
-  )
+    <View>
+      <Text>Settings</Text>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ProfileSettings')}>
+        <Text>Profile Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('NotificationSettings')}>
+        <Text>Notification Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('PrivacySettings')}>
+        <Text>Privacy Settings</Text>
+      </TouchableOpacity>
+    </View>
+  );
 }
 
-export default Settings
+
+
