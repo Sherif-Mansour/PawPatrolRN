@@ -22,9 +22,8 @@ const AppNavigator = () => {
             <Stack.Navigator initialRouteName="Login">
                 <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false}} />
                 <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false}}/>
-                <Stack.Screen name="Home" component={BottomTabNavigator} options={{ header: () => <AppHeader /> }} />
-                <Stack.Screen name="Settings" component={SettingsScreen} options={{  header: () => <AppHeader /> }} />
-                <Stack.Screen name="ProfileSettings" component={ProfileSettingsScreen} />
+                <Stack.Screen name="Home" component={BottomTabNavigator} options={{ header: () => <AppHeader showBackButton={false} /> }} />
+                <Stack.Screen name="ProfileSettings" component={ProfileSettingsScreen} options={{ header: () => <AppHeader showBackButton={true} /> }} />
                 <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
                 <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} />
             </Stack.Navigator>
