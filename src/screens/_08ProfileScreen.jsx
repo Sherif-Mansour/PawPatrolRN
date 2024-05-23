@@ -2,13 +2,18 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AppHeader from '../../components/Header';
 
 const ProfileSettingsScreen = () => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Profile Settings</Text>
-      {/* Add form elements or options to manage profile settings here */}
-    </View>
+    <SafeAreaProvider>
+      <View style={styles.container}>
+        <Text style={styles.title}>Profile Settings</Text>
+        {/* Add form elements or options to manage profile settings here */}
+      </View>
+    </SafeAreaProvider>
+
   );
 };
 
