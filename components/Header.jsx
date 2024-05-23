@@ -12,8 +12,9 @@ const AppHeader = () => (
   <Appbar.Header>
     <Appbar.BackAction onPress={() => {}} />
     <Appbar.Content title="" />
-    <Appbar.Action icon="calendar" onPress={() => {}} />
-    <Appbar.Action icon="magnify" onPress={() => {}} />
+    <Appbar.Action icon="plus" onPress={() => {}} />
+    <Appbar.Action icon="account-circle-outline" onPress={() => {}} />
+    <Appbar.Action icon="cart-outline" onPress={() => {}} />
   </Appbar.Header>
 );
 

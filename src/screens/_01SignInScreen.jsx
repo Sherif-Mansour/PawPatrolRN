@@ -7,7 +7,7 @@ import auth from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useTheme } from 'react-native-paper';
 
-const LoginScreen = ({ navigation }) => {
+const SignInScreen = ({ navigation }) => {
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,7 +32,7 @@ const LoginScreen = ({ navigation }) => {
     }
   }
 
-  const loginWithEmailAndPass = () => {
+  const signInWithEmailAndPass = () => {
     auth()
       .signInWithEmailAndPassword(email, password)
       .then(res => {
@@ -73,7 +73,7 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.textDontHave} onPress={() => navigation.navigate('SignUp')}>Don't have an account?{' '}
               <Text style={{textDecorationLine: 'underline'}}>Sign Up</Text>
               </Text>
-              <MyButton title={'Login'} onPress={loginWithEmailAndPass} />
+              <MyButton title={'Sign In'} onPress={signInWithEmailAndPass} />
               <Text style={styles.orText}>OR</Text>
               <SocialMedia onGooglePress={onGoogleButtonPress} />
               </View>
@@ -82,7 +82,7 @@ const LoginScreen = ({ navigation }) => {
   );
 };
 
-export default LoginScreen;
+export default SignInScreen;
 
 const styles = StyleSheet.create({
   container: {
