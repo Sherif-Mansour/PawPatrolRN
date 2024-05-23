@@ -1,62 +1,42 @@
-/* eslint-disable prettier/prettier */
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { PaperProvider, BottomNavigation, MD3LightTheme as DefaultTheme } from 'react-native-paper';
-import HomeScreen from './src/screens/Homescreen';
-import Favorites from './src/screens/Favorites';
-import Calendar from './src/screens/Calendar';
-import Messages from './src/screens/Messages';
-import Settings from './src/screens/Settings';
+import { PaperProvider, MD3LightTheme as DefaultTheme } from 'react-native-paper';
+import messaging from '@react-native-firebase/messaging';
 import customScheme from './assets/themes/customScheme.json';
-
-// https://callstack.github.io/react-native-paper/docs/guides/theming
+import AppNavigator from './navigation/AppNavigator';
 
 const theme = {
   ...DefaultTheme,
   colors: { ...customScheme.colors }
 };
 
-function App() {
+const App = () => {
 
-  const [index, setIndex] = React.useState(0);
+  async function requestUserPermission() {
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-  // https://youtu.be/Cr5eXyr6CJ4?list=LL "Introduction to React Native and React Native Paper" 36:03
-  // https://callstack.github.io/react-native-paper/docs/components/BottomNavigation/ "React Native Paper - Bottom Navigation"
+    if (enabled) {
+      console.log('Authorization status:', authStatus);
+    }
+  }
 
-  const [routes] = React.useState([
-    { key: 'main', title: 'Home', focusedIcon: 'home-circle', unfocusedIcon: 'home-circle-outline' },
-    { key: 'saved', title: 'Favorites', focusedIcon: 'heart', unfocusedIcon: 'heart-outline' },
-    { key: 'calendar', title: 'Calendar', focusedIcon: 'calendar-month', },
-    { key: 'messages', title: 'Chat', focusedIcon: 'chat', unfocusedIcon: 'chat-outline', },
-    { key: 'settings', title: 'Account', focusedIcon: 'account-circle', unfocusedIcon: 'account-circle-outline', },
-  ]);
+  const getToken = async () => {
+    const token = await messaging().getToken();
+    console.log('Token:', token);
+  }
 
-  const renderScene = BottomNavigation.SceneMap({
-    main: () => <HomeScreen />,
-    saved: () => <Favorites />,
-    calendar: () => <Calendar />,
-    messages: () => <Messages />,
-    settings: () => <Settings />,
-  });
-
+  useEffect(() => {
+    requestUserPermission();
+    getToken();
+  }, []);
+  
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
-        <BottomNavigation
-          navigationState={{ index, routes }}
-          onIndexChange={setIndex}
-          renderScene={renderScene}
-          barStyle={{ backgroundColor: theme.colors.primary }}
-          activeColor={ theme.colors.onPrimary }
-          inactiveColor={ theme.colors.onPrimary }
-        />
+        <AppNavigator />
       </PaperProvider>
     </SafeAreaProvider>
   );
