@@ -35,6 +35,7 @@ const SignInScreen = ({navigation}) => {
             onChangeText={text => setPassword(text)}
             placeholder="Enter Password"
             secureTextEntry={true}
+            style={styles.input}
           />
 
           <Text
