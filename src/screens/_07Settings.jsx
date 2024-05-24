@@ -12,10 +12,6 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Settings</Text>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('ProfileSettings')}>
-        <Text style={styles.setting}>Profile Settings</Text>
-      </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('NotificationSettings')}>
         <Text style={styles.setting}>Notification Settings</Text>
       </TouchableOpacity>
