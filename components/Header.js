@@ -30,6 +30,12 @@ const AppHeader = ({showBackButton}) => {
         }
       />
       <Appbar.Action
+        icon="plus"
+        size={36}
+        color={theme.colors.onPrimary}
+        onPress={() => navigation.navigate('CreateAd')}
+      />
+      <Appbar.Action
         icon="account-circle"
         size={36}
         color={theme.colors.onPrimary}

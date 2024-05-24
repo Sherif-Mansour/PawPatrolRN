@@ -12,6 +12,7 @@ import NotificationSettingsScreen from '../src/screens/_09NotificationScreen';
 import PrivacySettingsScreen from '../src/screens/_10PrivacyScreen';
 import AppPreferencesScreen from '../src/screens/_011Apppreference';
 import BookingSettingsScreen from '../src/screens/_013BookingsScreen';
+import AddAdScreen from '../src/screens/_015CreatingAddScreen';
 // import CreditCardScreen from '../src/screens/_014AddCreditCardScreen';
 import AppHeader from '../components/Header';
 import BottomTabNavigator from './BottomTabNavigator';
@@ -67,6 +68,11 @@ const AppNavigator = () => {
         name="BookingSettings"
         component={BookingSettingsScreen}
         options={{header: () => <AppHeader showBackButton={true} />}}   
+        />
+        <Stack.Screen   
+        name="CreateAd"
+        component={AddAdScreen}
+        options={{header: () => <AppHeader showBackButton={true} />}}
         />
       </Stack.Navigator>
       {/* <Stack.Screen
