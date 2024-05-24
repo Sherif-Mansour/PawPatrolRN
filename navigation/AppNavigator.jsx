@@ -10,6 +10,9 @@ import SettingsScreen from '../src/screens/_07Settings';
 import Profile from '../src/screens/_08Profile';
 import NotificationSettingsScreen from '../src/screens/_09NotificationScreen';
 import PrivacySettingsScreen from '../src/screens/_10PrivacyScreen';
+import AppPreferencesScreen from '../src/screens/_011Apppreference';
+import BookingSettingsScreen from '../src/screens/_013BookingsScreen';
+// import CreditCardScreen from '../src/screens/_014AddCreditCardScreen';
 import AppHeader from '../components/Header';
 import BottomTabNavigator from './BottomTabNavigator';
 
@@ -55,7 +58,22 @@ const AppNavigator = () => {
           component={PrivacySettingsScreen}
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
+        <Stack.Screen
+        name="AppPreferences"
+        component={AppPreferencesScreen}
+        options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+        name="BookingSettings"
+        component={BookingSettingsScreen}
+        options={{header: () => <AppHeader showBackButton={true} />}}   
+        />
       </Stack.Navigator>
+      {/* <Stack.Screen
+      name="CreditCard"
+      component={CreditCardScreen}
+      options={{header: () => <AppHeader showBackButton={true} />}}   
+      /> */}
     </NavigationContainer>
   );
 };
