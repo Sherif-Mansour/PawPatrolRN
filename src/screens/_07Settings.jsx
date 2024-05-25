@@ -27,6 +27,9 @@ export default function SettingsScreen() {
       <TouchableOpacity onPress={() => navigation.navigate('BookingSettings')}>
         <Text style={styles.setting}>Booking Settings</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('UserAds')}>
+        <Text style={styles.setting}>Ads</Text>
+      </TouchableOpacity>
     </View>
   );
 }
