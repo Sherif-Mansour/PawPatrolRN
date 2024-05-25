@@ -1,41 +1,33 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Button } from 'react-native-paper';
+import React, {useState} from 'react';
+import {View, Text, TextInput, StyleSheet} from 'react-native';
+import {Button} from 'react-native-paper';
+import {useUser} from '../../utils/UserContext';
 
-const AddAdScreen = () => {
+const Ad = () => {
+  const {user, createOrUpdateAd, ads} = useUser();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [pictures, setPictures] = useState([]);
   const [services, setServices] = useState([]);
   const [address, setAddress] = useState('');
-  const navigation = useNavigation();
 
-  const handleAddAd = () => {
-    if (title && description && address && services.length > 0) {
-      const newAd = {
-        id: Date.now().toString(), // Unique ID for each ad
-        title,
-        description,
-        pictures,
-        services,
-        address,
-      };
-      navigation.navigate('Home', { newAd }); // Navigate back to Home and pass newAd
-    } else {
-      // Handle error if any required field is empty
-    }
+  const saveAd = () => {
+    const adData = {
+      id: null,
+      title,
+      description,
+      pictures,
+      services,
+      address,
+    };
+    createOrUpdateAd(adData);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.inputsContainer}>
         <Text style={styles.label}>Title</Text>
-        <TextInput
-          style={styles.input}
-          value={title}
-          onChangeText={setTitle}
-        />
+        <TextInput style={styles.input} value={title} onChangeText={setTitle} />
         <Text style={styles.label}>Description</Text>
         <TextInput
           style={styles.input}
@@ -66,8 +58,8 @@ const AddAdScreen = () => {
         <Button
           mode="contained"
           buttonColor="#FFBF5D"
-          contentStyle={{ width: '100%' }}
-          onPress={handleAddAd}>
+          contentStyle={{width: '100%'}}
+          onPress={saveAd}>
           Add Ad
         </Button>
       </View>
@@ -99,4 +91,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddAdScreen;
+export default Ad;
