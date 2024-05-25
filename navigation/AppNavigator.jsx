@@ -8,19 +8,15 @@ import SignInScreen from '../src/screens/_01SignInScreen';
 import SignUpScreen from '../src/screens/_02SignUpScreen';
 import SettingsScreen from '../src/screens/_07Settings';
 import Profile from '../src/screens/_08Profile';
+import Ad from '../src/screens/_15AdScreen';
 import NotificationSettingsScreen from '../src/screens/_09NotificationScreen';
 import PrivacySettingsScreen from '../src/screens/_10PrivacyScreen';
-import AppPreferencesScreen from '../src/screens/_11AppPreference';
-import BookingSettingsScreen from '../src/screens/_13BookingsScreen';
-import AddAdScreen from '../src/screens/_15CreatingAddScreen';
-// import CreditCardScreen from '../src/screens/_014AddCreditCardScreen';
 import AppHeader from '../components/Header';
 import BottomTabNavigator from './BottomTabNavigator';
 
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
-
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="SplashScreen">
@@ -60,26 +56,11 @@ const AppNavigator = () => {
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen
-        name="AppPreferences"
-        component={AppPreferencesScreen}
-        options={{header: () => <AppHeader showBackButton={true} />}}
-        />
-        <Stack.Screen
-        name="BookingSettings"
-        component={BookingSettingsScreen}
-        options={{header: () => <AppHeader showBackButton={true} />}}   
-        />
-        <Stack.Screen   
-        name="CreateAd"
-        component={AddAdScreen}
-        options={{header: () => <AppHeader showBackButton={true} />}}
+          name="Ad"
+          component={Ad}
+          options={{header: () => <AppHeader showBackButton={true} />}}
         />
       </Stack.Navigator>
-      {/* <Stack.Screen
-      name="CreditCard"
-      component={CreditCardScreen}
-      options={{header: () => <AppHeader showBackButton={true} />}}   
-      /> */}
     </NavigationContainer>
   );
 };
