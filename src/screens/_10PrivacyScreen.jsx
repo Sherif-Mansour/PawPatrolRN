@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Switch, StyleSheet, Button, Alert, TextInput } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
 
 const PrivacySettingsScreen = () => {
   const [isPublicProfile, setIsPublicProfile] = useState(false);
@@ -9,6 +10,7 @@ const PrivacySettingsScreen = () => {
   const [isDataTrackingEnabled, setIsDataTrackingEnabled] = useState(false);
   const [isLiveLocationEnabled, setIsLiveLocationEnabled] = useState(false);
   const [inquiry, setInquiry] = useState('');
+  const navigation = useNavigation();
 
   const handleDeleteAccount = () => {
     Alert.alert(
@@ -25,7 +27,16 @@ const PrivacySettingsScreen = () => {
               if (user) {
                 await firestore().collection('users').doc(user.uid).delete();
                 await user.delete();
-                Alert.alert('Account deleted', 'Your account has been deleted successfully.');
+                Alert.alert(
+                  'Account deleted',
+                  'Your account has been deleted successfully.',
+                  [
+                    {
+                      text: 'OK',
+                      onPress: () => navigation.navigate('SplashScreen'),
+                    },
+                  ]
+                );
               }
             } catch (error) {
               console.error('Error deleting account:', error);
