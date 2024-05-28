@@ -4,6 +4,7 @@ import messaging from '@react-native-firebase/messaging';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {Alert} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
 
 const UserContext = createContext();
 
@@ -121,6 +122,26 @@ export const UserProvider = ({children}) => {
     }
   };
 
+  const fetchUserProfile = async () => {
+    if (!user) throw new Error('User not logged in');
+
+    const userProfileRef = firestore().collection('profiles').doc(user.uid);
+    const userProfileDoc = await userProfileRef.get();
+
+    if (userProfileDoc.exists) {
+      return userProfileDoc.data();
+    } else {
+      throw new Error('User profile not found');
+    }
+  };
+
+  const uploadProfilePicture = async imageUri => {
+    const storageRef = storage().ref('profilePictures/${user.uid}.jpg');
+    await storageRef.putFile(imageUri);
+    const downloadUrl = await storageRef.getDownloadURL();
+    return downloadUrl;
+  };
+
   const createOrUpdateAd = async adData => {
     try {
       if (!user) throw new Error('User not logged in');
@@ -170,6 +191,8 @@ export const UserProvider = ({children}) => {
         signInWithEmailAndPass,
         onGoogleButtonPress,
         createOrUpdateProfile,
+        fetchUserProfile,
+        uploadProfilePicture,
         ads,
         createOrUpdateAd,
       }}>
