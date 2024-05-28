@@ -1,4 +1,4 @@
-// src/screens/_014PaymentSettingsScreen.js
+// screens/PaymentSettingsScreen.js
 
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
@@ -8,6 +8,7 @@ const paymentMethods = [
   { id: '2', method: 'PayPal' },
   { id: '3', method: 'Bank Transfer' },
 ];
+
 
 const PaymentSettingsScreen = ({ navigation }) => {
   const renderItem = ({ item }) => (
@@ -30,6 +31,10 @@ const PaymentSettingsScreen = ({ navigation }) => {
       >
         <Text style={styles.buttonText}>Add Payment Method</Text>
       </TouchableOpacity> */}
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.buttonText}>Add Payment Method</Text>
+      </TouchableOpacity>
+
     </View>
   );
 };

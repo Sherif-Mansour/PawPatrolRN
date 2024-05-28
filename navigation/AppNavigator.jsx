@@ -8,9 +8,9 @@ import SignInScreen from '../src/screens/_01SignInScreen';
 import SignUpScreen from '../src/screens/_02SignUpScreen';
 import SettingsScreen from '../src/screens/_07Settings';
 import Profile from '../src/screens/_08Profile';
-import Ad from '../src/screens/_15AdScreen';
 import NotificationSettingsScreen from '../src/screens/_09NotificationScreen';
 import PrivacySettingsScreen from '../src/screens/_10PrivacyScreen';
+import Ad from '../src/screens/_15Ad';
 import UserAdsScreen from '../src/screens/_16AdInformation';
 import AppHeader from '../components/Header';
 import BottomTabNavigator from './BottomTabNavigator';
@@ -65,6 +65,11 @@ const AppNavigator = () => {
           name="UserAds"
           component={UserAdsScreen}
           options={{ header: () => <AppHeader showBackButton={true} /> }}
+        />
+        <Stack.Screen
+          name="Ad"
+          component={Ad}
+          options={{header: () => <AppHeader showBackButton={true} />}}
         />
       </Stack.Navigator>
     </NavigationContainer>
