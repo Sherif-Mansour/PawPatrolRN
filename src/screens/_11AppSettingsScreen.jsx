@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 
-const AppPreferencesScreen = () => {
+const AppSettingsScreen = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [language, setLanguage] = useState('English');
 
@@ -41,4 +41,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AppPreferencesScreen;
+export default AppSettingsScreen;
