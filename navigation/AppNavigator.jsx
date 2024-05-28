@@ -13,7 +13,7 @@ import AppPreferencesScreen from '../src/screens/_11AppSettingsScreen';
 import PaymentSettingsScreen from '../src/screens/_12PaymentSettingsScreen';
 import BookingSettingsScreen from '../src/screens/_13BookingSettingsScreen';
 import Ad from '../src/screens/_15Ad';
-import UserAdsScreen from '../src/screens/_16AdInformation';
+import UserAdsScreen from '../src/screens/_16EditDeleteAd';
 import AppHeader from '../components/Header';
 import BottomTabNavigator from './BottomTabNavigator';
 

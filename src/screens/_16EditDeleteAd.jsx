@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
 
-const UserAdsScreen = () => {
+const EditDeleteAd = () => {
   const { user, deleteAd } = useUser();
   const [ads, setAds] = useState([]);
   const navigation = useNavigation();
@@ -102,4 +102,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserAdsScreen;
+export default EditDeleteAd;
