@@ -6,10 +6,12 @@ import { createStackNavigator } from '@react-navigation/stack';
 import SplashScreen from './../src/screens/_00SplashScreen';
 import SignInScreen from '../src/screens/_01SignInScreen';
 import SignUpScreen from '../src/screens/_02SignUpScreen';
-import SettingsScreen from '../src/screens/_07Settings';
 import Profile from '../src/screens/_08Profile';
 import NotificationSettingsScreen from '../src/screens/_09NotificationScreen';
 import PrivacySettingsScreen from '../src/screens/_10PrivacyScreen';
+import AppPreferencesScreen from './../src/screens/_11AppPreference';
+import PaymentSettingsScreen from './../src/screens/_12PaymentOptionScreen';
+import BookingSettingsScreen from './../src/screens/_13BookingsScreen';
 import Ad from '../src/screens/_15Ad';
 import UserAdsScreen from '../src/screens/_16AdInformation';
 import AppHeader from '../components/Header';
@@ -57,6 +59,21 @@ const AppNavigator = () => {
           options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
+          name="PaymentSettings"
+          component={PaymentSettingsScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="AppPreferences"
+          component={AppPreferencesScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="BookingSettings"
+          component={BookingSettingsScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
           name="Ad"
           component={Ad}
           options={{ header: () => <AppHeader showBackButton={true} /> }}
@@ -65,11 +82,6 @@ const AppNavigator = () => {
           name="UserAds"
           component={UserAdsScreen}
           options={{ header: () => <AppHeader showBackButton={true} /> }}
-        />
-        <Stack.Screen
-          name="Ad"
-          component={Ad}
-          options={{header: () => <AppHeader showBackButton={true} />}}
         />
       </Stack.Navigator>
     </NavigationContainer>

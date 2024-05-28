@@ -18,7 +18,7 @@ export default function SettingsScreen() {
       <TouchableOpacity onPress={() => navigation.navigate('PrivacySettings')}>
         <Text style={styles.setting}>Privacy Settings</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('Payment')}>
+      <TouchableOpacity onPress={() => navigation.navigate('PaymentSettings')}>
         <Text style={styles.setting}>Payment Settings</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('AppPreferences')}>
