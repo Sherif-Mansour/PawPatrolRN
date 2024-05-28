@@ -66,11 +66,7 @@ const AppNavigator = () => {
           component={UserAdsScreen}
           options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
-        <Stack.Screen
-          name="Ad"
-          component={Ad}
-          options={{header: () => <AppHeader showBackButton={true} />}}
-        />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );
