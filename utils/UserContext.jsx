@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import React, {useContext, createContext, useState, useEffect} from 'react';
 import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
@@ -12,6 +11,7 @@ export const UserProvider = ({children}) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState(null);
+  const [ads, setAds] = useState([]);
 
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(currentUser => {
@@ -121,6 +121,46 @@ export const UserProvider = ({children}) => {
     }
   };
 
+  const createOrUpdateAd = async adData => {
+    try {
+      if (!user) throw new Error('User not logged in');
+
+      const userAdRef = firestore()
+        .collection('ads')
+        .doc(user.uid)
+        .collection('userAds');
+
+      let adDocRef;
+
+      if (adData.id) {
+        // If adData already has an ID, update the existing ad
+        adDocRef = userAdRef.doc(adData.id);
+      } else {
+        // If adData does not have an ID, create a new ad with an auto-generated ID
+        adDocRef = userAdRef.doc(); // Firestore will generate a unique ID
+        adData.id = adDocRef.id; // Associate the auto-generated ID with the ad data
+      }
+
+      // Set ad data and timestamps
+      await adDocRef.set({
+        ...adData,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+        updatedAt: firestore.FieldValue.serverTimestamp(),
+      });
+
+      if (adData.id) {
+        console.log('Ad updated successfully');
+        Alert.alert('Ad Updated', 'Your ad has been updated successfully');
+      } else {
+        console.log('Ad created successfully');
+        Alert.alert('Ad Created', 'Your ad has been created successfully');
+      }
+    } catch (err) {
+      console.error('Error creating/updating ad:', err);
+      Alert.alert('Ad Error', 'Failed to create/update ad');
+    }
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -130,6 +170,8 @@ export const UserProvider = ({children}) => {
         signInWithEmailAndPass,
         onGoogleButtonPress,
         createOrUpdateProfile,
+        ads,
+        createOrUpdateAd,
       }}>
       {children}
     </UserContext.Provider>

@@ -19,7 +19,7 @@ const SignUpScreen = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const singUpTestFn = () => {
+  const handleSignUp = () => {
     auth()
       .createUserWithEmailAndPassword(email, password)
       .then(() => {
@@ -68,7 +68,7 @@ const SignUpScreen = ({navigation}) => {
             style={styles.input} // Apply styles from the theme
           />
 
-          <Button mode="contained" buttonColor="#009B7D" onPress={singUpTestFn}>
+          <Button mode="contained" buttonColor="#009B7D" onPress={handleSignUp}>
             Sign Up
           </Button>
 
