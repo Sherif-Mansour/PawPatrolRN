@@ -1,9 +1,7 @@
-
-
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
-import { useNavigation } from '@react-navigation/native';
+import { useUser } from '../../utils/UserContext';
 
 const categories = [
   'Grooming',
@@ -15,22 +13,25 @@ const categories = [
 ];
 
 const HomeScreen = () => {
+  const { user } = useUser();
   const [ads, setAds] = useState([]);
   const [filteredAds, setFilteredAds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchAds = async () => {
       try {
+        console.log('Fetching ads from Firestore...');
         const adsSnapshot = await firestore()
           .collectionGroup('userAds')
           .get();
         const adsList = adsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log('Fetched ads:', adsList);
         setAds(adsList);
         setFilteredAds(adsList);
       } catch (error) {
-        console.error('Error fetching ads: ', error);
+        console.error('Error fetching ads:', error);
+        Alert.alert('Error', 'Failed to fetch ads. Please try again later.');
       }
     };
 
