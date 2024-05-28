@@ -12,10 +12,6 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Settings</Text>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('ProfileSettings')}>
-        <Text style={styles.setting}>Profile Settings</Text>
-      </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('NotificationSettings')}>
         <Text style={styles.setting}>Notification Settings</Text>
       </TouchableOpacity>
@@ -25,11 +21,14 @@ export default function SettingsScreen() {
       <TouchableOpacity onPress={() => navigation.navigate('Payment')}>
         <Text style={styles.setting}>Payment Settings</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('Bookings')}>
-        <Text style={styles.setting}>Bookings</Text>
-      </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('AppPreferences')}>
         <Text style={styles.setting}>App Preferences</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('BookingSettings')}>
+        <Text style={styles.setting}>Booking Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('UserAds')}>
+        <Text style={styles.setting}>Ads</Text>
       </TouchableOpacity>
     </View>
   );
