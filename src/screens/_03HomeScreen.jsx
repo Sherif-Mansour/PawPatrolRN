@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const categories = [
   'Grooming',
@@ -17,6 +18,7 @@ const HomeScreen = () => {
   const [ads, setAds] = useState([]);
   const [filteredAds, setFilteredAds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     const fetchAds = async () => {
@@ -49,6 +51,16 @@ const HomeScreen = () => {
     }
   }, [searchQuery, ads]);
 
+  const handleAddToFavorites = (ad) => {
+    setFavorites((prevFavorites) => {
+      if (prevFavorites.includes(ad.id)) {
+        return prevFavorites.filter(favId => favId !== ad.id);
+      } else {
+        return [...prevFavorites, ad.id];
+      }
+    });
+  };
+
   const renderCategory = (category) => (
     <TouchableOpacity key={category} style={styles.categoryButton}>
       <Text style={styles.categoryButtonText}>{category}</Text>
@@ -57,10 +69,18 @@ const HomeScreen = () => {
 
   const renderItem = ({ item }) => (
     <View style={styles.adContainer}>
-      <Text style={styles.adTitle}>{item.title}</Text>
-      <Text>{item.description}</Text>
-      <Text>Address: {item.address}</Text>
-      <Text>Services: {item.services.join(', ')}</Text>
+      <View style={styles.adContent}>
+        <Text style={styles.adTitle}>{item.title}</Text>
+        <Text>{item.description}</Text>
+        <Text>Address: {item.address}</Text>
+        <Text>Services: {item.services.join(', ')}</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.favoriteButton}
+        onPress={() => handleAddToFavorites(item)}
+      >
+        <Icon name={favorites.includes(item.id) ? "heart" : "heart-outline"} size={24} color="#ff0000" />
+      </TouchableOpacity>
     </View>
   );
 
@@ -119,11 +139,20 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     marginBottom: 10,
     borderRadius: 5,
+    position: 'relative',
+  },
+  adContent: {
+    marginBottom: 10,
   },
   adTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
+  },
+  favoriteButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
   },
 });
 
