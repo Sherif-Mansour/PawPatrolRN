@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { CreditCardInput } from 'react-native-credit-card-input';
 
-const AddCreditCardScreen = () => {
+const AddCreditCardScreen = ({ navigation }) => {
   const [cardData, setCardData] = useState(null);
 
   const onChange = (formData) => {
@@ -15,6 +15,7 @@ const AddCreditCardScreen = () => {
     if (cardData && cardData.valid) {
       Alert.alert('Card Added', 'Your card has been successfully added!');
       // Here, you can also add code to save the card information to your backend or payment gateway
+      navigation.goBack();  // Go back to the previous screen after adding the card
     } else {
       Alert.alert('Invalid Card', 'Please enter valid card details.');
     }
