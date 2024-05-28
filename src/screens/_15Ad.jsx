@@ -1,26 +1,51 @@
-import React, {useState} from 'react';
-import {View, Text, TextInput, StyleSheet} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {View, Text, TextInput, StyleSheet, Alert} from 'react-native';
 import {Button} from 'react-native-paper';
+import {useNavigation} from '@react-navigation/native';
 import {useUser} from '../../utils/UserContext';
 
-const Ad = () => {
-  const {user, createOrUpdateAd, ads} = useUser();
+const Ad = ({ route }) => {
+  const {createOrUpdateAd} = useUser();
+  const navigation = useNavigation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [pictures, setPictures] = useState([]);
   const [services, setServices] = useState([]);
   const [address, setAddress] = useState('');
+  const adId = route.params?.ad?.id;
 
-  const saveAd = () => {
-    const adData = {
-      id: null,
-      title,
-      description,
-      pictures,
-      services,
-      address,
-    };
-    createOrUpdateAd(adData);
+  useEffect(() => {
+    if (route.params?.ad) {
+      const { title, description, pictures, services, address } = route.params.ad;
+      setTitle(title);
+      setDescription(description);
+      setPictures(pictures);
+      setServices(services);
+      setAddress(address);
+    }
+  }, [route.params?.ad]);
+
+  const saveAd = async () => {
+    if (title && description && address && services.length > 0) {
+      const adData = {
+        id: adId,
+        title,
+        description,
+        pictures,
+        services,
+        address,
+      };
+      try {
+        await createOrUpdateAd(adData);
+        Alert.alert('Success', 'Your ad has been saved successfully');
+        navigation.navigate('Home'); // Navigate back to the home screen
+      } catch (error) {
+        Alert.alert('Error', 'There was an error saving your ad');
+        console.error('Error saving ad:', error);
+      }
+    } else {
+      Alert.alert('Error', 'Please fill in all fields');
+    }
   };
 
   return (
@@ -60,7 +85,7 @@ const Ad = () => {
           buttonColor="#FFBF5D"
           contentStyle={{width: '100%'}}
           onPress={saveAd}>
-          Add Ad
+          Save Ad
         </Button>
       </View>
     </View>
