@@ -9,7 +9,8 @@ const paymentMethods = [
   { id: '3', method: 'Bank Transfer' },
 ];
 
-const PaymentSettingsScreen = () => {
+
+const PaymentSettingsScreen = ({ navigation }) => {
   const renderItem = ({ item }) => (
     <View style={styles.paymentMethod}>
       <Text>{item.method}</Text>
@@ -24,9 +25,16 @@ const PaymentSettingsScreen = () => {
         renderItem={renderItem}
         keyExtractor={item => item.id}
       />
+      {/* <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('AddCreditCard')}
+      >
+        <Text style={styles.buttonText}>Add Payment Method</Text>
+      </TouchableOpacity> */}
       <TouchableOpacity style={styles.button}>
         <Text style={styles.buttonText}>Add Payment Method</Text>
       </TouchableOpacity>
+
     </View>
   );
 };
