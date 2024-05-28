@@ -10,21 +10,44 @@ export default function SettingsScreen() {
   const navigation = useNavigation();
 
   return (
-    <View>
-      <Text>Settings</Text>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('ProfileSettings')}>
-        <Text>Profile Settings</Text>
-      </TouchableOpacity>
+    <View style={styles.container}>
+      <Text style={styles.title}>Settings</Text>
       <TouchableOpacity onPress={() => navigation.navigate('NotificationSettings')}>
-        <Text>Notification Settings</Text>
+        <Text style={styles.setting}>Notification Settings</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('PrivacySettings')}>
-        <Text>Privacy Settings</Text>
+        <Text style={styles.setting}>Privacy Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('PaymentSettings')}>
+        <Text style={styles.setting}>Payment Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('AppPreferences')}>
+        <Text style={styles.setting}>App Preferences</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('BookingSettings')}>
+        <Text style={styles.setting}>Booking Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('UserAds')}>
+        <Text style={styles.setting}>Ads</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  title: {
+    fontSize: 40,
+    marginBottom: 20,
+  },
+  setting: {
+    fontSize: 20,
+    paddingVertical: 4,
+  },
+});
 
 
 
