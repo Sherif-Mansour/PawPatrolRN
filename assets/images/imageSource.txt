@@ -1,2 +1,3 @@
 background.jpg --> https://unsplash.com/photos/brown-short-coated-dog-in-orange-hoodie-oU6KZTXhuvk
 PetPalLogo.png --> https://logo.com
+default-avatar --> https://thumbs.dreamstime.com/b/default-avatar-profile-icon-vector-social-media-user-image-182145777.jpg
