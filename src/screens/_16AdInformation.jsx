@@ -63,7 +63,7 @@ const UserAdsScreen = () => {
       <Text>{item.description}</Text>
       <Button
         title="Edit"
-        onPress={() => navigation.navigate('AddAd', { ad: item })}
+        onPress={() => navigation.navigate('Ad', { ad: item })}
       />
       <Button
         title="Delete"
@@ -103,3 +103,7 @@ const styles = StyleSheet.create({
 });
 
 export default UserAdsScreen;
+
+
+// had to use chatgpt
+// add code such that on clicking edit a window is opened that has information about the ad already there, user can edit that information and once user clicks save old information is overwritten by new information in the same ad
