@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
 
-const UserAdsScreen = () => {
+const EditDeleteAd = () => {
   const { user, deleteAd } = useUser();
   const [ads, setAds] = useState([]);
   const navigation = useNavigation();
@@ -62,10 +62,12 @@ const UserAdsScreen = () => {
       <Text style={styles.adTitle}>{item.title}</Text>
       <Text>{item.description}</Text>
       <Button
+        mode="contained"
         title="Edit"
         onPress={() => navigation.navigate('Ad', { ad: item })}
       />
       <Button
+        mode="contained"
         title="Delete"
         onPress={() => handleDeleteAd(item.id)}
       />
@@ -92,18 +94,20 @@ const styles = StyleSheet.create({
   adContainer: {
     padding: 20,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: 'rgb(0, 104, 123)',
+    backgroundColor: 'rgb(0, 104, 123)',
     marginBottom: 10,
   },
   adTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
+    color: 'rgb(255, 155, 83)',
   },
 });
 
-export default UserAdsScreen;
+export default EditDeleteAd;
 
 
-// had to use chatgpt
-// add code such that on clicking edit a window is opened that has information about the ad already there, user can edit that information and once user clicks save old information is overwritten by new information in the same ad
+// read document from firebase for firestore security rules
+// https://firebase.google.com/docs/firestore/security/rules-structure

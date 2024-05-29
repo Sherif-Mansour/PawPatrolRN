@@ -1,26 +1,85 @@
-import React, {useState} from 'react';
-import {View, Text, TextInput, StyleSheet} from 'react-native';
-import {Button} from 'react-native-paper';
-import {useUser} from '../../utils/UserContext';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { Button } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { useUser } from '../../utils/UserContext';
 
-const Ad = () => {
-  const {user, createOrUpdateAd, ads} = useUser();
+const categories = [
+  'Grooming',
+  'Walking',
+  'Boarding',
+  'Training',
+  'Veterinary',
+  'Sitting',
+];
+
+const Ad = ({ route }) => {
+  const { createOrUpdateAd } = useUser();
+  const navigation = useNavigation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [pictures, setPictures] = useState([]);
   const [services, setServices] = useState([]);
   const [address, setAddress] = useState('');
+  const [category, setCategory] = useState(categories[0]);
+  const adId = route.params?.ad?.id;
 
-  const saveAd = () => {
-    const adData = {
-      id: null,
-      title,
-      description,
-      pictures,
-      services,
-      address,
-    };
-    createOrUpdateAd(adData);
+  useEffect(() => {
+    if (route.params?.ad) {
+      const { title, description, pictures, services, address, category } = route.params.ad;
+      setTitle(title);
+      setDescription(description);
+      setPictures(pictures);
+      setServices(services);
+      setAddress(address);
+      setCategory(category || categories[0]);
+    }
+  }, [route.params?.ad]);
+
+  const saveAd = async () => {
+    if (title && description && address && services.length > 0 && category) {
+      const adData = {
+        id: adId,
+        title,
+        description,
+        pictures,
+        services,
+        address,
+        category,
+      };
+      try {
+        await createOrUpdateAd(adData);
+        Alert.alert('Success', 'Your ad has been saved successfully');
+        navigation.navigate('Home'); // Navigate back to the home screen
+      } catch (error) {
+        Alert.alert('Error', 'There was an error saving your ad');
+        console.error('Error saving ad:', error);
+      }
+    } else {
+      Alert.alert('Error', 'Please fill in all fields');
+    }
+  };
+
+  const renderCategoryButtons = () => {
+    return categories.map((cat) => (
+      <TouchableOpacity
+        key={cat}
+        style={[
+          styles.categoryButton,
+          category === cat ? styles.selectedCategoryButton : null,
+        ]}
+        onPress={() => setCategory(cat)}
+      >
+        <Text
+          style={[
+            styles.categoryButtonText,
+            category === cat ? styles.selectedCategoryButtonText : null,
+          ]}
+        >
+          {cat}
+        </Text>
+      </TouchableOpacity>
+    ));
   };
 
   return (
@@ -55,12 +114,17 @@ const Ad = () => {
           value={address}
           onChangeText={setAddress}
         />
+        <Text style={styles.label}>Category</Text>
+        <View style={styles.categoriesContainer}>
+          {renderCategoryButtons()}
+        </View>
         <Button
           mode="contained"
           buttonColor="#FFBF5D"
-          contentStyle={{width: '100%'}}
-          onPress={saveAd}>
-          Add Ad
+          contentStyle={{ width: '100%' }}
+          onPress={saveAd}
+        >
+          Save Ad
         </Button>
       </View>
     </View>
@@ -89,6 +153,30 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 5,
   },
+  categoriesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginVertical: 10,
+  },
+  categoryButton: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+    margin: 5,
+  },
+  selectedCategoryButton: {
+    backgroundColor: '#0056b3',
+  },
+  categoryButtonText: {
+    color: 'white',
+  },
+  selectedCategoryButtonText: {
+    fontWeight: 'bold',
+  },
 });
 
 export default Ad;
+
+
+// watched youtube video for firebase
+// https://www.youtube.com/watch?v=2hR-uWjBAgw
