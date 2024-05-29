@@ -5,6 +5,7 @@ import { useUser } from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const categories = [
+  'All',
   'Grooming',
   'Walking',
   'Boarding',
@@ -18,6 +19,7 @@ const HomeScreen = () => {
   const [ads, setAds] = useState([]);
   const [filteredAds, setFilteredAds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
@@ -41,15 +43,24 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredAds(ads);
-    } else {
-      const filtered = ads.filter(ad =>
+    filterAds();
+  }, [searchQuery, selectedCategory, ads]);
+
+  const filterAds = () => {
+    let filtered = ads;
+
+    if (selectedCategory && selectedCategory !== 'All') {
+      filtered = filtered.filter(ad => ad.category === selectedCategory);
+    }
+
+    if (searchQuery.trim() !== '') {
+      filtered = filtered.filter(ad =>
         ad.title.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setFilteredAds(filtered);
     }
-  }, [searchQuery, ads]);
+
+    setFilteredAds(filtered);
+  };
 
   const handleAddToFavorites = (ad) => {
     setFavorites((prevFavorites) => {
@@ -62,8 +73,22 @@ const HomeScreen = () => {
   };
 
   const renderCategory = (category) => (
-    <TouchableOpacity key={category} style={styles.categoryButton}>
-      <Text style={styles.categoryButtonText}>{category}</Text>
+    <TouchableOpacity
+      key={category}
+      style={[
+        styles.categoryButton,
+        selectedCategory === category ? styles.selectedCategoryButton : null,
+      ]}
+      onPress={() => setSelectedCategory(category)}
+    >
+      <Text
+        style={[
+          styles.categoryButtonText,
+          selectedCategory === category ? styles.selectedCategoryButtonText : null,
+        ]}
+      >
+        {category}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -74,6 +99,7 @@ const HomeScreen = () => {
         <Text>{item.description}</Text>
         <Text>Address: {item.address}</Text>
         <Text>Services: {item.services.join(', ')}</Text>
+        <Text>Category: {item.category}</Text>
       </View>
       <TouchableOpacity
         style={styles.favoriteButton}
@@ -130,8 +156,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     margin: 5,
   },
+  selectedCategoryButton: {
+    backgroundColor: '#0056b3',
+  },
   categoryButtonText: {
     color: 'white',
+  },
+  selectedCategoryButtonText: {
+    fontWeight: 'bold',
   },
   adContainer: {
     padding: 20,
