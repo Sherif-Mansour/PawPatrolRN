@@ -176,3 +176,7 @@ const styles = StyleSheet.create({
 });
 
 export default Ad;
+
+
+// watched youtube video for firebase
+// https://www.youtube.com/watch?v=2hR-uWjBAgw
