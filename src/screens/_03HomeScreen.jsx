@@ -96,10 +96,10 @@ const HomeScreen = () => {
     <View style={styles.adContainer}>
       <View style={styles.adContent}>
         <Text style={styles.adTitle}>{item.title}</Text>
-        <Text>{item.description}</Text>
-        <Text>Address: {item.address}</Text>
-        <Text>Services: {item.services.join(', ')}</Text>
-        <Text>Category: {item.category}</Text>
+        <Text style={styles.adData}>{item.description}</Text>
+        <Text style={styles.adData}>Address: {item.address}</Text>
+        <Text style={styles.adData}>Services: {item.services.join(', ')}</Text>
+        <Text style={styles.adData}>Category: {item.category}</Text>
       </View>
       <TouchableOpacity
         style={styles.favoriteButton}
@@ -139,11 +139,13 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     height: 40,
-    borderColor: '#ccc',
+    borderColor: 'rgb(0, 104, 123)',
+    backgroundColor: 'rgb(0, 104, 123)',
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 20,
+    color: 'rgb(200, 200, 200)',
   },
   categoriesContainer: {
     flexDirection: 'row',
@@ -151,7 +153,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   categoryButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: 'rgb(0, 104, 123)',
     padding: 10,
     borderRadius: 5,
     margin: 5,
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0056b3',
   },
   categoryButtonText: {
-    color: 'white',
+    color: 'rgb(200, 200, 200)',
   },
   selectedCategoryButtonText: {
     fontWeight: 'bold',
@@ -168,18 +170,24 @@ const styles = StyleSheet.create({
   adContainer: {
     padding: 20,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: 'rgb(0, 104, 123)',
+    backgroundColor: 'rgb(0, 104, 123)',
     marginBottom: 10,
     borderRadius: 5,
     position: 'relative',
   },
   adContent: {
+    color: '#009B7D',
     marginBottom: 10,
   },
   adTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: 'rgb(255, 155, 83)',
     marginBottom: 5,
+  },
+  adData: {
+    color: 'rgb(200, 200, 200)',
   },
   favoriteButton: {
     position: 'absolute',
@@ -189,3 +197,9 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+
+// took help of chatgpt to get contrasting colors for the app
+// what colour is gonna look good with : 'rgb(0, 104, 123)', for app
+
+// got icons for home screen from react-icons
+// https://react-icons.github.io/react-icons/
