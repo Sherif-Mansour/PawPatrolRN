@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Searchbar, useTheme, Chip, Button } from 'react-native-paper';
+import { Searchbar, useTheme, Chip, Button, Card, Text } from 'react-native-paper';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 
@@ -26,7 +26,6 @@ const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [favorites, setFavorites] = useState([]);
-  const [expanded, setExpanded] = React.useState(true);
 
   useEffect(() => {
     const fetchAds = async () => {
@@ -93,30 +92,70 @@ const HomeScreen = () => {
   );
 
   const renderItem = ({ item }) => (
-    <View style={styles.adContainer}>
-      <View style={styles.adContent}>
-        <Text style={styles.adTitle}>{item.title}</Text>
-        <Text style={styles.adData}>{item.description}</Text>
-        <Text style={styles.adData}>Address: {item.address}</Text>
-        <Text style={styles.adData}>Services: {item.services.join(', ')}</Text>
-        <Text style={styles.adData}>Category: {item.category}</Text>
-      </View>
+    <Card
+      style={styles.adContainer}
+    >
+      <Card.Title
+        titleStyle={styles.adTitle}
+        title={item.title}
+        subtitle={`Address: ${item.address}\nServices: ${item.services.join(', ')}\nCategory: ${item.category}`}
+        subtitleNumberOfLines={3}
+        subtitleStyle={styles.adTitle}
+      />
+      <Card.Content>
+        <Text variant='bodyMedium' style={styles.adContent}>{item.description}</Text>
+      </Card.Content>
       <TouchableOpacity
         style={styles.favoriteButton}
         onPress={() => handleAddToFavorites(item)}
       >
         <Icon name={favorites.includes(item.id) ? "heart" : "heart-outline"} size={24} color="#ff0000" />
       </TouchableOpacity>
-    </View>
+    </Card>
   );
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+      paddingTop: 5,
+      backgroundColor: 'white',
+    },
+    categoryChip: {
+      marginRight: 10
+    },
+    categoriesScrollContainer: {
+      flexDirection: 'row',
+      marginVertical: 10,
+    },
+    adContainer: {
+      borderWidth: 1,
+      paddingTop: 5,
+      marginBottom: 10,
+      position: 'relative',
+      backgroundColor: theme.colors.primaryContainer
+    },
+    adTitle: {
+      color: theme.colors.onPrimaryContainer
+    },
+    adContent: {
+      color: theme.colors.onPrimaryContainer,
+      marginBottom: 10,
+    },
+    favoriteButton: {
+      position: 'absolute',
+      bottom: 10,
+      right: 10,
+    },
+  });
 
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: 'row' }}>
         <Button
-          icon='map-marker'
+          style={{ backgroundColor: 'transparent' }}
           onPress={() => navigation.navigate('Location')}
-          style={{backgroundColor: 'transparent'}}
+          icon='map-marker'
         >
           Location
         </Button>
@@ -145,49 +184,6 @@ const HomeScreen = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    paddingTop: 5,
-    backgroundColor: 'white',
-  },
-  categoryChip: {
-    marginRight: 10
-  },
-  categoriesScrollContainer: {
-    flexDirection: 'row',
-    marginVertical: 10,
-  },
-  adContainer: {
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'rgb(0, 104, 123)',
-    backgroundColor: 'rgb(0, 104, 123)',
-    marginBottom: 10,
-    borderRadius: 5,
-    position: 'relative',
-  },
-  adContent: {
-    color: '#009B7D',
-    marginBottom: 10,
-  },
-  adTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'rgb(255, 155, 83)',
-    marginBottom: 5,
-  },
-  adData: {
-    color: 'rgb(200, 200, 200)',
-  },
-  favoriteButton: {
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
-  },
-});
 
 export default HomeScreen;
 
