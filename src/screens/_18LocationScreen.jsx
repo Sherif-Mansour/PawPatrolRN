@@ -1,7 +1,7 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-const _17LocationScreen = () => {
+const LocationScreen = () => {
   return (
     <View>
       <Text>_17LocationScreen</Text>
@@ -9,4 +9,4 @@ const _17LocationScreen = () => {
   )
 }
 
-export default _17LocationScreen
+export default LocationScreen
