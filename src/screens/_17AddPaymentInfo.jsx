@@ -40,7 +40,7 @@ const PaymentForm = () => {
       valid = false;
     }
     if (!creditCardInfo.cvv || !/^\d{3,4}$/.test(creditCardInfo.cvv)) {
-      errors.cvv = 'Valid CVV is required (3 or 4 digits)';
+      errors.cvv = 'Valid CVV is required (3 digits)';
       valid = false;
     }
     if (!creditCardInfo.address) {
@@ -76,7 +76,7 @@ const PaymentForm = () => {
     }
 
     try {
-      await firestore().collection('paymentMethods').add({
+      await firestore().collection('paymentMethods').doc('cardDetails').set({
         paymentMethod,
         ...paymentDetails,
       });
