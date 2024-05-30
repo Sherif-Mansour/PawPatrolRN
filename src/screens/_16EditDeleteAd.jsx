@@ -62,10 +62,12 @@ const EditDeleteAd = () => {
       <Text style={styles.adTitle}>{item.title}</Text>
       <Text>{item.description}</Text>
       <Button
+        mode="contained"
         title="Edit"
         onPress={() => navigation.navigate('Ad', { ad: item })}
       />
       <Button
+        mode="contained"
         title="Delete"
         onPress={() => handleDeleteAd(item.id)}
       />
@@ -92,14 +94,20 @@ const styles = StyleSheet.create({
   adContainer: {
     padding: 20,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: 'rgb(0, 104, 123)',
+    backgroundColor: 'rgb(0, 104, 123)',
     marginBottom: 10,
   },
   adTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
+    color: 'rgb(255, 155, 83)',
   },
 });
 
 export default EditDeleteAd;
+
+
+// read document from firebase for firestore security rules
+// https://firebase.google.com/docs/firestore/security/rules-structure
