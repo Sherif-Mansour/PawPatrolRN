@@ -16,6 +16,7 @@ const Profile = () => {
   const {user, createOrUpdateProfile, fetchUserProfile, uploadProfilePicture} =
     useUser();
   const [selectedSegment, setSelectedSegment] = useState('user');
+  const [selectedPetIndex, setSelectedPetIndex] = useState(0);
   const [profileData, setProfileData] = useState({
     name: '',
     bio: '',
