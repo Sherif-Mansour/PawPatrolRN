@@ -61,9 +61,22 @@ const Profile = () => {
       ) {
         const imageUri = response.assets[0].uri;
         console.log('Selected Image URI:', imageUri);
-        const downloadUrl = await uploadProfilePicture(imageUri);
-        console.log('Download URL:', downloadUrl);
-        setProfileData({...profileData, profilePicture: downloadUrl});
+        try {
+          const downloadUrl = await uploadProfilePicture(imageUri);
+          console.log('Download URL:', downloadUrl);
+          setProfileData(prevState => ({
+            ...prevState,
+            profilePicture: downloadUrl,
+          }));
+          await createOrUpdateProfile({
+            ...profileData,
+            profilePicture: downloadUrl,
+          });
+          Alert.alert('Profile Picture Updated Successfully');
+        } catch (err) {
+          console.error('Error uploading profile picture:', err);
+          Alert.alert('Error', 'Failed to upload profile picture');
+        }
       }
     });
   };
