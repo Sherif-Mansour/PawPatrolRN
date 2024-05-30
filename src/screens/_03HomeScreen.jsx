@@ -1,22 +1,205 @@
-import { View, Text } from 'react-native';
-import React from 'react'
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import MySearchBar from '../../components/MySearchBar';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import firestore from '@react-native-firebase/firestore';
+import { useUser } from '../../utils/UserContext';
+import Icon from 'react-native-vector-icons/Ionicons';
+
+const categories = [
+  'All',
+  'Grooming',
+  'Walking',
+  'Boarding',
+  'Training',
+  'Veterinary',
+  'Sitting',
+];
 
 const HomeScreen = () => {
-  return (
-    <SafeAreaProvider>
-      <View style={{flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', borderWidth: 1, borderColor: 'black'}}>
-        <View style={{width: '30%'}}>
-          <Text>This is a placeholder</Text>
-        </View>
-          <MySearchBar />
-      </View>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'black'}}>
-        <Text>This is a placeholder</Text>
-      </View>
-    </SafeAreaProvider>
-  )
-}
+  const { user } = useUser();
+  const [ads, setAds] = useState([]);
+  const [filteredAds, setFilteredAds] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [favorites, setFavorites] = useState([]);
 
-export default HomeScreen
+  useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        console.log('Fetching ads from Firestore...');
+        const adsSnapshot = await firestore()
+          .collectionGroup('userAds')
+          .get();
+        const adsList = adsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log('Fetched ads:', adsList);
+        setAds(adsList);
+        setFilteredAds(adsList);
+      } catch (error) {
+        console.error('Error fetching ads:', error);
+        Alert.alert('Error', 'Failed to fetch ads. Please try again later.');
+      }
+    };
+
+    fetchAds();
+  }, []);
+
+  useEffect(() => {
+    filterAds();
+  }, [searchQuery, selectedCategory, ads]);
+
+  const filterAds = () => {
+    let filtered = ads;
+
+    if (selectedCategory && selectedCategory !== 'All') {
+      filtered = filtered.filter(ad => ad.category === selectedCategory);
+    }
+
+    if (searchQuery.trim() !== '') {
+      filtered = filtered.filter(ad =>
+        ad.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    setFilteredAds(filtered);
+  };
+
+  const handleAddToFavorites = (ad) => {
+    setFavorites((prevFavorites) => {
+      if (prevFavorites.includes(ad.id)) {
+        return prevFavorites.filter(favId => favId !== ad.id);
+      } else {
+        return [...prevFavorites, ad.id];
+      }
+    });
+  };
+
+  const renderCategory = (category) => (
+    <TouchableOpacity
+      key={category}
+      style={[
+        styles.categoryButton,
+        selectedCategory === category ? styles.selectedCategoryButton : null,
+      ]}
+      onPress={() => setSelectedCategory(category)}
+    >
+      <Text
+        style={[
+          styles.categoryButtonText,
+          selectedCategory === category ? styles.selectedCategoryButtonText : null,
+        ]}
+      >
+        {category}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const renderItem = ({ item }) => (
+    <View style={styles.adContainer}>
+      <View style={styles.adContent}>
+        <Text style={styles.adTitle}>{item.title}</Text>
+        <Text style={styles.adData}>{item.description}</Text>
+        <Text style={styles.adData}>Address: {item.address}</Text>
+        <Text style={styles.adData}>Services: {item.services.join(', ')}</Text>
+        <Text style={styles.adData}>Category: {item.category}</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.favoriteButton}
+        onPress={() => handleAddToFavorites(item)}
+      >
+        <Icon name={favorites.includes(item.id) ? "heart" : "heart-outline"} size={24} color="#ff0000" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <TextInput
+        style={styles.searchBar}
+        placeholder="Search for services..."
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+      <View style={styles.categoriesContainer}>
+        {categories.map(renderCategory)}
+      </View>
+      <FlatList
+        data={filteredAds}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        ListEmptyComponent={<Text>No ads found.</Text>}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: 'white',
+  },
+  searchBar: {
+    height: 40,
+    borderColor: 'rgb(0, 104, 123)',
+    backgroundColor: 'rgb(0, 104, 123)',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+    color: 'rgb(200, 200, 200)',
+  },
+  categoriesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 20,
+  },
+  categoryButton: {
+    backgroundColor: 'rgb(0, 104, 123)',
+    padding: 10,
+    borderRadius: 5,
+    margin: 5,
+  },
+  selectedCategoryButton: {
+    backgroundColor: '#0056b3',
+  },
+  categoryButtonText: {
+    color: 'rgb(200, 200, 200)',
+  },
+  selectedCategoryButtonText: {
+    fontWeight: 'bold',
+  },
+  adContainer: {
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgb(0, 104, 123)',
+    backgroundColor: 'rgb(0, 104, 123)',
+    marginBottom: 10,
+    borderRadius: 5,
+    position: 'relative',
+  },
+  adContent: {
+    color: '#009B7D',
+    marginBottom: 10,
+  },
+  adTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'rgb(255, 155, 83)',
+    marginBottom: 5,
+  },
+  adData: {
+    color: 'rgb(200, 200, 200)',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+  },
+});
+
+export default HomeScreen;
+
+// took help of chatgpt to get contrasting colors for the app
+// what colour is gonna look good with : 'rgb(0, 104, 123)', for app
+
+// got icons for home screen from react-icons
+// https://react-icons.github.io/react-icons/
