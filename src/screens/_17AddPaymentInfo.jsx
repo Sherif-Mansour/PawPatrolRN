@@ -111,6 +111,7 @@ const PaymentForm = () => {
               placeholder="Expiry Date (MM/YY)"
               value={creditCardInfo.expiryDate}
               onChangeText={(text) => setCreditCardInfo({ ...creditCardInfo, expiryDate: text })}
+              keyboardType="numeric"
             />
             {errors.expiryDate && <Text style={styles.errorText}>{errors.expiryDate}</Text>}
             <TextInput
