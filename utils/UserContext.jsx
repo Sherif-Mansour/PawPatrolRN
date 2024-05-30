@@ -94,6 +94,19 @@ export const UserProvider = ({children}) => {
       });
   };
 
+  const createUserWithEmailAndPassword = async (email, password) => {
+    try {
+      const userCredential = await auth().createUserWithEmailAndPassword(
+        email,
+        password,
+      );
+      setUser(userCredential.user);
+      return userCredential.user;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const createOrUpdateProfile = async profileData => {
     const userProfileRef = firestore().collection('profiles').doc(user.uid);
 
@@ -189,6 +202,7 @@ export const UserProvider = ({children}) => {
         loading,
         email,
         signInWithEmailAndPass,
+        createUserWithEmailAndPassword,
         onGoogleButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
