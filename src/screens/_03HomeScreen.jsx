@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { Searchbar, useTheme, Chip, Button, Card, Text } from 'react-native-paper';
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import { useNavigation } from '@react-navigation/native';
 
 const categories = [
   'All',
@@ -15,6 +18,8 @@ const categories = [
 ];
 
 const HomeScreen = () => {
+  const navigation = useNavigation();
+  const theme = useTheme()
   const { user } = useUser();
   const [ads, setAds] = useState([]);
   const [filteredAds, setFilteredAds] = useState([]);
@@ -72,54 +77,104 @@ const HomeScreen = () => {
     });
   };
 
+  {/** https://callstack.github.io/react-native-paper/docs/components/Chip/  **/ }
   const renderCategory = (category) => (
-    <TouchableOpacity
+    <Chip
       key={category}
-      style={[
-        styles.categoryButton,
-        selectedCategory === category ? styles.selectedCategoryButton : null,
-      ]}
       onPress={() => setSelectedCategory(category)}
+      selected={selectedCategory === category}
+      style={[
+        styles.categoryChip,
+      ]}
     >
-      <Text
-        style={[
-          styles.categoryButtonText,
-          selectedCategory === category ? styles.selectedCategoryButtonText : null,
-        ]}
-      >
-        {category}
-      </Text>
-    </TouchableOpacity>
+      {category}
+    </ Chip>
   );
 
   const renderItem = ({ item }) => (
-    <View style={styles.adContainer}>
-      <View style={styles.adContent}>
-        <Text style={styles.adTitle}>{item.title}</Text>
-        <Text style={styles.adData}>{item.description}</Text>
-        <Text style={styles.adData}>Address: {item.address}</Text>
-        <Text style={styles.adData}>Services: {item.services.join(', ')}</Text>
-        <Text style={styles.adData}>Category: {item.category}</Text>
-      </View>
+    <Card
+      style={styles.adContainer}
+    >
+      <Card.Title
+        titleStyle={styles.adTitle}
+        title={item.title}
+        subtitle={`Address: ${item.address}\nServices: ${item.services.join(', ')}\nCategory: ${item.category}`}
+        subtitleNumberOfLines={3}
+        subtitleStyle={styles.adTitle}
+      />
+      <Card.Content>
+        <Text variant='bodyMedium' style={styles.adContent}>{item.description}</Text>
+      </Card.Content>
       <TouchableOpacity
         style={styles.favoriteButton}
         onPress={() => handleAddToFavorites(item)}
       >
         <Icon name={favorites.includes(item.id) ? "heart" : "heart-outline"} size={24} color="#ff0000" />
       </TouchableOpacity>
-    </View>
+    </Card>
   );
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+      paddingTop: 5,
+      backgroundColor: 'white',
+    },
+    categoryChip: {
+      marginRight: 10
+    },
+    categoriesScrollContainer: {
+      flexDirection: 'row',
+      marginVertical: 10,
+    },
+    adContainer: {
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      paddingTop: 5,
+      marginBottom: 10,
+      position: 'relative',
+      backgroundColor: theme.colors.primaryContainer
+    },
+    adTitle: {
+      color: theme.colors.onPrimaryContainer
+    },
+    adContent: {
+      color: theme.colors.onPrimaryContainer,
+      marginBottom: 10,
+    },
+    favoriteButton: {
+      position: 'absolute',
+      bottom: 10,
+      right: 10,
+    },
+  });
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.searchBar}
-        placeholder="Search for services..."
+      <View style={{ flexDirection: 'row' }}>
+        <Button
+          style={{ backgroundColor: 'transparent' }}
+          onPress={() => navigation.navigate('Location')}
+          icon='map-marker'
+        >
+          Location
+        </Button>
+      </View>
+      <Searchbar
+        style={{ backgroundColor: theme.colors.elevation.level5, borderWidth: 1, borderColor: theme.colors.outline }}
+        placeholder='Search for services'
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
-      <View style={styles.categoriesContainer}>
-        {categories.map(renderCategory)}
+      <View
+        style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}
+      >
+        <View style={styles.categoriesScrollContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {categories.map(renderCategory)}
+          </ScrollView>
+        </View>
       </View>
       <FlatList
         data={filteredAds}
@@ -130,71 +185,6 @@ const HomeScreen = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: 'white',
-  },
-  searchBar: {
-    height: 40,
-    borderColor: 'rgb(0, 104, 123)',
-    backgroundColor: 'rgb(0, 104, 123)',
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 20,
-    color: 'rgb(200, 200, 200)',
-  },
-  categoriesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 20,
-  },
-  categoryButton: {
-    backgroundColor: 'rgb(0, 104, 123)',
-    padding: 10,
-    borderRadius: 5,
-    margin: 5,
-  },
-  selectedCategoryButton: {
-    backgroundColor: '#0056b3',
-  },
-  categoryButtonText: {
-    color: 'rgb(200, 200, 200)',
-  },
-  selectedCategoryButtonText: {
-    fontWeight: 'bold',
-  },
-  adContainer: {
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'rgb(0, 104, 123)',
-    backgroundColor: 'rgb(0, 104, 123)',
-    marginBottom: 10,
-    borderRadius: 5,
-    position: 'relative',
-  },
-  adContent: {
-    color: '#009B7D',
-    marginBottom: 10,
-  },
-  adTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'rgb(255, 155, 83)',
-    marginBottom: 5,
-  },
-  adData: {
-    color: 'rgb(200, 200, 200)',
-  },
-  favoriteButton: {
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
-  },
-});
 
 export default HomeScreen;
 
