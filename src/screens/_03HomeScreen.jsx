@@ -130,6 +130,7 @@ const HomeScreen = () => {
     },
     adContainer: {
       borderWidth: 1,
+      borderColor: theme.colors.primary,
       paddingTop: 5,
       marginBottom: 10,
       position: 'relative',
@@ -161,7 +162,7 @@ const HomeScreen = () => {
         </Button>
       </View>
       <Searchbar
-        style={{ backgroundColor: theme.colors.elevation.level5, borderWidth: 1 }}
+        style={{ backgroundColor: theme.colors.elevation.level5, borderWidth: 1, borderColor: theme.colors.outline }}
         placeholder='Search for services'
         value={searchQuery}
         onChangeText={setSearchQuery}
