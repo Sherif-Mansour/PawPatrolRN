@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { Searchbar, useTheme, Chip, Button } from 'react-native-paper';
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import { useNavigation } from '@react-navigation/native';
 
 const categories = [
   'All',
@@ -15,12 +18,15 @@ const categories = [
 ];
 
 const HomeScreen = () => {
+  const navigation = useNavigation();
+  const theme = useTheme()
   const { user } = useUser();
   const [ads, setAds] = useState([]);
   const [filteredAds, setFilteredAds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [favorites, setFavorites] = useState([]);
+  const [expanded, setExpanded] = React.useState(true);
 
   useEffect(() => {
     const fetchAds = async () => {
@@ -72,24 +78,18 @@ const HomeScreen = () => {
     });
   };
 
+  {/** https://callstack.github.io/react-native-paper/docs/components/Chip/  **/ }
   const renderCategory = (category) => (
-    <TouchableOpacity
+    <Chip
       key={category}
-      style={[
-        styles.categoryButton,
-        selectedCategory === category ? styles.selectedCategoryButton : null,
-      ]}
       onPress={() => setSelectedCategory(category)}
+      selected={selectedCategory === category}
+      style={[
+        styles.categoryChip,
+      ]}
     >
-      <Text
-        style={[
-          styles.categoryButtonText,
-          selectedCategory === category ? styles.selectedCategoryButtonText : null,
-        ]}
-      >
-        {category}
-      </Text>
-    </TouchableOpacity>
+      {category}
+    </ Chip>
   );
 
   const renderItem = ({ item }) => (
@@ -112,14 +112,29 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.searchBar}
-        placeholder="Search for services..."
+      <View style={{ flexDirection: 'row' }}>
+        <Button
+          icon='map-marker'
+          onPress={() => navigation.navigate('Location')}
+          style={{backgroundColor: 'transparent'}}
+        >
+          Location
+        </Button>
+      </View>
+      <Searchbar
+        style={{ backgroundColor: theme.colors.elevation.level5, borderWidth: 1 }}
+        placeholder='Search for services'
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
-      <View style={styles.categoriesContainer}>
-        {categories.map(renderCategory)}
+      <View
+        style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}
+      >
+        <View style={styles.categoriesScrollContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {categories.map(renderCategory)}
+          </ScrollView>
+        </View>
       </View>
       <FlatList
         data={filteredAds}
@@ -135,37 +150,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingTop: 5,
     backgroundColor: 'white',
   },
-  searchBar: {
-    height: 40,
-    borderColor: 'rgb(0, 104, 123)',
-    backgroundColor: 'rgb(0, 104, 123)',
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 20,
-    color: 'rgb(200, 200, 200)',
+  categoryChip: {
+    marginRight: 10
   },
-  categoriesContainer: {
+  categoriesScrollContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 20,
-  },
-  categoryButton: {
-    backgroundColor: 'rgb(0, 104, 123)',
-    padding: 10,
-    borderRadius: 5,
-    margin: 5,
-  },
-  selectedCategoryButton: {
-    backgroundColor: '#0056b3',
-  },
-  categoryButtonText: {
-    color: 'rgb(200, 200, 200)',
-  },
-  selectedCategoryButtonText: {
-    fontWeight: 'bold',
+    marginVertical: 10,
   },
   adContainer: {
     padding: 20,
