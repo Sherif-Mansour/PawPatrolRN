@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { Button } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
-import { useUser } from '../../utils/UserContext';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
+import {Button, useTheme} from 'react-native-paper';
+import {useUser} from '../../utils/UserContext';
 
 const categories = [
   'Grooming',
@@ -13,9 +19,9 @@ const categories = [
   'Sitting',
 ];
 
-const Ad = ({ route }) => {
-  const { createOrUpdateAd } = useUser();
-  const navigation = useNavigation();
+const Ad = ({navigation, route}) => {
+  const theme = useTheme();
+  const {createOrUpdateAd} = useUser();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [pictures, setPictures] = useState([]);
@@ -26,7 +32,8 @@ const Ad = ({ route }) => {
 
   useEffect(() => {
     if (route.params?.ad) {
-      const { title, description, pictures, services, address, category } = route.params.ad;
+      const {title, description, pictures, services, address, category} =
+        route.params.ad;
       setTitle(title);
       setDescription(description);
       setPictures(pictures);
@@ -61,26 +68,68 @@ const Ad = ({ route }) => {
   };
 
   const renderCategoryButtons = () => {
-    return categories.map((cat) => (
+    return categories.map(cat => (
       <TouchableOpacity
         key={cat}
         style={[
           styles.categoryButton,
           category === cat ? styles.selectedCategoryButton : null,
         ]}
-        onPress={() => setCategory(cat)}
-      >
+        onPress={() => setCategory(cat)}>
         <Text
           style={[
             styles.categoryButtonText,
             category === cat ? styles.selectedCategoryButtonText : null,
-          ]}
-        >
+          ]}>
           {cat}
         </Text>
       </TouchableOpacity>
     ));
   };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: 'white',
+    },
+    inputsContainer: {
+      backgroundColor: '#003d4d',
+      padding: 20,
+      margin: 20,
+      marginTop: 50,
+      borderRadius: 10,
+    },
+    label: {
+      color: 'white',
+      marginBottom: 5,
+    },
+    input: {
+      backgroundColor: 'white',
+      padding: 10,
+      marginBottom: 10,
+      borderRadius: 5,
+    },
+    categoriesContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginVertical: 10,
+    },
+    categoryButton: {
+      backgroundColor: '#007bff',
+      padding: 10,
+      borderRadius: 5,
+      margin: 5,
+    },
+    selectedCategoryButton: {
+      backgroundColor: '#0056b3',
+    },
+    categoryButtonText: {
+      color: 'white',
+    },
+    selectedCategoryButtonText: {
+      fontWeight: 'bold',
+    },
+  });
 
   return (
     <View style={styles.container}>
@@ -121,9 +170,8 @@ const Ad = ({ route }) => {
         <Button
           mode="contained"
           buttonColor="#FFBF5D"
-          contentStyle={{ width: '100%' }}
-          onPress={saveAd}
-        >
+          contentStyle={{width: '100%'}}
+          onPress={saveAd}>
           Save Ad
         </Button>
       </View>
@@ -131,52 +179,7 @@ const Ad = ({ route }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  inputsContainer: {
-    backgroundColor: '#003d4d',
-    padding: 20,
-    margin: 20,
-    marginTop: 50,
-    borderRadius: 10,
-  },
-  label: {
-    color: 'white',
-    marginBottom: 5,
-  },
-  input: {
-    backgroundColor: 'white',
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 5,
-  },
-  categoriesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginVertical: 10,
-  },
-  categoryButton: {
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 5,
-    margin: 5,
-  },
-  selectedCategoryButton: {
-    backgroundColor: '#0056b3',
-  },
-  categoryButtonText: {
-    color: 'white',
-  },
-  selectedCategoryButtonText: {
-    fontWeight: 'bold',
-  },
-});
-
 export default Ad;
-
 
 // watched youtube video for firebase
 // https://www.youtube.com/watch?v=2hR-uWjBAgw

@@ -13,6 +13,7 @@ export const UserProvider = ({children}) => {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState(null);
   const [ads, setAds] = useState([]);
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(currentUser => {
@@ -195,19 +196,89 @@ export const UserProvider = ({children}) => {
     }
   };
 
+  const fetchUserAds = async () => {
+    try {
+      if (!user) throw new Error('User not logged in');
+
+      console.log('Fetching user ads from Firestore...');
+      const userAdsSnapshot = await firestore()
+        .collection('ads')
+        .doc(user.uid)
+        .collection('userAds')
+        .get();
+      const userAdsList = userAdsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setAds(userAdsList);
+    } catch (err) {
+      console.error('Error fetching user ads:', err);
+      Alert.alert('Error', 'Failed to fetch user ads. Please try again later.');
+    }
+  };
+
+  const fetchAllAds = async () => {
+    try {
+      console.log('Fetching ads from Firestore...');
+      const adsSnapshot = await firestore().collectionGroup('userAds').get();
+      const adsList = adsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      // uncomment the following line to see the ads in the console
+      // console.log('Fetched ads:', adsList);
+      setAds(adsList);
+    } catch (err) {
+      console.error('Error fetching ads:', err);
+      Alert.alert('Error', 'Failed to fetch ads. Please try again later.');
+    }
+  };
+
+  const deleteAd = async adId => {
+    try {
+      const adRef = firestore()
+        .collection('ads')
+        .doc(user.uid)
+        .collection('userAds')
+        .doc(adId);
+
+      await adRef.delete();
+      setAds(ads.filter(ad => ad.id !== adId));
+      Alert.alert('Ad Deleted', 'Your ad has been deleted successfully.');
+    } catch (err) {
+      console.error('Error deleting ad:', err);
+      Alert.alert('Error', 'There was an error deleting the ad.');
+    }
+  };
+
+  const handleAddToFavorites = adId => {
+    setFavorites(prevFavorites => {
+      if (prevFavorites.includes(adId)) {
+        return prevFavorites.filter(favId => favId !== adId);
+      } else {
+        return [...prevFavorites, adId];
+      }
+    });
+  };
+
   return (
     <UserContext.Provider
       value={{
         user,
         loading,
         email,
+        ads,
+        fetchUserAds,
+        fetchAllAds,
+        deleteAd,
+        favorites,
+        handleAddToFavorites,
         signInWithEmailAndPass,
         createUserWithEmailAndPassword,
         onGoogleButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
         uploadProfilePicture,
-        ads,
         createOrUpdateAd,
       }}>
       {children}
