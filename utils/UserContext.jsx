@@ -13,6 +13,7 @@ export const UserProvider = ({children}) => {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState(null);
   const [ads, setAds] = useState([]);
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(currentUser => {
@@ -195,19 +196,55 @@ export const UserProvider = ({children}) => {
     }
   };
 
+  useEffect(() => {
+    if (user) {
+      fetchAds();
+    }
+  }, [user]);
+
+  const fetchAds = async () => {
+    try {
+      console.log('Fetching ads from Firestore...');
+      const adsSnapshot = await firestore().collectionGroup('userAds').get();
+      const adsList = adsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      // uncomment the following line to see the ads in the console
+      // console.log('Fetched ads:', adsList);
+      setAds(adsList);
+    } catch (err) {
+      console.error('Error fetching ads:', err);
+      Alert.alert('Error', 'Failed to fetch ads. Please try again later.');
+    }
+  };
+
+  const handleAddToFavorites = adId => {
+    setFavorites(prevFavorites => {
+      if (prevFavorites.includes(adId)) {
+        return prevFavorites.filter(favId => favId !== adId);
+      } else {
+        return [...prevFavorites, adId];
+      }
+    });
+  };
+
   return (
     <UserContext.Provider
       value={{
         user,
         loading,
         email,
+        ads,
+        fetchAds,
+        favorites,
+        handleAddToFavorites,
         signInWithEmailAndPass,
         createUserWithEmailAndPassword,
         onGoogleButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
         uploadProfilePicture,
-        ads,
         createOrUpdateAd,
       }}>
       {children}
