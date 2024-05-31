@@ -12,9 +12,9 @@ const paymentMethods = [
 
 const PaymentSettingsScreen = ({ navigation }) => {
   const renderItem = ({ item }) => (
-    <View style={styles.paymentMethod}>
+    <TouchableOpacity onPress={()=> navigation.navigate("PaymentForm")} style={styles.paymentMethod}>
       <Text>{item.method}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
