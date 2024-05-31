@@ -196,13 +196,28 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      fetchAds();
-    }
-  }, [user]);
+  const fetchUserAds = async () => {
+    try {
+      if (!user) throw new Error('User not logged in');
 
-  const fetchAds = async () => {
+      console.log('Fetching user ads from Firestore...');
+      const userAdsSnapshot = await firestore()
+        .collection('ads')
+        .doc(user.uid)
+        .collection('userAds')
+        .get();
+      const userAdsList = userAdsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setAds(userAdsList);
+    } catch (err) {
+      console.error('Error fetching user ads:', err);
+      Alert.alert('Error', 'Failed to fetch user ads. Please try again later.');
+    }
+  };
+
+  const fetchAllAds = async () => {
     try {
       console.log('Fetching ads from Firestore...');
       const adsSnapshot = await firestore().collectionGroup('userAds').get();
@@ -216,6 +231,23 @@ export const UserProvider = ({children}) => {
     } catch (err) {
       console.error('Error fetching ads:', err);
       Alert.alert('Error', 'Failed to fetch ads. Please try again later.');
+    }
+  };
+
+  const deleteAd = async adId => {
+    try {
+      const adRef = firestore()
+        .collection('ads')
+        .doc(user.uid)
+        .collection('userAds')
+        .doc(adId);
+
+      await adRef.delete();
+      setAds(ads.filter(ad => ad.id !== adId));
+      Alert.alert('Ad Deleted', 'Your ad has been deleted successfully.');
+    } catch (err) {
+      console.error('Error deleting ad:', err);
+      Alert.alert('Error', 'There was an error deleting the ad.');
     }
   };
 
@@ -236,7 +268,9 @@ export const UserProvider = ({children}) => {
         loading,
         email,
         ads,
-        fetchAds,
+        fetchUserAds,
+        fetchAllAds,
+        deleteAd,
         favorites,
         handleAddToFavorites,
         signInWithEmailAndPass,

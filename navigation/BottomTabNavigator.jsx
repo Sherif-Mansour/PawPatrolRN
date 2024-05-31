@@ -45,7 +45,7 @@ const BottomTabNavigator = () => {
       focusedIcon: 'heart',
       unfocusedIcon: 'heart-outline',
     },
-    {key: 'booking', title: 'Booking', focusedIcon: 'calendar-month'},
+    {key: 'booking', title: 'Bookings', focusedIcon: 'calendar-month'},
     {
       key: 'messages',
       title: 'Messages',
@@ -55,8 +55,8 @@ const BottomTabNavigator = () => {
     {
       key: 'settings',
       title: 'Settings',
-      focusedIcon: 'account-circle',
-      unfocusedIcon: 'account-circle-outline',
+      focusedIcon: 'menu',
+      unfocusedIcon: 'menu',
     },
   ]);
 

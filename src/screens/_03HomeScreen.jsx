@@ -24,13 +24,13 @@ const categories = [
 
 const HomeScreen = ({navigation}) => {
   const theme = useTheme();
-  const {ads, favorites, handleAddToFavorites, fetchAds} = useUser();
+  const {ads, favorites, handleAddToFavorites, fetchAllAds} = useUser();
   const [filteredAds, setFilteredAds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   useEffect(() => {
-    fetchAds();
+    fetchAllAds();
   }, []);
 
   useEffect(() => {
@@ -113,9 +113,10 @@ const HomeScreen = ({navigation}) => {
       paddingTop: 5,
       marginBottom: 10,
       position: 'relative',
-      backgroundColor: theme.colors.primaryContainer,
+      backgroundColor: theme.colors.secondaryContainer,
     },
     adTitle: {
+      fontWeight: 'bold',
       color: theme.colors.onPrimaryContainer,
     },
     adContent: {
