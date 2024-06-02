@@ -285,6 +285,21 @@ export const UserProvider = ({children}) => {
     }
   };
 
+  const savePaymentDetails = async (paymentMethod, paymentDetails) => {
+    try {
+      if (!user) throw new Error('User not logged in');
+
+      await firestore()
+        .collection('paymentMethods')
+        .doc(user.uid)
+        .set({paymentMethod, ...paymentDetails});
+      console.log('Payment details saved successfully:', paymentDetails);
+    } catch (err) {
+      console.error('Error saving payment details:', err);
+      Alert.alert('Payment Error', 'Failed to save payment details');
+    }
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -305,6 +320,7 @@ export const UserProvider = ({children}) => {
         uploadProfilePicture,
         createOrUpdateAd,
         signOut,
+        savePaymentDetails,
       }}>
       {children}
     </UserContext.Provider>
