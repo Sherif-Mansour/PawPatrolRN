@@ -16,13 +16,20 @@ export const UserProvider = ({children}) => {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    const unsubscribe = auth().onAuthStateChanged(currentUser => {
-      setUser(currentUser);
+    const unsubscribe = auth().onAuthStateChanged(async currentUser => {
+      if (currentUser) {
+        setUser(currentUser);
+        setEmail(currentUser.email);
+        await fetchUserAds();
+        await fetchAllAds();
+      } else {
+        setUser(null);
+        setEmail(null);
+      }
       setLoading(false);
-      setEmail(currentUser ? currentUser.email : null);
     });
     return () => unsubscribe();
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -67,26 +74,32 @@ export const UserProvider = ({children}) => {
   }, []);
 
   async function onGoogleButtonPress(navigation) {
+    setLoading(true);
     try {
       await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
       const {idToken, user} = await GoogleSignin.signIn();
       console.log(user);
-      navigation.navigate('Home');
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      return auth().signInWithCredential(googleCredential);
+      await auth().signInWithCredential(googleCredential);
+      setLoading(false);
+      navigation.navigate('Home');
     } catch (err) {
+      setLoading(false);
       console.error(err);
     }
   }
 
   const signInWithEmailAndPass = (email, password, navigation) => {
+    setLoading(true);
     auth()
       .signInWithEmailAndPassword(email, password)
       .then(res => {
         console.log(res);
+        setLoading(false);
         navigation.navigate('Home');
       })
       .catch(err => {
+        setLoading(false);
         console.error('Email/password sign-in error:', err);
         Alert.alert(
           'Sign-In Error',
@@ -197,9 +210,10 @@ export const UserProvider = ({children}) => {
   };
 
   const fetchUserAds = async () => {
+    if (!user) {
+      return;
+    }
     try {
-      if (!user) throw new Error('User not logged in');
-
       console.log('Fetching user ads from Firestore...');
       const userAdsSnapshot = await firestore()
         .collection('ads')
@@ -219,14 +233,12 @@ export const UserProvider = ({children}) => {
 
   const fetchAllAds = async () => {
     try {
-      console.log('Fetching ads from Firestore...');
+      console.log('Fetching all ads from Firestore...');
       const adsSnapshot = await firestore().collectionGroup('userAds').get();
       const adsList = adsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
-      // uncomment the following line to see the ads in the console
-      // console.log('Fetched ads:', adsList);
       setAds(adsList);
     } catch (err) {
       console.error('Error fetching ads:', err);
@@ -261,6 +273,18 @@ export const UserProvider = ({children}) => {
     });
   };
 
+  const signOut = async navigation => {
+    try {
+      await auth().signOut();
+      setUser(null);
+      console.log('User signed out');
+      navigation.navigate('SplashScreen');
+    } catch (err) {
+      console.error('Sign-out error:', err);
+      Alert.alert('Sign-Out Error', 'Failed to sign out. Please try again.');
+    }
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -280,6 +304,7 @@ export const UserProvider = ({children}) => {
         fetchUserProfile,
         uploadProfilePicture,
         createOrUpdateAd,
+        signOut,
       }}>
       {children}
     </UserContext.Provider>

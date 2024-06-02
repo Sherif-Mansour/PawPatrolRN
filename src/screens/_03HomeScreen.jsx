@@ -24,14 +24,17 @@ const categories = [
 
 const HomeScreen = ({navigation}) => {
   const theme = useTheme();
-  const {ads, favorites, handleAddToFavorites, fetchAllAds} = useUser();
+  const {ads, favorites, handleAddToFavorites, fetchAllAds, loading} =
+    useUser();
   const [filteredAds, setFilteredAds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   useEffect(() => {
-    fetchAllAds();
-  }, []);
+    if (!loading) {
+      fetchAllAds();
+    }
+  }, [loading]);
 
   useEffect(() => {
     filterAds();

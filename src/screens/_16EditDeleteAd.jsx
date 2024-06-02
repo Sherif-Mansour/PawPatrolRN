@@ -12,11 +12,13 @@ import {useTheme} from 'react-native-paper';
 
 const EditDeleteAd = ({navigation}) => {
   const theme = useTheme();
-  const {user, ads, fetchUserAds, deleteAd} = useUser();
+  const {user, ads, fetchUserAds, deleteAd, loading} = useUser();
 
   useEffect(() => {
-    fetchUserAds();
-  }, [user]);
+    if (!loading && user) {
+      fetchUserAds();
+    }
+  }, [user, loading]);
 
   const handleDeleteAd = async adId => {
     Alert.alert('Delete Ad', 'Are you sure you want to delete this ad?', [
