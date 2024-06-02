@@ -1,18 +1,21 @@
-
 // screens/SettingsScreen.js
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {useUser} from '../../utils/UserContext';
 
-export default function SettingsScreen() {
-  const navigation = useNavigation();
+export default function SettingsScreen({navigation}) {
+  const {signOut} = useUser();
+
+  const handleSignOut = () => {
+    signOut(navigation);
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Settings</Text>
-      <TouchableOpacity onPress={() => navigation.navigate('NotificationSettings')}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('NotificationSettings')}>
         <Text style={styles.setting}>Notification Settings</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('PrivacySettings')}>
@@ -29,6 +32,9 @@ export default function SettingsScreen() {
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('UserAds')}>
         <Text style={styles.setting}>Ads</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleSignOut}>
+        <Text style={styles.setting}>Sign Out</Text>
       </TouchableOpacity>
     </View>
   );
@@ -48,6 +54,3 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
 });
-
-
-

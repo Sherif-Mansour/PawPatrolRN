@@ -2,11 +2,9 @@ import {Image, View} from 'react-native';
 import React from 'react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {Button, useTheme} from 'react-native-paper';
-import {useNavigation} from '@react-navigation/native';
 
-const SplashScreen = () => {
+const SplashScreen = ({navigation}) => {
   const theme = useTheme();
-  const navigation = useNavigation();
 
   return (
     <SafeAreaProvider style={{backgroundColor: 'rgb(0, 104, 123)'}}>
