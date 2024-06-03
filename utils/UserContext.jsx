@@ -11,6 +11,8 @@ const UserContext = createContext();
 export const UserProvider = ({children}) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingUserAds, setLoadingUserAds] = useState(false);
+  const [loadingAllAds, setLoadingAllAds] = useState(false);
   const [email, setEmail] = useState(null);
   const [ads, setAds] = useState([]);
   const [favorites, setFavorites] = useState([]);
@@ -210,9 +212,8 @@ export const UserProvider = ({children}) => {
   };
 
   const fetchUserAds = async () => {
-    if (!user) {
-      return;
-    }
+    if (!user) return;
+    setLoadingUserAds(true);
     try {
       console.log('Fetching user ads from Firestore...');
       const userAdsSnapshot = await firestore()
@@ -228,10 +229,13 @@ export const UserProvider = ({children}) => {
     } catch (err) {
       console.error('Error fetching user ads:', err);
       Alert.alert('Error', 'Failed to fetch user ads. Please try again later.');
+    } finally {
+      setLoadingUserAds(false);
     }
   };
 
   const fetchAllAds = async () => {
+    setLoadingAllAds(true);
     try {
       console.log('Fetching all ads from Firestore...');
       const adsSnapshot = await firestore().collectionGroup('userAds').get();
@@ -243,6 +247,8 @@ export const UserProvider = ({children}) => {
     } catch (err) {
       console.error('Error fetching ads:', err);
       Alert.alert('Error', 'Failed to fetch ads. Please try again later.');
+    } finally {
+      setLoadingAllAds(false);
     }
   };
 
@@ -305,6 +311,8 @@ export const UserProvider = ({children}) => {
       value={{
         user,
         loading,
+        loadingUserAds,
+        loadingAllAds,
         email,
         ads,
         fetchUserAds,

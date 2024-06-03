@@ -6,19 +6,20 @@ import {
   StyleSheet,
   Alert,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import {useUser} from '../../utils/UserContext';
 import {useTheme} from 'react-native-paper';
 
 const EditDeleteAd = ({navigation}) => {
   const theme = useTheme();
-  const {user, ads, fetchUserAds, deleteAd, loading} = useUser();
+  const {user, ads, fetchUserAds, deleteAd, loadingUserAds} = useUser();
 
   useEffect(() => {
-    if (!loading && user) {
+    if (user) {
       fetchUserAds();
     }
-  }, [user, loading]);
+  }, [user]);
 
   const handleDeleteAd = async adId => {
     Alert.alert('Delete Ad', 'Are you sure you want to delete this ad?', [
@@ -105,6 +106,14 @@ const EditDeleteAd = ({navigation}) => {
       right: 10,
     },
   });
+
+  if (loadingUserAds) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
