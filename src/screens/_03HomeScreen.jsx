@@ -1,5 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, TouchableOpacity, Alert} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import {useUser} from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
@@ -24,17 +30,19 @@ const categories = [
 
 const HomeScreen = ({navigation}) => {
   const theme = useTheme();
-  const {ads, favorites, handleAddToFavorites, fetchAllAds, loading} =
+  const {ads, favorites, handleAddToFavorites, fetchAllAds, loadingAllAds} =
     useUser();
   const [filteredAds, setFilteredAds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [adsFetched, setAdsFetched] = useState(false);
 
   useEffect(() => {
-    if (!loading) {
+    if (!adsFetched && !loadingAllAds) {
       fetchAllAds();
+      setAdsFetched(true);
     }
-  }, [loading]);
+  }, [adsFetched, loadingAllAds]);
 
   useEffect(() => {
     filterAds();
@@ -132,6 +140,14 @@ const HomeScreen = ({navigation}) => {
       right: 10,
     },
   });
+
+  if (loadingAllAds) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
