@@ -6,14 +6,18 @@ import {createStackNavigator} from '@react-navigation/stack';
 import SplashScreen from './../src/screens/_00SplashScreen';
 import SignInScreen from '../src/screens/_01SignInScreen';
 import SignUpScreen from '../src/screens/_02SignUpScreen';
-import SettingsScreen from '../src/screens/_07Settings';
 import Profile from '../src/screens/_08Profile';
-import NotificationSettingsScreen from '../src/screens/_09NotificationScreen';
-import PrivacySettingsScreen from '../src/screens/_10PrivacyScreen';
+import NotificationSettingsScreen from '../src/screens/_09NotificationSettingsScreen';
+import PrivacySettingsScreen from '../src/screens/_10PrivacySettingsScreen';
+import AppPreferencesScreen from '../src/screens/_11AppSettingsScreen';
+import PaymentSettingsScreen from '../src/screens/_12PaymentSettingsScreen';
+import BookingSettingsScreen from '../src/screens/_13BookingSettingsScreen';
 import Ad from '../src/screens/_15Ad';
-import UserAdsScreen from '../src/screens/_16AdInformation';
+import UserAdsScreen from '../src/screens/_16EditDeleteAd';
 import AppHeader from '../components/Header';
 import BottomTabNavigator from './BottomTabNavigator';
+import AddPaymentInfo from '../src/screens/_17AddPaymentInfo';
+import LocationScreen from './../src/screens/_18LocationScreen';
 
 const Stack = createStackNavigator();
 
@@ -57,6 +61,21 @@ const AppNavigator = () => {
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen
+          name="PaymentSettings"
+          component={PaymentSettingsScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="AppPreferences"
+          component={AppPreferencesScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="BookingSettings"
+          component={BookingSettingsScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
           name="Ad"
           component={Ad}
           options={{header: () => <AppHeader showBackButton={true} />}}
@@ -64,7 +83,16 @@ const AppNavigator = () => {
         <Stack.Screen
           name="UserAds"
           component={UserAdsScreen}
-
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="AddPaymentInfo"
+          component={AddPaymentInfo}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="Location"
+          component={LocationScreen}
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
       </Stack.Navigator>

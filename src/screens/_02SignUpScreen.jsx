@@ -10,26 +10,30 @@ import {
 } from 'react-native';
 import MyTextInput from '../../components/MyTextInput';
 import SocialMedia from '../../components/SocialMedia';
-import auth from '@react-native-firebase/auth';
 import {Button, useTheme} from 'react-native-paper';
+import {useUser} from '../../utils/UserContext';
 
 const SignUpScreen = ({navigation}) => {
+  const {user, createUserWithEmailAndPassword} = useUser();
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSignUp = () => {
-    auth()
-      .createUserWithEmailAndPassword(email, password)
-      .then(() => {
-        Alert.alert('User created successfully! Proceed to Sign In.');
-        navigation.navigate('SignIn');
-      })
-      .catch(err => {
-        console.log(err.nativeErrorMessage);
-        Alert.alert(err.nativeErrorMessage);
-      });
+  const handleSignUp = async () => {
+    if (password !== confirmPassword) {
+      Alert.alert('Passwords do not match');
+      return;
+    }
+
+    try {
+      await createUserWithEmailAndPassword(email, password);
+      Alert.alert('User created successfully! Proceed to Sign In.');
+      navigation.navigate('SignIn');
+    } catch (err) {
+      console.error(err);
+      Alert.alert(err.nativeErrorMessage);
+    }
   };
 
   return (
@@ -44,28 +48,26 @@ const SignUpScreen = ({navigation}) => {
           />
         </View>
 
-        {/* <Text style={styles.title}>PetPal</Text> */}
-
         <View style={[styles.inputsContainer]}>
           <MyTextInput
             value={email}
             onChangeText={text => setEmail(text)}
             placeholder="Enter Email"
-            style={styles.input} // Apply styles from the theme
+            style={styles.input}
           />
           <MyTextInput
             value={password}
             onChangeText={text => setPassword(text)}
             placeholder="Enter Password"
             secureTextEntry={true}
-            style={styles.input} // Apply styles from the theme
+            style={styles.input}
           />
           <MyTextInput
             value={confirmPassword}
             onChangeText={text => setConfirmPassword(text)}
             placeholder="Confirm Password"
             secureTextEntry={true}
-            style={styles.input} // Apply styles from the theme
+            style={styles.input}
           />
 
           <Button mode="contained" buttonColor="#009B7D" onPress={handleSignUp}>
