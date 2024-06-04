@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
-import firestore from '@react-native-firebase/firestore';
+import React, {useState} from 'react';
+import {View, Text, TextInput, Button, StyleSheet} from 'react-native';
+import {useUser} from '../../utils/UserContext';
+import {useTheme} from 'react-native-paper';
 
-const PaymentForm = () => {
+const AddPaymentInfo = () => {
+  const theme = useTheme();
+  const {savePaymentDetails} = useUser();
   const [paymentMethod, setPaymentMethod] = useState('creditCard');
   const [creditCardInfo, setCreditCardInfo] = useState({
     nameOnCard: '',
@@ -31,11 +34,17 @@ const PaymentForm = () => {
       errors.nameOnCard = 'Name on card is required';
       valid = false;
     }
-    if (!creditCardInfo.cardNumber || !/^\d{16}$/.test(creditCardInfo.cardNumber)) {
+    if (
+      !creditCardInfo.cardNumber ||
+      !/^\d{16}$/.test(creditCardInfo.cardNumber)
+    ) {
       errors.cardNumber = 'Valid card number is required (16 digits)';
       valid = false;
     }
-    if (!creditCardInfo.expiryDate || !/^(0[1-9]|1[0-2])\/\d{2}$/.test(creditCardInfo.expiryDate)) {
+    if (
+      !creditCardInfo.expiryDate ||
+      !/^(0[1-9]|1[0-2])\/\d{2}$/.test(creditCardInfo.expiryDate)
+    ) {
       errors.expiryDate = 'Valid expiry date is required (MM/YY)';
       valid = false;
     }
@@ -75,18 +84,10 @@ const PaymentForm = () => {
       return;
     }
 
-    try {
-      await firestore().collection('paymentMethods').doc('cardDetails').set({
-        paymentMethod,
-        ...paymentDetails,
-      });
-      console.log('Payment details saved to Firebase:', paymentDetails);
-    } catch (error) {
-      console.error('Error saving payment details:', error);
-    }
+    await savePaymentDetails(paymentMethod, paymentDetails);
   };
 
-  const renderPaymentForm = () => {
+  const renderAddPaymentInfo = () => {
     switch (paymentMethod) {
       case 'creditCard':
         return (
@@ -95,29 +96,44 @@ const PaymentForm = () => {
               style={styles.input}
               placeholder="Name On The Card"
               value={creditCardInfo.nameOnCard}
-              onChangeText={(text) => setCreditCardInfo({ ...creditCardInfo, nameOnCard: text })}
+              onChangeText={text =>
+                setCreditCardInfo({...creditCardInfo, nameOnCard: text})
+              }
             />
-            {errors.nameOnCard && <Text style={styles.errorText}>{errors.nameOnCard}</Text>}
+            {errors.nameOnCard && (
+              <Text style={styles.errorText}>{errors.nameOnCard}</Text>
+            )}
             <TextInput
               style={styles.input}
               placeholder="Card Number"
               value={creditCardInfo.cardNumber}
-              onChangeText={(text) => setCreditCardInfo({ ...creditCardInfo, cardNumber: text })}
+              onChangeText={text =>
+                setCreditCardInfo({...creditCardInfo, cardNumber: text})
+              }
               keyboardType="numeric"
             />
-            {errors.cardNumber && <Text style={styles.errorText}>{errors.cardNumber}</Text>}
+            {errors.cardNumber && (
+              <Text style={styles.errorText}>{errors.cardNumber}</Text>
+            )}
             <TextInput
               style={styles.input}
               placeholder="Expiry Date (MM/YY)"
               value={creditCardInfo.expiryDate}
-              onChangeText={(text) => setCreditCardInfo({ ...creditCardInfo, expiryDate: text })}
+              onChangeText={text =>
+                setCreditCardInfo({...creditCardInfo, expiryDate: text})
+              }
+              keyboardType="numeric"
             />
-            {errors.expiryDate && <Text style={styles.errorText}>{errors.expiryDate}</Text>}
+            {errors.expiryDate && (
+              <Text style={styles.errorText}>{errors.expiryDate}</Text>
+            )}
             <TextInput
               style={styles.input}
               placeholder="CVV"
               value={creditCardInfo.cvv}
-              onChangeText={(text) => setCreditCardInfo({ ...creditCardInfo, cvv: text })}
+              onChangeText={text =>
+                setCreditCardInfo({...creditCardInfo, cvv: text})
+              }
               keyboardType="numeric"
             />
             {errors.cvv && <Text style={styles.errorText}>{errors.cvv}</Text>}
@@ -125,9 +141,13 @@ const PaymentForm = () => {
               style={styles.input}
               placeholder="Address"
               value={creditCardInfo.address}
-              onChangeText={(text) => setCreditCardInfo({ ...creditCardInfo, address: text })}
+              onChangeText={text =>
+                setCreditCardInfo({...creditCardInfo, address: text})
+              }
             />
-            {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
+            {errors.address && (
+              <Text style={styles.errorText}>{errors.address}</Text>
+            )}
           </>
         );
       case 'paypal':
@@ -137,14 +157,16 @@ const PaymentForm = () => {
               style={styles.input}
               placeholder="PayPal Email"
               value={paypalInfo.email}
-              onChangeText={(text) => setPaypalInfo({ ...paypalInfo, email: text })}
+              onChangeText={text => setPaypalInfo({...paypalInfo, email: text})}
               keyboardType="email-address"
             />
             <TextInput
               style={styles.input}
               placeholder="PayPal Password"
               value={paypalInfo.password}
-              onChangeText={(text) => setPaypalInfo({ ...paypalInfo, password: text })}
+              onChangeText={text =>
+                setPaypalInfo({...paypalInfo, password: text})
+              }
               secureTextEntry={true}
             />
           </>
@@ -156,27 +178,38 @@ const PaymentForm = () => {
               style={styles.input}
               placeholder="Account Number"
               value={bankTransferInfo.accountNumber}
-              onChangeText={(text) => setBankTransferInfo({ ...bankTransferInfo, accountNumber: text })}
+              onChangeText={text =>
+                setBankTransferInfo({...bankTransferInfo, accountNumber: text})
+              }
               keyboardType="numeric"
             />
             <TextInput
               style={styles.input}
               placeholder="Bank Name"
               value={bankTransferInfo.bankName}
-              onChangeText={(text) => setBankTransferInfo({ ...bankTransferInfo, bankName: text })}
+              onChangeText={text =>
+                setBankTransferInfo({...bankTransferInfo, bankName: text})
+              }
             />
             <TextInput
               style={styles.input}
               placeholder="Transit Number"
               value={bankTransferInfo.transitNumber}
-              onChangeText={(text) => setBankTransferInfo({ ...bankTransferInfo, transitNumber: text })}
+              onChangeText={text =>
+                setBankTransferInfo({...bankTransferInfo, transitNumber: text})
+              }
               keyboardType="numeric"
             />
             <TextInput
               style={styles.input}
               placeholder="Institution Number"
               value={bankTransferInfo.institutionNumber}
-              onChangeText={(text) => setBankTransferInfo({ ...bankTransferInfo, institutionNumber: text })}
+              onChangeText={text =>
+                setBankTransferInfo({
+                  ...bankTransferInfo,
+                  institutionNumber: text,
+                })
+              }
               keyboardType="numeric"
             />
           </>
@@ -186,49 +219,55 @@ const PaymentForm = () => {
     }
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+      backgroundColor: '#f5f5f5',
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 20,
+      textAlign: 'center',
+    },
+    input: {
+      height: 40,
+      borderColor: '#ccc',
+      borderWidth: 1,
+      marginBottom: 15,
+      paddingHorizontal: 10,
+      backgroundColor: '#fff',
+    },
+    errorText: {
+      color: 'red',
+      marginBottom: 15,
+    },
+    buttonGroup: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      marginBottom: 20,
+    },
+  });
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Add Payment Method</Text>
       <View style={styles.buttonGroup}>
-        <Button title="Credit Card" onPress={() => setPaymentMethod('creditCard')} />
+        <Button
+          title="Credit Card"
+          onPress={() => setPaymentMethod('creditCard')}
+        />
         <Button title="PayPal" onPress={() => setPaymentMethod('paypal')} />
-        <Button title="Bank Transfer" onPress={() => setPaymentMethod('bankTransfer')} />
+        <Button
+          title="Bank Transfer"
+          onPress={() => setPaymentMethod('bankTransfer')}
+        />
       </View>
-      {renderPaymentForm()}
+      {renderAddPaymentInfo()}
       <Button title="Save Payment Method" onPress={handleSave} />
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    marginBottom: 15,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
-  },
-  errorText: {
-    color: 'red',
-    marginBottom: 15,
-  },
-  buttonGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-});
-
-export default PaymentForm;
+export default AddPaymentInfo;

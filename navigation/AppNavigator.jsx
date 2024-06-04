@@ -16,7 +16,7 @@ import Ad from '../src/screens/_15Ad';
 import UserAdsScreen from '../src/screens/_16EditDeleteAd';
 import AppHeader from '../components/Header';
 import BottomTabNavigator from './BottomTabNavigator';
-import PaymentForm from '../src/screens/_17AddPaymentInfo';
+import AddPaymentInfo from '../src/screens/_17AddPaymentInfo';
 import LocationScreen from './../src/screens/_18LocationScreen';
 
 const Stack = createStackNavigator();
@@ -86,8 +86,8 @@ const AppNavigator = () => {
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen
-          name="PaymentForm"
-          component={PaymentForm}
+          name="AddPaymentInfo"
+          component={AddPaymentInfo}
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen
