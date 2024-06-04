@@ -160,7 +160,8 @@ export const UserProvider = ({children}) => {
     if (userProfileDoc.exists) {
       return userProfileDoc.data();
     } else {
-      throw new Error('User profile not found');
+      // Return null or a default profile object when the user profile is not found
+      return null; // or { name: '', bio: '', profilePicture: '', pets: [], otherInfo: {} }
     }
   };
 

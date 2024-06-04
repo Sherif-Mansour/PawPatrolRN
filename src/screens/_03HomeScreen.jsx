@@ -109,7 +109,7 @@ const HomeScreen = ({navigation}) => {
       flex: 1,
       padding: 20,
       paddingTop: 5,
-      backgroundColor: 'white',
+      backgroundColor: '#FFF3D6',
     },
     categoryChip: {
       marginRight: 10,
