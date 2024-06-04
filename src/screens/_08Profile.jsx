@@ -39,7 +39,7 @@ const Profile = () => {
       if (user) {
         try {
           const userProfile = await fetchUserProfile();
-          setProfileData(userProfile);
+          setProfileData(userProfile || profileData);
         } catch (err) {
           console.error('Error fetching user profile:', err);
         }
