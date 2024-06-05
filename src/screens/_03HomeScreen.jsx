@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import {useUser} from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -30,23 +31,23 @@ const categories = [
 
 const HomeScreen = ({navigation}) => {
   const theme = useTheme();
-  const {ads, favorites, handleAddToFavorites, fetchAllAds, loadingAllAds} =
-    useUser();
+  const {
+    ads,
+    favorites,
+    handleAddToFavorites,
+    fetchAllAds,
+    loadingAllAds,
+    loadingFavorites,
+    loading,
+  } = useUser();
   const [filteredAds, setFilteredAds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [adsFetched, setAdsFetched] = useState(false);
-
-  useEffect(() => {
-    if (!adsFetched && !loadingAllAds) {
-      fetchAllAds();
-      setAdsFetched(true);
-    }
-  }, [adsFetched, loadingAllAds]);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     filterAds();
-  }, [searchQuery, selectedCategory, ads]);
+  }, [searchQuery, selectedCategory, ads, favorites]);
 
   const filterAds = () => {
     let filtered = ads;
@@ -62,6 +63,19 @@ const HomeScreen = ({navigation}) => {
     }
 
     setFilteredAds(filtered);
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    console.log('Refreshing ads...');
+    try {
+      await fetchAllAds();
+      console.log('Ads refreshed successfully.');
+    } catch (error) {
+      console.error('Error refreshing ads:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // https://callstack.github.io/react-native-paper/docs/components/Chip/
@@ -141,7 +155,7 @@ const HomeScreen = ({navigation}) => {
     },
   });
 
-  if (loadingAllAds) {
+  if (loading || loadingAllAds || loadingFavorites) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -186,6 +200,13 @@ const HomeScreen = ({navigation}) => {
         renderItem={renderItem}
         keyExtractor={item => item.id}
         ListEmptyComponent={<Text>No ads found.</Text>}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+          />
+        }
       />
     </View>
   );
