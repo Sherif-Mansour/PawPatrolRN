@@ -38,12 +38,25 @@ const HomeScreen = ({navigation}) => {
     fetchAllAds,
     loadingAllAds,
     loadingFavorites,
+    fetchUserFavorites,
     loading,
   } = useUser();
   const [filteredAds, setFilteredAds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
+  const [adsFetched, setAdsFetched] = useState(false);
+
+  useEffect(() => {
+    if (!adsFetched && !loadingAllAds) {
+      fetchAllAds();
+      setAdsFetched(true);
+    }
+    const loadFavorites = async () => {
+      await fetchUserFavorites();
+    };
+    loadFavorites();
+  }, [adsFetched, loadingAllAds, fetchAllAds, fetchUserFavorites]);
 
   useEffect(() => {
     filterAds();
