@@ -33,6 +33,7 @@ const HomeScreen = ({navigation}) => {
   const theme = useTheme();
   const {
     ads,
+    user,
     favorites,
     handleAddToFavorites,
     fetchAllAds,
@@ -48,15 +49,20 @@ const HomeScreen = ({navigation}) => {
   const [adsFetched, setAdsFetched] = useState(false);
 
   useEffect(() => {
+    if (user) {
+      const loadFavorites = async () => {
+        await fetchUserFavorites();
+      };
+      loadFavorites();
+    }
+  }, [user]);
+
+  useEffect(() => {
     if (!adsFetched && !loadingAllAds) {
       fetchAllAds();
       setAdsFetched(true);
     }
-    const loadFavorites = async () => {
-      await fetchUserFavorites();
-    };
-    loadFavorites();
-  }, [adsFetched, loadingAllAds, fetchAllAds, fetchUserFavorites]);
+  }, [adsFetched, loadingAllAds]);
 
   useEffect(() => {
     filterAds();
@@ -83,7 +89,8 @@ const HomeScreen = ({navigation}) => {
     console.log('Refreshing ads...');
     try {
       await fetchAllAds();
-      console.log('Ads refreshed successfully.');
+      await fetchUserFavorites();
+      console.log('Ads and favorites refreshed successfully.');
     } catch (error) {
       console.error('Error refreshing ads:', error);
     } finally {
