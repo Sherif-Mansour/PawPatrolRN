@@ -18,6 +18,7 @@ import AppHeader from '../components/Header';
 import BottomTabNavigator from './BottomTabNavigator';
 import AddPaymentInfo from '../src/screens/_17AddPaymentInfo';
 import LocationScreen from './../src/screens/_18LocationScreen';
+import AdDetailsScreen from '../src/screens/_19AdDetailScreen';
 
 const Stack = createStackNavigator();
 
@@ -93,6 +94,11 @@ const AppNavigator = () => {
         <Stack.Screen
           name="Location"
           component={LocationScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="AdDetails"
+          component={AdDetailsScreen}
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
       </Stack.Navigator>

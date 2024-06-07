@@ -6,6 +6,7 @@ import {
   Alert,
   ActivityIndicator,
   RefreshControl,
+  Image,
 } from 'react-native';
 import {useUser} from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -111,31 +112,28 @@ const HomeScreen = ({navigation}) => {
   );
 
   const renderItem = ({item}) => (
-    <Card style={styles.adContainer}>
-      <Card.Title
-        titleStyle={styles.adTitle}
-        title={item.title}
-        subtitle={`Address: ${item.address}\nServices: ${item.services.join(
-          ', ',
-        )}\nCategory: ${item.category}`}
-        subtitleNumberOfLines={3}
-        subtitleStyle={styles.adTitle}
-      />
-      <Card.Content>
-        <Text variant="bodyMedium" style={styles.adContent}>
-          {item.description}
-        </Text>
-      </Card.Content>
-      <TouchableOpacity
-        style={styles.favoriteButton}
-        onPress={() => handleAddToFavorites(item.id)}>
-        <Icon
-          name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
-          size={24}
-          color="#ff0000"
+    <TouchableOpacity
+      onPress={() => navigation.navigate('AdDetails', { ad: item })}
+    >
+      <Card style={styles.adContainer}>
+        <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+        <Card.Title
+          titleStyle={styles.adTitle}
+          title={item.title}
+          subtitle={`Rating: ${item.rating || 'N/A'}`}
+          subtitleStyle={styles.adTitle}
         />
-      </TouchableOpacity>
-    </Card>
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => handleAddToFavorites(item.id)}>
+          <Icon
+            name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
+            size={24}
+            color="#ff0000"
+          />
+        </TouchableOpacity>
+      </Card>
+    </TouchableOpacity>
   );
 
   const styles = StyleSheet.create({
@@ -159,6 +157,9 @@ const HomeScreen = ({navigation}) => {
       marginBottom: 10,
       position: 'relative',
       backgroundColor: theme.colors.secondaryContainer,
+    },
+    adImage: {
+      height: 200,
     },
     adTitle: {
       fontWeight: 'bold',
