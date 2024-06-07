@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,14 @@ import {
   Alert,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
 } from 'react-native';
-import {useUser} from '../../utils/UserContext';
-import {useTheme} from 'react-native-paper';
+import { useUser } from '../../utils/UserContext';
+import { useTheme, Card, Button } from 'react-native-paper';
 
-const EditDeleteAd = ({navigation}) => {
+const EditDeleteAd = ({ navigation }) => {
   const theme = useTheme();
-  const {user, ads, fetchUserAds, deleteAd, loadingUserAds} = useUser();
+  const { user, ads, fetchUserAds, deleteAd, loadingUserAds } = useUser();
 
   useEffect(() => {
     if (user) {
@@ -23,7 +24,7 @@ const EditDeleteAd = ({navigation}) => {
 
   const handleDeleteAd = async adId => {
     Alert.alert('Delete Ad', 'Are you sure you want to delete this ad?', [
-      {text: 'Cancel', style: 'cancel'},
+      { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
         style: 'destructive',
@@ -32,24 +33,42 @@ const EditDeleteAd = ({navigation}) => {
     ]);
   };
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.adContainer}
-      onPress={() => navigation.navigate('Ad', {ad: item})}>
-      <Text style={styles.adTitle}>{item.title}</Text>
-      <Text>{item.description}</Text>
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.editButton]}
-          onPress={() => navigation.navigate('Ad', {ad: item})}>
-          <Text style={styles.buttonText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.deleteButton]}
-          onPress={() => handleDeleteAd(item.id)}>
-          <Text style={styles.buttonText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
+      onPress={() => navigation.navigate('Ad', { ad: item })}
+    >
+      <Card style={styles.adContainer}>
+        {item.picture ? (
+          <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+        ) : (
+          <Image source={require('../../assets/images/OIP.jpeg')} style={styles.adImage} />
+        )}
+        <Card.Title
+          titleStyle={styles.adTitle}
+          title={item.title}
+          subtitle={`Category: ${item.category}`}
+          subtitleStyle={styles.adTitle}
+        />
+        <Card.Content>
+          <Text variant="bodyMedium" style={styles.adContent}>
+            {item.description}
+          </Text>
+        </Card.Content>
+        <View style={styles.buttonsContainer}>
+          <Button
+            mode="contained"
+            style={styles.editButton}
+            onPress={() => navigation.navigate('Ad', { ad: item })}>
+            Edit
+          </Button>
+          <Button
+            mode="contained"
+            style={styles.deleteButton}
+            onPress={() => handleDeleteAd(item.id)}>
+            Delete
+          </Button>
+        </View>
+      </Card>
     </TouchableOpacity>
   );
 
@@ -67,6 +86,11 @@ const EditDeleteAd = ({navigation}) => {
       padding: 20,
       borderRadius: 5,
       position: 'relative',
+    },
+    adImage: {
+      height: 200,
+      width: '90%',
+      alignSelf: 'center',
     },
     adTitle: {
       fontSize: 18,
@@ -95,15 +119,6 @@ const EditDeleteAd = ({navigation}) => {
       margin: 10,
       borderRadius: 20,
       width: '35%',
-    },
-    buttonText: {
-      color: '#ffffff',
-      textAlign: 'center',
-    },
-    favoriteButton: {
-      position: 'absolute',
-      bottom: 10,
-      right: 10,
     },
   });
 

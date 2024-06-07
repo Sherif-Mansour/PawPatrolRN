@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
   RefreshControl,
   Image,
 } from 'react-native';
-import {useUser} from '../../utils/UserContext';
+import { useUser } from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
   Searchbar,
@@ -18,7 +18,7 @@ import {
   Card,
   Text,
 } from 'react-native-paper';
-import {FlatList, ScrollView} from 'react-native-gesture-handler';
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
 
 const categories = [
   'All',
@@ -30,7 +30,7 @@ const categories = [
   'Sitting',
 ];
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({ navigation }) => {
   const theme = useTheme();
   const {
     ads,
@@ -99,8 +99,6 @@ const HomeScreen = ({navigation}) => {
     }
   };
 
-  // https://callstack.github.io/react-native-paper/docs/components/Chip/
-
   const renderCategory = category => (
     <Chip
       key={category}
@@ -111,12 +109,16 @@ const HomeScreen = ({navigation}) => {
     </Chip>
   );
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate('AdDetails', { ad: item })}
     >
       <Card style={styles.adContainer}>
-        <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+        {item.picture ? (
+          <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+        ) : (
+          <Image source={require('../../assets/images/OIP.jpeg')} style={styles.adImage} />
+        )}
         <Card.Title
           titleStyle={styles.adTitle}
           title={item.title}
@@ -160,14 +162,12 @@ const HomeScreen = ({navigation}) => {
     },
     adImage: {
       height: 200,
+      width: '90%',
+      alignSelf: 'center',
     },
     adTitle: {
       fontWeight: 'bold',
       color: theme.colors.onPrimaryContainer,
-    },
-    adContent: {
-      color: theme.colors.onPrimaryContainer,
-      marginBottom: 10,
     },
     favoriteButton: {
       position: 'absolute',
@@ -186,9 +186,9 @@ const HomeScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <View style={{flexDirection: 'row'}}>
+      <View style={{ flexDirection: 'row' }}>
         <Button
-          style={{backgroundColor: 'transparent'}}
+          style={{ backgroundColor: 'transparent' }}
           onPress={() => navigation.navigate('Location')}
           icon="map-marker">
           Location
@@ -239,4 +239,4 @@ export default HomeScreen;
 // what color is gonna look good with : 'rgb(0, 104, 123)', for app
 
 // got icons for home screen from react-icons
-// https://react-icons.github.io/react-icons/
+// https://react-icons.github.

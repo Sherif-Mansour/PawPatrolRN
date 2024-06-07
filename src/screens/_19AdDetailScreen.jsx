@@ -1,55 +1,76 @@
 import React from 'react';
-import { View, StyleSheet, Image } from 'react-native';
-import { Text, Card, useTheme } from 'react-native-paper';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+} from 'react-native';
+import { useTheme, Card } from 'react-native-paper';
+import { useRoute } from '@react-navigation/native';
 
-const AdDetailsScreen = ({ route }) => {
+const AdDetails = () => {
   const theme = useTheme();
+  const route = useRoute();
   const { ad } = route.params;
 
   return (
-    <View style={styles.container}>
-      <Card style={styles.card}>
-        <Card.Cover source={{ uri: ad.picture }} style={styles.adImage} />
+    <ScrollView contentContainerStyle={styles.container}>
+      <Card style={styles.adContainer}>
+        {ad.picture ? (
+          <Card.Cover source={{ uri: ad.picture }} style={styles.adImage} />
+        ) : (
+          <Image source={require('../../assets/images/OIP.jpeg')} style={styles.adImage} />
+        )}
         <Card.Title
           titleStyle={styles.adTitle}
           title={ad.title}
-          subtitle={`Rating: ${ad.rating || 'N/A'}`}
+          subtitle={`Category: ${ad.category}`}
           subtitleStyle={styles.adTitle}
         />
         <Card.Content>
-          <Text variant="bodyMedium" style={styles.adContent}>
+          <Text style={styles.adContent}>
             {ad.description}
           </Text>
-          <Text style={styles.adContent}>Address: {ad.address}</Text>
+          <Text style={styles.adContent}>
+            Address: {ad.address}
+          </Text>
           <Text style={styles.adContent}>
             Services: {ad.services.join(', ')}
           </Text>
-          <Text style={styles.adContent}>Category: {ad.category}</Text>
         </Card.Content>
       </Card>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
-    backgroundColor: '#FFF3D6',
+    backgroundColor: 'white',
   },
-  card: {
+  adContainer: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: 'black',
+    backgroundColor: 'white',
+    paddingTop: 5,
+    marginBottom: 10,
+    position: 'relative',
   },
   adImage: {
-    height: 300,
+    height: 200,
+    width: '90%',
+    alignSelf: 'center',
   },
   adTitle: {
     fontWeight: 'bold',
+    color: 'black',
   },
   adContent: {
+    color: 'black',
     marginBottom: 10,
   },
 });
 
-export default AdDetailsScreen;
+export default AdDetails;
