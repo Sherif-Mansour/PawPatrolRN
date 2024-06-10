@@ -1,16 +1,17 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
   ActivityIndicator,
   FlatList,
   TouchableOpacity,
+  Image,
 } from 'react-native';
-import {useUser} from '../../utils/UserContext';
-import {Card, Text, Button, useTheme} from 'react-native-paper';
+import { useUser } from '../../utils/UserContext';
+import { Card, Text, Button, useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const FavoritesScreen = ({navigation}) => {
+const FavoritesScreen = ({ navigation }) => {
   const theme = useTheme();
   const {
     favorites,
@@ -36,32 +37,33 @@ const FavoritesScreen = ({navigation}) => {
     }
   }, [favorites, ads]);
 
-  const renderAd = ({item}) => (
-    <Card style={styles.adContainer}>
-      <Card.Title
-        titleStyle={styles.adTitle}
-        title={item.title}
-        subtitle={`Address: ${item.address}\nServices: ${item.services.join(
-          ', ',
-        )}\nCategory: ${item.category}`}
-        subtitleNumberOfLines={3}
-        subtitleStyle={styles.adTitle}
-      />
-      <Card.Content>
-        <Text variant="bodyMedium" style={styles.adContent}>
-          {item.description}
-        </Text>
-      </Card.Content>
-      <TouchableOpacity
-        style={styles.favoriteButton}
-        onPress={() => handleAddToFavorites(item.id)}>
-        <Icon
-          name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
-          size={24}
-          color="#ff0000"
+  const renderAd = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('AdDetails', { ad: item })}
+    >
+      <Card style={styles.adContainer}>
+        {item.picture ? (
+          <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+        ) : (
+          <Image source={require('../../assets/images/OIP.jpeg')} style={styles.adImage} />
+        )}
+        <Card.Title
+          titleStyle={styles.adTitle}
+          title={item.title}
+          subtitle={`Rating: ${item.rating || 'N/A'}`}
+          subtitleStyle={styles.adTitle}
         />
-      </TouchableOpacity>
-    </Card>
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => handleAddToFavorites(item.id)}>
+          <Icon
+            name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
+            size={24}
+            color="#ff0000"
+          />
+        </TouchableOpacity>
+      </Card>
+    </TouchableOpacity>
   );
 
   const styles = StyleSheet.create({
@@ -83,13 +85,14 @@ const FavoritesScreen = ({navigation}) => {
       position: 'relative',
       backgroundColor: theme.colors.secondaryContainer,
     },
+    adImage: {
+      height: 200,
+      width: '90%',
+      alignSelf: 'center',
+    },
     adTitle: {
       fontWeight: 'bold',
       color: theme.colors.onPrimaryContainer,
-    },
-    adContent: {
-      color: theme.colors.onPrimaryContainer,
-      marginBottom: 10,
     },
     favoriteButton: {
       position: 'absolute',
