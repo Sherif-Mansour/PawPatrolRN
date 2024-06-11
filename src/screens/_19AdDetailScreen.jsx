@@ -6,12 +6,13 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import { useTheme, Card } from 'react-native-paper';
-import { useRoute } from '@react-navigation/native';
+import { useTheme, Card, Button } from 'react-native-paper';
+import { useRoute, useNavigation } from '@react-navigation/native';
 
 const AdDetails = () => {
   const theme = useTheme();
   const route = useRoute();
+  const navigation = useNavigation();
   const { ad } = route.params;
 
   return (
@@ -40,6 +41,13 @@ const AdDetails = () => {
           </Text>
         </Card.Content>
       </Card>
+      <Button
+        mode="contained"
+        onPress={() => navigation.navigate('BookAppointment', { ad })}
+        style={styles.bookButton}
+      >
+        Book Appointment
+      </Button>
     </ScrollView>
   );
 };
@@ -70,6 +78,9 @@ const styles = StyleSheet.create({
   adContent: {
     color: 'black',
     marginBottom: 10,
+  },
+  bookButton: {
+    marginTop: 20,
   },
 });
 

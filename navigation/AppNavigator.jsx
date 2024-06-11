@@ -19,6 +19,7 @@ import BottomTabNavigator from './BottomTabNavigator';
 import AddPaymentInfo from '../src/screens/_17AddPaymentInfo';
 import LocationScreen from './../src/screens/_18LocationScreen';
 import AdDetailsScreen from '../src/screens/_19AdDetailScreen';
+import BookAppointment from '../src/screens/_20BookAppointment';
 
 const Stack = createStackNavigator();
 
@@ -99,6 +100,11 @@ const AppNavigator = () => {
         <Stack.Screen
           name="AdDetails"
           component={AdDetailsScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="BookAppointment"
+          component={BookAppointment}
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
       </Stack.Navigator>
