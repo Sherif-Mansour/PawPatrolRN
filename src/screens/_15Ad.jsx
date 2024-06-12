@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,8 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import { Button, useTheme } from 'react-native-paper';
-import { useUser } from '../../utils/UserContext';
+import {Button, useTheme} from 'react-native-paper';
+import {useUser} from '../../utils/UserContext';
 
 const categories = [
   'Grooming',
@@ -19,23 +19,20 @@ const categories = [
   'Sitting',
 ];
 
-const Ad = ({ navigation, route }) => {
+const Ad = ({navigation, route}) => {
   const theme = useTheme();
-  const { createOrUpdateAd } = useUser();
+  const {createOrUpdateAd} = useUser();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [pictures, setPictures] = useState([]);
   const [services, setServices] = useState([]);
   const [address, setAddress] = useState('');
   const [category, setCategory] = useState(categories[0]);
-  const [availableSlots, setAvailableSlots] = useState([]);
-  const [newSlotDate, setNewSlotDate] = useState('');
-  const [newSlotTime, setNewSlotTime] = useState('');
   const adId = route.params?.ad?.id;
 
   useEffect(() => {
     if (route.params?.ad) {
-      const { title, description, pictures, services, address, category, availableSlots } =
+      const {title, description, pictures, services, address, category} =
         route.params.ad;
       setTitle(title);
       setDescription(description);
@@ -43,7 +40,6 @@ const Ad = ({ navigation, route }) => {
       setServices(services);
       setAddress(address);
       setCategory(category || categories[0]);
-      setAvailableSlots(availableSlots || []);
     }
   }, [route.params?.ad]);
 
@@ -57,7 +53,6 @@ const Ad = ({ navigation, route }) => {
         services,
         address,
         category,
-        availableSlots,
       };
       try {
         await createOrUpdateAd(adData);
@@ -69,16 +64,6 @@ const Ad = ({ navigation, route }) => {
       }
     } else {
       Alert.alert('Error', 'Please fill in all fields');
-    }
-  };
-
-  const addSlot = () => {
-    if (newSlotDate && newSlotTime) {
-      setAvailableSlots([...availableSlots, { date: newSlotDate, time: newSlotTime }]);
-      setNewSlotDate('');
-      setNewSlotTime('');
-    } else {
-      Alert.alert('Error', 'Please enter both date and time');
     }
   };
 
@@ -144,23 +129,6 @@ const Ad = ({ navigation, route }) => {
     selectedCategoryButtonText: {
       fontWeight: 'bold',
     },
-    slotContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 10,
-    },
-    slotInput: {
-      flex: 1,
-      backgroundColor: 'white',
-      padding: 10,
-      borderRadius: 5,
-      marginRight: 10,
-    },
-    slotButton: {
-      backgroundColor: '#007bff',
-      padding: 10,
-      borderRadius: 5,
-    },
   });
 
   return (
@@ -199,33 +167,10 @@ const Ad = ({ navigation, route }) => {
         <View style={styles.categoriesContainer}>
           {renderCategoryButtons()}
         </View>
-        <Text style={styles.label}>Available Slots</Text>
-        {availableSlots.map((slot, index) => (
-          <View key={index} style={styles.slotContainer}>
-            <Text>{`${slot.date} - ${slot.time}`}</Text>
-          </View>
-        ))}
-        <View style={styles.slotContainer}>
-          <TextInput
-            style={styles.slotInput}
-            placeholder="Date (YYYY-MM-DD)"
-            value={newSlotDate}
-            onChangeText={setNewSlotDate}
-          />
-          <TextInput
-            style={styles.slotInput}
-            placeholder="Time (HH:MM)"
-            value={newSlotTime}
-            onChangeText={setNewSlotTime}
-          />
-          <Button mode="contained" style={styles.slotButton} onPress={addSlot}>
-            Add Slot
-          </Button>
-        </View>
         <Button
           mode="contained"
           buttonColor="#FFBF5D"
-          contentStyle={{ width: '100%' }}
+          contentStyle={{width: '100%'}}
           onPress={saveAd}>
           Save Ad
         </Button>
@@ -235,3 +180,6 @@ const Ad = ({ navigation, route }) => {
 };
 
 export default Ad;
+
+// watched youtube video for firebase
+// https://www.youtube.com/watch?v=2hR-uWjBAgw
