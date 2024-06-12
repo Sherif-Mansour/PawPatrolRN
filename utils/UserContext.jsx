@@ -11,24 +11,39 @@ const UserContext = createContext();
 export const UserProvider = ({children}) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadingUserAds, setLoadingUserAds] = useState(false);
-  const [loadingAllAds, setLoadingAllAds] = useState(false);
+  const [loadingUserAds, setLoadingUserAds] = useState(true);
+  const [loadingAllAds, setLoadingAllAds] = useState(true);
+  const [loadingFavorites, setLoadingFavorites] = useState(true);
   const [email, setEmail] = useState(null);
   const [ads, setAds] = useState([]);
   const [favorites, setFavorites] = useState([]);
 
+  const resetLoadingStates = () => {
+    setLoading(true);
+    setLoadingUserAds(true);
+    setLoadingAllAds(true);
+    setLoadingFavorites(true);
+  };
+
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async currentUser => {
+      resetLoadingStates();
       if (currentUser) {
         setUser(currentUser);
         setEmail(currentUser.email);
         await fetchUserAds();
         await fetchAllAds();
+        await fetchUserFavorites();
       } else {
         setUser(null);
         setEmail(null);
+        setAds([]);
+        setFavorites([]);
       }
       setLoading(false);
+      setLoadingUserAds(false);
+      setLoadingAllAds(false);
+      setLoadingFavorites(false);
     });
     return () => unsubscribe();
   }, []);
@@ -83,7 +98,13 @@ export const UserProvider = ({children}) => {
       console.log(user);
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
       await auth().signInWithCredential(googleCredential);
+      await fetchUserAds();
+      await fetchAllAds();
+      await fetchUserFavorites();
       setLoading(false);
+      setLoadingUserAds(false);
+      setLoadingAllAds(false);
+      setLoadingFavorites(false);
       navigation.navigate('Home');
     } catch (err) {
       setLoading(false);
@@ -95,9 +116,15 @@ export const UserProvider = ({children}) => {
     setLoading(true);
     auth()
       .signInWithEmailAndPassword(email, password)
-      .then(res => {
+      .then(async res => {
         console.log(res);
+        await fetchUserAds();
+        await fetchAllAds();
+        await fetchUserFavorites();
         setLoading(false);
+        setLoadingUserAds(false);
+        setLoadingAllAds(false);
+        setLoadingFavorites(false);
         navigation.navigate('Home');
       })
       .catch(err => {
@@ -160,12 +187,13 @@ export const UserProvider = ({children}) => {
     if (userProfileDoc.exists) {
       return userProfileDoc.data();
     } else {
-      throw new Error('User profile not found');
+      // Return null or a default profile object when the user profile is not found
+      return null; // or { name: '', bio: '', profilePicture: '', pets: [], otherInfo: {} }
     }
   };
 
   const uploadProfilePicture = async imageUri => {
-    const storageRef = storage().ref('profilePictures/${user.uid}.jpg');
+    const storageRef = storage().ref(`profilePictures/${user.uid}.jpg`);
     await storageRef.putFile(imageUri);
     const downloadUrl = await storageRef.getDownloadURL();
     return downloadUrl;
@@ -269,20 +297,42 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const handleAddToFavorites = adId => {
+  const handleAddToFavorites = async adId => {
+    const userFavoritesRef = firestore().collection('favorites').doc(user.uid);
+
     setFavorites(prevFavorites => {
-      if (prevFavorites.includes(adId)) {
-        return prevFavorites.filter(favId => favId !== adId);
-      } else {
-        return [...prevFavorites, adId];
-      }
+      const updatedFavorites = prevFavorites.includes(adId)
+        ? prevFavorites.filter(favId => favId !== adId)
+        : [...prevFavorites, adId];
+
+      userFavoritesRef.set({favorites: updatedFavorites}, {merge: true});
+
+      return updatedFavorites;
     });
+  };
+
+  const fetchUserFavorites = async () => {
+    if (!user) return;
+
+    const userFavoritesRef = firestore().collection('favorites').doc(user.uid);
+    const userFavoritesDoc = await userFavoritesRef.get();
+
+    if (userFavoritesDoc.exists) {
+      setFavorites(userFavoritesDoc.data().favorites);
+    } else {
+      setFavorites([]);
+    }
   };
 
   const signOut = async navigation => {
     try {
       await auth().signOut();
       setUser(null);
+      setFavorites([]);
+      setAds([]);
+      setLoadingUserAds(true);
+      setLoadingAllAds(true);
+      setLoadingFavorites(true);
       console.log('User signed out');
       navigation.navigate('SplashScreen');
     } catch (err) {
@@ -313,6 +363,7 @@ export const UserProvider = ({children}) => {
         loading,
         loadingUserAds,
         loadingAllAds,
+        loadingFavorites,
         email,
         ads,
         fetchUserAds,
@@ -320,6 +371,7 @@ export const UserProvider = ({children}) => {
         deleteAd,
         favorites,
         handleAddToFavorites,
+        fetchUserFavorites,
         signInWithEmailAndPass,
         createUserWithEmailAndPassword,
         onGoogleButtonPress,

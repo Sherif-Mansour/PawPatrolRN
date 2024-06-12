@@ -1,12 +1,14 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  RefreshControl,
+  Image,
 } from 'react-native';
-import {useUser} from '../../utils/UserContext';
+import { useUser } from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
   Searchbar,
@@ -16,7 +18,7 @@ import {
   Card,
   Text,
 } from 'react-native-paper';
-import {FlatList, ScrollView} from 'react-native-gesture-handler';
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
 
 const categories = [
   'All',
@@ -28,14 +30,33 @@ const categories = [
   'Sitting',
 ];
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({ navigation }) => {
   const theme = useTheme();
-  const {ads, favorites, handleAddToFavorites, fetchAllAds, loadingAllAds} =
-    useUser();
+  const {
+    ads,
+    user,
+    favorites,
+    handleAddToFavorites,
+    fetchAllAds,
+    loadingAllAds,
+    loadingFavorites,
+    fetchUserFavorites,
+    loading,
+  } = useUser();
   const [filteredAds, setFilteredAds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [refreshing, setRefreshing] = useState(false);
   const [adsFetched, setAdsFetched] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      const loadFavorites = async () => {
+        await fetchUserFavorites();
+      };
+      loadFavorites();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!adsFetched && !loadingAllAds) {
@@ -46,7 +67,7 @@ const HomeScreen = ({navigation}) => {
 
   useEffect(() => {
     filterAds();
-  }, [searchQuery, selectedCategory, ads]);
+  }, [searchQuery, selectedCategory, ads, favorites]);
 
   const filterAds = () => {
     let filtered = ads;
@@ -64,7 +85,19 @@ const HomeScreen = ({navigation}) => {
     setFilteredAds(filtered);
   };
 
-  // https://callstack.github.io/react-native-paper/docs/components/Chip/
+  const onRefresh = async () => {
+    setRefreshing(true);
+    console.log('Refreshing ads...');
+    try {
+      await fetchAllAds();
+      await fetchUserFavorites();
+      console.log('Ads and favorites refreshed successfully.');
+    } catch (error) {
+      console.error('Error refreshing ads:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const renderCategory = category => (
     <Chip
@@ -76,32 +109,33 @@ const HomeScreen = ({navigation}) => {
     </Chip>
   );
 
-  const renderItem = ({item}) => (
-    <Card style={styles.adContainer}>
-      <Card.Title
-        titleStyle={styles.adTitle}
-        title={item.title}
-        subtitle={`Address: ${item.address}\nServices: ${item.services.join(
-          ', ',
-        )}\nCategory: ${item.category}`}
-        subtitleNumberOfLines={3}
-        subtitleStyle={styles.adTitle}
-      />
-      <Card.Content>
-        <Text variant="bodyMedium" style={styles.adContent}>
-          {item.description}
-        </Text>
-      </Card.Content>
-      <TouchableOpacity
-        style={styles.favoriteButton}
-        onPress={() => handleAddToFavorites(item.id)}>
-        <Icon
-          name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
-          size={24}
-          color="#ff0000"
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('AdDetails', { ad: item })}
+    >
+      <Card style={styles.adContainer}>
+        {item.picture ? (
+          <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+        ) : (
+          <Image source={require('../../assets/images/OIP.jpeg')} style={styles.adImage} />
+        )}
+        <Card.Title
+          titleStyle={styles.adTitle}
+          title={item.title}
+          subtitle={`Rating: ${item.rating || 'N/A'}`}
+          subtitleStyle={styles.adTitle}
         />
-      </TouchableOpacity>
-    </Card>
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => handleAddToFavorites(item.id)}>
+          <Icon
+            name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
+            size={24}
+            color="#ff0000"
+          />
+        </TouchableOpacity>
+      </Card>
+    </TouchableOpacity>
   );
 
   const styles = StyleSheet.create({
@@ -109,7 +143,7 @@ const HomeScreen = ({navigation}) => {
       flex: 1,
       padding: 20,
       paddingTop: 5,
-      backgroundColor: 'white',
+      backgroundColor: '#FFF3D6',
     },
     categoryChip: {
       marginRight: 10,
@@ -126,13 +160,14 @@ const HomeScreen = ({navigation}) => {
       position: 'relative',
       backgroundColor: theme.colors.secondaryContainer,
     },
+    adImage: {
+      height: 200,
+      width: '90%',
+      alignSelf: 'center',
+    },
     adTitle: {
       fontWeight: 'bold',
       color: theme.colors.onPrimaryContainer,
-    },
-    adContent: {
-      color: theme.colors.onPrimaryContainer,
-      marginBottom: 10,
     },
     favoriteButton: {
       position: 'absolute',
@@ -141,7 +176,7 @@ const HomeScreen = ({navigation}) => {
     },
   });
 
-  if (loadingAllAds) {
+  if (loading || loadingAllAds || loadingFavorites) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -151,9 +186,9 @@ const HomeScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <View style={{flexDirection: 'row'}}>
+      <View style={{ flexDirection: 'row' }}>
         <Button
-          style={{backgroundColor: 'transparent'}}
+          style={{ backgroundColor: 'transparent' }}
           onPress={() => navigation.navigate('Location')}
           icon="map-marker">
           Location
@@ -186,6 +221,13 @@ const HomeScreen = ({navigation}) => {
         renderItem={renderItem}
         keyExtractor={item => item.id}
         ListEmptyComponent={<Text>No ads found.</Text>}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+          />
+        }
       />
     </View>
   );
@@ -197,4 +239,4 @@ export default HomeScreen;
 // what color is gonna look good with : 'rgb(0, 104, 123)', for app
 
 // got icons for home screen from react-icons
-// https://react-icons.github.io/react-icons/
+// https://react-icons.github.
