@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Switch, StyleSheet, Button, Alert, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Switch, StyleSheet, Button, Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
@@ -9,8 +9,77 @@ const PrivacySettingsScreen = () => {
   const [shareDataWithThirdParties, setShareDataWithThirdParties] = useState(false);
   const [isDataTrackingEnabled, setIsDataTrackingEnabled] = useState(false);
   const [isLiveLocationEnabled, setIsLiveLocationEnabled] = useState(false);
-  const [inquiry, setInquiry] = useState('');
+  const [isActivityStatusEnabled, setIsActivityStatusEnabled] = useState(false);
+  const [isAdPersonalizationEnabled, setIsAdPersonalizationEnabled] = useState(false);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const user = auth().currentUser;
+        if (user) {
+          const settingsDoc = await firestore().collection('privacySettings').doc(user.uid).get();
+          if (settingsDoc.exists) {
+            const settings = settingsDoc.data();
+            setIsPublicProfile(settings.isPublicProfile);
+            setShareDataWithThirdParties(settings.shareDataWithThirdParties);
+            setIsDataTrackingEnabled(settings.isDataTrackingEnabled);
+            setIsLiveLocationEnabled(settings.isLiveLocationEnabled);
+            setIsActivityStatusEnabled(settings.isActivityStatusEnabled);
+            setIsAdPersonalizationEnabled(settings.isAdPersonalizationEnabled);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+        Alert.alert('Error', 'There was an error fetching your settings.');
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
+  const saveSetting = async (settingName, value) => {
+    try {
+      const user = auth().currentUser;
+      if (user) {
+        await firestore().collection('privacySettings').doc(user.uid).set(
+          {
+            [settingName]: value,
+          },
+          { merge: true }
+        );
+      }
+    } catch (error) {
+      console.error(`Error saving ${settingName}:`, error);
+      Alert.alert('Error', `There was an error saving your ${settingName} setting.`);
+    }
+  };
+
+  const handleToggleSwitch = (settingName, value) => {
+    switch (settingName) {
+      case 'isPublicProfile':
+        setIsPublicProfile(value);
+        break;
+      case 'shareDataWithThirdParties':
+        setShareDataWithThirdParties(value);
+        break;
+      case 'isDataTrackingEnabled':
+        setIsDataTrackingEnabled(value);
+        break;
+      case 'isLiveLocationEnabled':
+        setIsLiveLocationEnabled(value);
+        break;
+      case 'isActivityStatusEnabled':
+        setIsActivityStatusEnabled(value);
+        break;
+      case 'isAdPersonalizationEnabled':
+        setIsAdPersonalizationEnabled(value);
+        break;
+      default:
+        break;
+    }
+    saveSetting(settingName, value);
+  };
 
   const handleDeleteAccount = () => {
     Alert.alert(
@@ -26,6 +95,7 @@ const PrivacySettingsScreen = () => {
               const user = auth().currentUser;
               if (user) {
                 await firestore().collection('users').doc(user.uid).delete();
+                await firestore().collection('privacySettings').doc(user.uid).delete();
                 await user.delete();
                 Alert.alert(
                   'Account deleted',
@@ -48,29 +118,6 @@ const PrivacySettingsScreen = () => {
     );
   };
 
-  const handleSubmitInquiry = async () => {
-    if (inquiry.trim() === '') {
-      Alert.alert('Submit Inquiry', 'Please enter your inquiry.');
-      return;
-    }
-
-    try {
-      const user = auth().currentUser;
-      if (user) {
-        await firestore().collection('inquiries').add({
-          userId: user.uid,
-          inquiry,
-          timestamp: firestore.FieldValue.serverTimestamp(),
-        });
-        setInquiry('');
-        Alert.alert('Inquiry Submitted', 'Your inquiry has been submitted successfully.');
-      }
-    } catch (error) {
-      console.error('Error submitting inquiry:', error);
-      Alert.alert('Error', 'There was an error submitting your inquiry.');
-    }
-  };
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Privacy Settings</Text>
@@ -78,39 +125,49 @@ const PrivacySettingsScreen = () => {
         <Text>Public Profile</Text>
         <Switch
           value={isPublicProfile}
-          onValueChange={setIsPublicProfile}
+          onValueChange={(value) => handleToggleSwitch('isPublicProfile', value)}
         />
       </View>
       <View style={styles.setting}>
         <Text>Share Data with Third Parties</Text>
         <Switch
           value={shareDataWithThirdParties}
-          onValueChange={setShareDataWithThirdParties}
+          onValueChange={(value) => handleToggleSwitch('shareDataWithThirdParties', value)}
         />
       </View>
       <View style={styles.setting}>
         <Text>Data Tracking</Text>
         <Switch
           value={isDataTrackingEnabled}
-          onValueChange={setIsDataTrackingEnabled}
+          onValueChange={(value) => handleToggleSwitch('isDataTrackingEnabled', value)}
         />
       </View>
       <View style={styles.setting}>
         <Text>Live Location</Text>
         <Switch
           value={isLiveLocationEnabled}
-          onValueChange={setIsLiveLocationEnabled}
+          onValueChange={(value) => handleToggleSwitch('isLiveLocationEnabled', value)}
+        />
+      </View>
+      <View style={styles.setting}>
+        <Text>Activity Status</Text>
+        <Switch
+          value={isActivityStatusEnabled}
+          onValueChange={(value) => handleToggleSwitch('isActivityStatusEnabled', value)}
+        />
+      </View>
+      <View style={styles.setting}>
+        <Text>Ad Personalization</Text>
+        <Switch
+          value={isAdPersonalizationEnabled}
+          onValueChange={(value) => handleToggleSwitch('isAdPersonalizationEnabled', value)}
         />
       </View>
       <View style={styles.inquiryContainer}>
-        <Text style={styles.label}>Submit a Privacy Inquiry</Text>
-        <TextInput
-          style={styles.input}
-          value={inquiry}
-          onChangeText={setInquiry}
-          placeholder="Enter your inquiry"
+        <Button
+          title="Submit Inquiry"
+          onPress={() => navigation.navigate('InquirySubmission')}
         />
-        <Button title="Submit Inquiry" onPress={handleSubmitInquiry} />
       </View>
       <View style={styles.buttonContainer}>
         <Button title="Delete Account" onPress={handleDeleteAccount} />
@@ -136,16 +193,6 @@ const styles = StyleSheet.create({
   },
   inquiryContainer: {
     marginVertical: 20,
-  },
-  label: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  input: {
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
   },
   buttonContainer: {
     marginTop: 20,
