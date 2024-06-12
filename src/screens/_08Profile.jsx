@@ -13,7 +13,7 @@ import {useUser} from '../../utils/UserContext';
 
 const Profile = () => {
   const theme = useTheme();
-  const {user, createOrUpdateProfile, fetchUserProfile, uploadProfilePicture} =
+  const {user, createOrUpdateProfile, fetchUserProfile, uploadImage} =
     useUser();
   const [selectedSegment, setSelectedSegment] = useState('user');
   const [selectedPetIndex, setSelectedPetIndex] = useState(0);
@@ -63,7 +63,7 @@ const Profile = () => {
         const imageUri = response.assets[0].uri;
         console.log('Selected Image URI:', imageUri);
         try {
-          const downloadUrl = await uploadProfilePicture(imageUri);
+          const downloadUrl = await uploadImage(imageUri);
           console.log('Download URL:', downloadUrl);
           setProfileData(prevState => ({
             ...prevState,
