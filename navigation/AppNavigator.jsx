@@ -77,11 +77,6 @@ const AppNavigator = () => {
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen
-          name="Ad"
-          component={Ad}
-          options={{header: () => <AppHeader showBackButton={true} />}}
-        />
-        <Stack.Screen
           name="UserAds"
           component={UserAdsScreen}
           options={{header: () => <AppHeader showBackButton={true} />}}
