@@ -1,26 +1,45 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-} from 'react-native';
-import { useTheme, Card } from 'react-native-paper';
-import { useRoute } from '@react-navigation/native';
+import {View, Text, StyleSheet, Image, ScrollView} from 'react-native';
+import {useTheme, Card, Button} from 'react-native-paper';
+import {useRoute} from '@react-navigation/native';
+import {useUser} from '../../utils/UserContext';
 
-const AdDetails = () => {
+const AdDetails = ({navigation}) => {
   const theme = useTheme();
+  const {user, createChat} = useUser();
   const route = useRoute();
-  const { ad } = route.params;
+  const {ad} = route.params;
+
+  console.log('Ad object in AdDetails:', ad);
+  console.log('User object in AdDetails:', user);
+
+  const handleContactPress = async () => {
+    if (!user || !ad.userId) {
+      console.error('User or ad userId is missing.', {user, ad});
+      return;
+    }
+    try {
+      const chatId = await createChat(user.uid, ad.userId);
+      if (chatId) {
+        navigation.navigate('IndividualChat', {chatId});
+      } else {
+        console.error('Error creating or fetching chat.');
+      }
+    } catch (err) {
+      console.error('Error handling contact press: ', err);
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Card style={styles.adContainer}>
         {ad.picture ? (
-          <Card.Cover source={{ uri: ad.picture }} style={styles.adImage} />
+          <Card.Cover source={{uri: ad.picture}} style={styles.adImage} />
         ) : (
-          <Image source={require('../../assets/images/OIP.jpeg')} style={styles.adImage} />
+          <Image
+            source={require('../../assets/images/OIP.jpeg')}
+            style={styles.adImage}
+          />
         )}
         <Card.Title
           titleStyle={styles.adTitle}
@@ -29,16 +48,17 @@ const AdDetails = () => {
           subtitleStyle={styles.adTitle}
         />
         <Card.Content>
-          <Text style={styles.adContent}>
-            {ad.description}
-          </Text>
-          <Text style={styles.adContent}>
-            Address: {ad.address}
-          </Text>
+          <Text style={styles.adContent}>{ad.description}</Text>
+          <Text style={styles.adContent}>Address: {ad.address}</Text>
           <Text style={styles.adContent}>
             Services: {ad.services.join(', ')}
           </Text>
         </Card.Content>
+        <Card.Actions>
+          <Button mode="contained" onPress={handleContactPress}>
+            Contact
+          </Button>
+        </Card.Actions>
       </Card>
     </ScrollView>
   );
