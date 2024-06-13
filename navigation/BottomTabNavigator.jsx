@@ -16,9 +16,7 @@ import HomeScreen from '../src/screens/_03HomeScreen';
 import Favorites from '../src/screens/_04FavoritesScreen';
 import Ad from '../src/screens/_15Ad'
 import BookingScreen from '../src/screens/_05BookingScreen';
-
 import Chat from '../src/screens/_06Chat';
-import Settings from '../src/screens/_07Settings';
 import customScheme from '../assets/themes/customScheme.json';
 
 // https://callstack.github.io/react-native-paper/docs/guides/theming
