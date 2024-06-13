@@ -16,7 +16,9 @@ import HomeScreen from '../src/screens/_03HomeScreen';
 import Favorites from '../src/screens/_04FavoritesScreen';
 import Ad from '../src/screens/_15Ad'
 import BookingScreen from '../src/screens/_05BookingScreen';
-import Messages from '../src/screens/_06Messages';
+
+import Chat from '../src/screens/_06Chat';
+import Settings from '../src/screens/_07Settings';
 import customScheme from '../assets/themes/customScheme.json';
 
 // https://callstack.github.io/react-native-paper/docs/guides/theming
@@ -57,12 +59,13 @@ const BottomTabNavigator = () => {
       focusedIcon: 'calendar-month'
     },
     {
-      key: 'messages',
-      title: 'Messages',
+      key: 'chat',
+      title: 'Chat',
       focusedIcon: 'chat',
       unfocusedIcon: 'chat-outline',
     },
   ]);
+
 
   const renderScene = ({ route }) => {
     switch (route.key) {
@@ -74,13 +77,13 @@ const BottomTabNavigator = () => {
         return <Ad navigation={navigation} route={route} />;
       case 'booking':
         return <BookingScreen navigation={navigation} />;
-      case 'messages':
-        return <Messages navigation={navigation} />;
+      case 'chat':
+        return <Chat navigation={navigation} />;
       default:
         return null;
     }
   };
-  
+
   return (
     <BottomNavigation
       navigationState={{index, routes}}

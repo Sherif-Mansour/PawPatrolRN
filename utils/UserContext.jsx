@@ -2,9 +2,10 @@ import React, {useContext, createContext, useState, useEffect} from 'react';
 import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import {Alert} from 'react-native';
+import {Alert, Platform} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
+import {GiftedChat} from 'react-native-gifted-chat';
 
 const UserContext = createContext();
 
@@ -192,11 +193,20 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const uploadProfilePicture = async imageUri => {
-    const storageRef = storage().ref(`profilePictures/${user.uid}.jpg`);
-    await storageRef.putFile(imageUri);
-    const downloadUrl = await storageRef.getDownloadURL();
-    return downloadUrl;
+  const uploadImage = async imageUri => {
+    const filename = imageUri.substring(imageUri.lastIndexOf('/') + 1);
+    const uploadUri =
+      Platform.OS === 'ios' ? imageUri.replace('file://', '') : imageUri;
+    const task = storage().ref(filename).putFile(uploadUri);
+
+    try {
+      await task;
+      const url = await storage().ref(filename).getDownloadURL();
+      return url;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
   };
 
   const createOrUpdateAd = async adData => {
@@ -219,12 +229,17 @@ export const UserProvider = ({children}) => {
         adData.id = adDocRef.id; // Associate the auto-generated ID with the ad data
       }
 
-      // Set ad data and timestamps
-      await adDocRef.set({
+      const adDataWithUserId = {
         ...adData,
+        userId: user.uid,
         createdAt: firestore.FieldValue.serverTimestamp(),
         updatedAt: firestore.FieldValue.serverTimestamp(),
-      });
+      };
+
+      console.log('Setting ad data:', adDataWithUserId); // Log the ad data being set
+
+      // Set ad data and timestamps
+      await adDocRef.set(adDataWithUserId);
 
       if (adData.id) {
         console.log('Ad updated successfully');
@@ -236,6 +251,40 @@ export const UserProvider = ({children}) => {
     } catch (err) {
       console.error('Error creating/updating ad:', err);
       Alert.alert('Ad Error', 'Failed to create/update ad');
+    }
+  };
+
+  const createChat = async (currentUserId, adUserId) => {
+    try {
+      // First, check if a chat between the current user and the ad user already exists
+      const chatQuery = await firestore()
+        .collection('chats')
+        .where('participants', 'array-contains', currentUserId)
+        .get();
+
+      let chatId = null;
+      chatQuery.forEach(doc => {
+        const participants = doc.data().participants;
+        if (participants.includes(adUserId)) {
+          chatId = doc.id;
+        }
+      });
+
+      // If no existing chat is found, create a new one
+      if (!chatId) {
+        const newChatRef = await firestore()
+          .collection('chats')
+          .add({
+            participants: [currentUserId, adUserId],
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          });
+        chatId = newChatRef.id;
+      }
+
+      return chatId;
+    } catch (err) {
+      console.error('Error creating chat: ', err);
+      return null;
     }
   };
 
@@ -356,6 +405,94 @@ export const UserProvider = ({children}) => {
     }
   };
 
+  const sendMessage = async (chatId, text) => {
+    try {
+      const messageData = {
+        text,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+        userId: user.uid,
+        user: {
+          _id: user.uid,
+          name: user.displayName,
+          avatar: user.photoURL,
+        },
+      };
+      console.log('Sending message:', messageData);
+      await firestore()
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .add(messageData);
+      console.log('Message sent successfully');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  };
+
+  const sendMultimediaMessage = async (chatId, imageUri) => {
+    const url = await uploadImage(imageUri);
+    if (url) {
+      await firestore()
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .add({
+          image: url,
+          createdAt: firestore.FieldValue.serverTimestamp(),
+          userId: user.uid,
+        });
+    }
+  };
+
+  const subscribeToMessages = (chatId, callback) => {
+    return firestore()
+      .collection('chats')
+      .doc(chatId)
+      .collection('messages')
+      .orderBy('createdAt', 'desc')
+      .onSnapshot(
+        querySnapshot => {
+          if (querySnapshot && !querySnapshot.empty) {
+            const messages = querySnapshot.docs.map(doc => {
+              const data = doc.data();
+              return {
+                _id: doc.id,
+                text: data.text,
+                createdAt: data.createdAt
+                  ? data.createdAt.toDate()
+                  : new Date(),
+                user: data.user,
+              };
+            });
+            callback(messages);
+          } else {
+            callback([]);
+          }
+        },
+        error => {
+          console.error('Error fetching messages:', error);
+          callback([]);
+        },
+      );
+  };
+
+  const fetchUserChats = async userId => {
+    try {
+      const userChatsSnapshot = await firestore()
+        .collection('chats')
+        .where('participants', 'array-contains', userId)
+        .get();
+      const userChats = userChatsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      return userChats;
+    } catch (err) {
+      console.error('Error fetching user chats:', err);
+      return [];
+    }
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -377,10 +514,15 @@ export const UserProvider = ({children}) => {
         onGoogleButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
-        uploadProfilePicture,
+        uploadImage,
         createOrUpdateAd,
         signOut,
         savePaymentDetails,
+        sendMessage,
+        subscribeToMessages,
+        sendMultimediaMessage,
+        fetchUserChats,
+        createChat,
       }}>
       {children}
     </UserContext.Provider>

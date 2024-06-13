@@ -19,6 +19,8 @@ import BottomTabNavigator from './BottomTabNavigator';
 import AddPaymentInfo from '../src/screens/_17AddPaymentInfo';
 import LocationScreen from './../src/screens/_18LocationScreen';
 import AdDetailsScreen from '../src/screens/_19AdDetailScreen';
+import InquirySubmissionScreen from '../src/screens/_21InquirySubmissionScreen';
+import IndividualChat from '../src/screens/_20IndividualChat';
 
 const Stack = createStackNavigator();
 
@@ -94,6 +96,16 @@ const AppNavigator = () => {
         <Stack.Screen
           name="AdDetails"
           component={AdDetailsScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="InquirySubmission"
+          component={InquirySubmissionScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="IndividualChat"
+          component={IndividualChat}
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
       </Stack.Navigator>
