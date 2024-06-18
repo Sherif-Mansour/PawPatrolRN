@@ -2,33 +2,49 @@ import React, {useContext, createContext, useState, useEffect} from 'react';
 import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import {Alert} from 'react-native';
+import {Alert, Platform} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
+import {GiftedChat} from 'react-native-gifted-chat';
 
 const UserContext = createContext();
 
 export const UserProvider = ({children}) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadingUserAds, setLoadingUserAds] = useState(false);
-  const [loadingAllAds, setLoadingAllAds] = useState(false);
+  const [loadingUserAds, setLoadingUserAds] = useState(true);
+  const [loadingAllAds, setLoadingAllAds] = useState(true);
+  const [loadingFavorites, setLoadingFavorites] = useState(true);
   const [email, setEmail] = useState(null);
   const [ads, setAds] = useState([]);
   const [favorites, setFavorites] = useState([]);
 
+  const resetLoadingStates = () => {
+    setLoading(true);
+    setLoadingUserAds(true);
+    setLoadingAllAds(true);
+    setLoadingFavorites(true);
+  };
+
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async currentUser => {
+      resetLoadingStates();
       if (currentUser) {
         setUser(currentUser);
         setEmail(currentUser.email);
         await fetchUserAds();
         await fetchAllAds();
+        await fetchUserFavorites();
       } else {
         setUser(null);
         setEmail(null);
+        setAds([]);
+        setFavorites([]);
       }
       setLoading(false);
+      setLoadingUserAds(false);
+      setLoadingAllAds(false);
+      setLoadingFavorites(false);
     });
     return () => unsubscribe();
   }, []);
@@ -83,7 +99,13 @@ export const UserProvider = ({children}) => {
       console.log(user);
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
       await auth().signInWithCredential(googleCredential);
+      await fetchUserAds();
+      await fetchAllAds();
+      await fetchUserFavorites();
       setLoading(false);
+      setLoadingUserAds(false);
+      setLoadingAllAds(false);
+      setLoadingFavorites(false);
       navigation.navigate('Home');
     } catch (err) {
       setLoading(false);
@@ -95,9 +117,15 @@ export const UserProvider = ({children}) => {
     setLoading(true);
     auth()
       .signInWithEmailAndPassword(email, password)
-      .then(res => {
+      .then(async res => {
         console.log(res);
+        await fetchUserAds();
+        await fetchAllAds();
+        await fetchUserFavorites();
         setLoading(false);
+        setLoadingUserAds(false);
+        setLoadingAllAds(false);
+        setLoadingFavorites(false);
         navigation.navigate('Home');
       })
       .catch(err => {
@@ -160,15 +188,25 @@ export const UserProvider = ({children}) => {
     if (userProfileDoc.exists) {
       return userProfileDoc.data();
     } else {
-      throw new Error('User profile not found');
+      // Return null or a default profile object when the user profile is not found
+      return null; // or { name: '', bio: '', profilePicture: '', pets: [], otherInfo: {} }
     }
   };
 
-  const uploadProfilePicture = async imageUri => {
-    const storageRef = storage().ref('profilePictures/${user.uid}.jpg');
-    await storageRef.putFile(imageUri);
-    const downloadUrl = await storageRef.getDownloadURL();
-    return downloadUrl;
+  const uploadImage = async imageUri => {
+    const filename = imageUri.substring(imageUri.lastIndexOf('/') + 1);
+    const uploadUri =
+      Platform.OS === 'ios' ? imageUri.replace('file://', '') : imageUri;
+    const task = storage().ref(filename).putFile(uploadUri);
+
+    try {
+      await task;
+      const url = await storage().ref(filename).getDownloadURL();
+      return url;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
   };
 
   const createOrUpdateAd = async adData => {
@@ -191,12 +229,17 @@ export const UserProvider = ({children}) => {
         adData.id = adDocRef.id; // Associate the auto-generated ID with the ad data
       }
 
-      // Set ad data and timestamps
-      await adDocRef.set({
+      const adDataWithUserId = {
         ...adData,
+        userId: user.uid,
         createdAt: firestore.FieldValue.serverTimestamp(),
         updatedAt: firestore.FieldValue.serverTimestamp(),
-      });
+      };
+
+      console.log('Setting ad data:', adDataWithUserId); // Log the ad data being set
+
+      // Set ad data and timestamps
+      await adDocRef.set(adDataWithUserId);
 
       if (adData.id) {
         console.log('Ad updated successfully');
@@ -208,6 +251,40 @@ export const UserProvider = ({children}) => {
     } catch (err) {
       console.error('Error creating/updating ad:', err);
       Alert.alert('Ad Error', 'Failed to create/update ad');
+    }
+  };
+
+  const createChat = async (currentUserId, adUserId) => {
+    try {
+      // First, check if a chat between the current user and the ad user already exists
+      const chatQuery = await firestore()
+        .collection('chats')
+        .where('participants', 'array-contains', currentUserId)
+        .get();
+
+      let chatId = null;
+      chatQuery.forEach(doc => {
+        const participants = doc.data().participants;
+        if (participants.includes(adUserId)) {
+          chatId = doc.id;
+        }
+      });
+
+      // If no existing chat is found, create a new one
+      if (!chatId) {
+        const newChatRef = await firestore()
+          .collection('chats')
+          .add({
+            participants: [currentUserId, adUserId],
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          });
+        chatId = newChatRef.id;
+      }
+
+      return chatId;
+    } catch (err) {
+      console.error('Error creating chat: ', err);
+      return null;
     }
   };
 
@@ -269,20 +346,42 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const handleAddToFavorites = adId => {
+  const handleAddToFavorites = async adId => {
+    const userFavoritesRef = firestore().collection('favorites').doc(user.uid);
+
     setFavorites(prevFavorites => {
-      if (prevFavorites.includes(adId)) {
-        return prevFavorites.filter(favId => favId !== adId);
-      } else {
-        return [...prevFavorites, adId];
-      }
+      const updatedFavorites = prevFavorites.includes(adId)
+        ? prevFavorites.filter(favId => favId !== adId)
+        : [...prevFavorites, adId];
+
+      userFavoritesRef.set({favorites: updatedFavorites}, {merge: true});
+
+      return updatedFavorites;
     });
+  };
+
+  const fetchUserFavorites = async () => {
+    if (!user) return;
+
+    const userFavoritesRef = firestore().collection('favorites').doc(user.uid);
+    const userFavoritesDoc = await userFavoritesRef.get();
+
+    if (userFavoritesDoc.exists) {
+      setFavorites(userFavoritesDoc.data().favorites);
+    } else {
+      setFavorites([]);
+    }
   };
 
   const signOut = async navigation => {
     try {
       await auth().signOut();
       setUser(null);
+      setFavorites([]);
+      setAds([]);
+      setLoadingUserAds(true);
+      setLoadingAllAds(true);
+      setLoadingFavorites(true);
       console.log('User signed out');
       navigation.navigate('SplashScreen');
     } catch (err) {
@@ -306,6 +405,94 @@ export const UserProvider = ({children}) => {
     }
   };
 
+  const sendMessage = async (chatId, text) => {
+    try {
+      const messageData = {
+        text,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+        userId: user.uid,
+        user: {
+          _id: user.uid,
+          name: user.displayName,
+          avatar: user.photoURL,
+        },
+      };
+      console.log('Sending message:', messageData);
+      await firestore()
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .add(messageData);
+      console.log('Message sent successfully');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  };
+
+  const sendMultimediaMessage = async (chatId, imageUri) => {
+    const url = await uploadImage(imageUri);
+    if (url) {
+      await firestore()
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .add({
+          image: url,
+          createdAt: firestore.FieldValue.serverTimestamp(),
+          userId: user.uid,
+        });
+    }
+  };
+
+  const subscribeToMessages = (chatId, callback) => {
+    return firestore()
+      .collection('chats')
+      .doc(chatId)
+      .collection('messages')
+      .orderBy('createdAt', 'desc')
+      .onSnapshot(
+        querySnapshot => {
+          if (querySnapshot && !querySnapshot.empty) {
+            const messages = querySnapshot.docs.map(doc => {
+              const data = doc.data();
+              return {
+                _id: doc.id,
+                text: data.text,
+                createdAt: data.createdAt
+                  ? data.createdAt.toDate()
+                  : new Date(),
+                user: data.user,
+              };
+            });
+            callback(messages);
+          } else {
+            callback([]);
+          }
+        },
+        error => {
+          console.error('Error fetching messages:', error);
+          callback([]);
+        },
+      );
+  };
+
+  const fetchUserChats = async userId => {
+    try {
+      const userChatsSnapshot = await firestore()
+        .collection('chats')
+        .where('participants', 'array-contains', userId)
+        .get();
+      const userChats = userChatsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      return userChats;
+    } catch (err) {
+      console.error('Error fetching user chats:', err);
+      return [];
+    }
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -313,6 +500,7 @@ export const UserProvider = ({children}) => {
         loading,
         loadingUserAds,
         loadingAllAds,
+        loadingFavorites,
         email,
         ads,
         fetchUserAds,
@@ -320,15 +508,21 @@ export const UserProvider = ({children}) => {
         deleteAd,
         favorites,
         handleAddToFavorites,
+        fetchUserFavorites,
         signInWithEmailAndPass,
         createUserWithEmailAndPassword,
         onGoogleButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
-        uploadProfilePicture,
+        uploadImage,
         createOrUpdateAd,
         signOut,
         savePaymentDetails,
+        sendMessage,
+        subscribeToMessages,
+        sendMultimediaMessage,
+        fetchUserChats,
+        createChat,
       }}>
       {children}
     </UserContext.Provider>
