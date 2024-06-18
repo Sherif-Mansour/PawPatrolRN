@@ -14,9 +14,9 @@ import {
 } from 'react-native-paper';
 import HomeScreen from '../src/screens/_03HomeScreen';
 import Favorites from '../src/screens/_04FavoritesScreen';
+import Ad from '../src/screens/_15Ad'
 import BookingScreen from '../src/screens/_05BookingScreen';
-import Messages from '../src/screens/_06Messages';
-import Settings from '../src/screens/_07Settings';
+import Chat from '../src/screens/_06Chat';
 import customScheme from '../assets/themes/customScheme.json';
 
 // https://callstack.github.io/react-native-paper/docs/guides/theming
@@ -45,28 +45,42 @@ const BottomTabNavigator = () => {
       focusedIcon: 'heart',
       unfocusedIcon: 'heart-outline',
     },
-    {key: 'booking', title: 'Bookings', focusedIcon: 'calendar-month'},
     {
-      key: 'messages',
-      title: 'Messages',
+      key: 'listing',
+      title: 'Post',
+      focusedIcon: 'plus-circle',
+      unfocusedIcon: 'plus-circle-outline',
+    },
+    {
+      key: 'booking', 
+      title: 'Bookings', 
+      focusedIcon: 'calendar-month'
+    },
+    {
+      key: 'chat',
+      title: 'Chat',
       focusedIcon: 'chat',
       unfocusedIcon: 'chat-outline',
     },
-    {
-      key: 'settings',
-      title: 'Settings',
-      focusedIcon: 'menu',
-      unfocusedIcon: 'menu',
-    },
   ]);
 
-  const renderScene = BottomNavigation.SceneMap({
-    home: () => <HomeScreen navigation={navigation} />,
-    favorites: () => <Favorites navigation={navigation} />,
-    booking: () => <BookingScreen navigation={navigation} />,
-    messages: () => <Messages navigation={navigation} />,
-    settings: () => <Settings navigation={navigation} />,
-  });
+
+  const renderScene = ({ route }) => {
+    switch (route.key) {
+      case 'home':
+        return <HomeScreen navigation={navigation} />;
+      case 'favorites':
+        return <Favorites navigation={navigation} />;
+      case 'listing':
+        return <Ad navigation={navigation} route={route} />;
+      case 'booking':
+        return <BookingScreen navigation={navigation} />;
+      case 'chat':
+        return <Chat navigation={navigation} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <BottomNavigation
