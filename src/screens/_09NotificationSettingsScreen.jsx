@@ -1,7 +1,5 @@
-// screens/NotificationSettingsScreen.js
-
 import React, { useState, useEffect } from 'react';
-import { View, Text, Switch, StyleSheet, Alert } from 'react-native';
+import { View, Text, Switch, StyleSheet, Alert, TextInput, Modal, Button } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
@@ -11,6 +9,10 @@ const NotificationSettingsScreen = () => {
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [newsNotifications, setNewsNotifications] = useState(false);
   const [promoNotifications, setPromoNotifications] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [userPhoneNumber, setUserPhoneNumber] = useState('');
+  const [emailModalVisible, setEmailModalVisible] = useState(false);
+  const [phoneModalVisible, setPhoneModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -25,6 +27,13 @@ const NotificationSettingsScreen = () => {
             setSmsNotifications(settings.smsNotifications);
             setNewsNotifications(settings.newsNotifications);
             setPromoNotifications(settings.promoNotifications);
+          }
+
+          const profileDoc = await firestore().collection('profiles').doc(user.uid).get();
+          if (profileDoc.exists) {
+            const profile = profileDoc.data();
+            setUserEmail(profile.email || '');
+            setUserPhoneNumber(profile.phoneNumber || '');
           }
         }
       } catch (error) {
@@ -53,7 +62,17 @@ const NotificationSettingsScreen = () => {
     }
   };
 
-  const handleToggleSwitch = (settingName, value) => {
+  const handleToggleSwitch = async (settingName, value) => {
+    if (settingName === 'emailNotifications' && value && !userEmail) {
+      setEmailModalVisible(true);
+      return;
+    }
+
+    if (settingName === 'smsNotifications' && value && !userPhoneNumber) {
+      setPhoneModalVisible(true);
+      return;
+    }
+
     switch (settingName) {
       case 'pushNotifications':
         setPushNotifications(value);
@@ -74,6 +93,54 @@ const NotificationSettingsScreen = () => {
         break;
     }
     saveSetting(settingName, value);
+  };
+
+  const handleSaveEmail = async () => {
+    if (!userEmail) {
+      Alert.alert('Error', 'Email address cannot be empty.');
+      return;
+    }
+    try {
+      const user = auth().currentUser;
+      if (user) {
+        await firestore().collection('profiles').doc(user.uid).set(
+          {
+            email: userEmail,
+          },
+          { merge: true }
+        );
+        setEmailModalVisible(false);
+        setEmailNotifications(true);
+        saveSetting('emailNotifications', true);
+      }
+    } catch (error) {
+      console.error('Error saving email:', error);
+      Alert.alert('Error', 'There was an error saving your email.');
+    }
+  };
+
+  const handleSavePhoneNumber = async () => {
+    if (!userPhoneNumber) {
+      Alert.alert('Error', 'Phone number cannot be empty.');
+      return;
+    }
+    try {
+      const user = auth().currentUser;
+      if (user) {
+        await firestore().collection('profiles').doc(user.uid).set(
+          {
+            phoneNumber: userPhoneNumber,
+          },
+          { merge: true }
+        );
+        setPhoneModalVisible(false);
+        setSmsNotifications(true);
+        saveSetting('smsNotifications', true);
+      }
+    } catch (error) {
+      console.error('Error saving phone number:', error);
+      Alert.alert('Error', 'There was an error saving your phone number.');
+    }
   };
 
   return (
@@ -114,6 +181,50 @@ const NotificationSettingsScreen = () => {
           onValueChange={(value) => handleToggleSwitch('promoNotifications', value)}
         />
       </View>
+
+      <Modal
+        visible={emailModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setEmailModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Enter Email Address</Text>
+            <TextInput
+              style={styles.input}
+              value={userEmail}
+              onChangeText={setUserEmail}
+              placeholder="Email Address"
+              keyboardType="email-address"
+            />
+            <Button title="Save" onPress={handleSaveEmail} />
+            <Button title="Cancel" onPress={() => setEmailModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={phoneModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setPhoneModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Enter Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              value={userPhoneNumber}
+              onChangeText={setUserPhoneNumber}
+              placeholder="Phone Number"
+              keyboardType="phone-pad"
+            />
+            <Button title="Save" onPress={handleSavePhoneNumber} />
+            <Button title="Cancel" onPress={() => setPhoneModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -132,6 +243,28 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  input: {
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
   },
 });
 
