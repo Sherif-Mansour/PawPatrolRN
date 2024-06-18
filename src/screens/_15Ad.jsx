@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import {Button, useTheme} from 'react-native-paper';
 import {useUser} from '../../utils/UserContext';
+import { launchImageLibrary } from 'react-native-image-picker';   
 
 const categories = [
   'Grooming',
@@ -23,8 +24,13 @@ const Ad = ({navigation, route}) => {
   const theme = useTheme();
   const {createOrUpdateAd} = useUser();
   const [title, setTitle] = useState('');
+  const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
+  const [location, setLocation] = useState(''); 
+  const [availabilityDate, setAvailabilityDate] = useState(new Date());
+  const [serviceHours, setServiceHours] = useState ('');
   const [pictures, setPictures] = useState([]);
+  const [mainPhoto, setMainPhoto] = useState(null);
   const [services, setServices] = useState([]);
   const [address, setAddress] = useState('');
   const [category, setCategory] = useState(categories[0]);
@@ -34,6 +40,7 @@ const Ad = ({navigation, route}) => {
     if (route.params?.ad) {
       const {title, description, pictures, services, address, category} =
         route.params.ad;
+      setPrice(price);
       setTitle(title);
       setDescription(description);
       setPictures(pictures);
@@ -48,8 +55,13 @@ const Ad = ({navigation, route}) => {
       const adData = {
         id: adId,
         title,
+        price,
         description,
+        location, 
+        availabilityDate,
+        serviceHours,
         pictures,
+        mainPhoto,
         services,
         address,
         category,
@@ -85,6 +97,14 @@ const Ad = ({navigation, route}) => {
         </Text>
       </TouchableOpacity>
     ));
+  };
+
+  const handleSelectPictures = async () => {
+    const result = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 5 });
+    if (!result.didCancel) {
+      const uris = result.assets.map(asset => asset.uri);
+      setPictures(uris);
+    }
   };
 
   const styles = StyleSheet.create({
