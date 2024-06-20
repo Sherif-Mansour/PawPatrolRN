@@ -33,11 +33,6 @@ const Profile = ({ navigation }) => {
       favoriteFood: '',
     },
   });
-  const { signOut } = useUser();
-
-  const handleSignOut = () => {
-    signOut(navigation);
-  };
 
   useEffect(() => {
     const getData = async () => {
@@ -131,7 +126,10 @@ const Profile = ({ navigation }) => {
       <Button
         mode="contained"
         style={styles.button}
-        onPress={handleSaveProfile}>
+        onPress={() => {
+          handleSaveProfile();
+          navigation.navigate('Account');
+        }}>
         Save Profile
       </Button>
     </View>
@@ -229,31 +227,6 @@ const Profile = ({ navigation }) => {
         {selectedSegment === 'user' && renderUserInfo()}
         {selectedSegment === 'pets' && renderPetInfo()}
         {selectedSegment === 'other' && renderOtherInfo()}
-        <View style={styles.container}>
-          <Text style={styles.title}>Settings</Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('NotificationSettings')}>
-            <Text style={styles.setting}>Notification Settings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('PrivacySettings')}>
-            <Text style={styles.setting}>Privacy Settings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('PaymentSettings')}>
-            <Text style={styles.setting}>Payment Settings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('AppPreferences')}>
-            <Text style={styles.setting}>App Preferences</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('BookingSettings')}>
-            <Text style={styles.setting}>Booking Settings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('UserAds')}>
-            <Text style={styles.setting}>Ads</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSignOut}>
-            <Text style={styles.setting}>Sign Out</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
     </SafeAreaProvider>
   );
