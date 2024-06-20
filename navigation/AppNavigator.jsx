@@ -20,8 +20,13 @@ import LocationScreen from './../src/screens/_18LocationScreen';
 import AdDetailsScreen from '../src/screens/_19AdDetailScreen';
 import InquirySubmissionScreen from '../src/screens/_21InquirySubmissionScreen';
 import IndividualChat from '../src/screens/_20IndividualChat';
+
 import AccountSettings from './../src/screens/_22AccountSettings';
 import Ad from '../src/screens/_15Ad';
+
+import BookAppointmentScreen from '../src/screens/_23BookAppointment';
+import PendingAppointmentsScreen from '../src/screens/_24PendingApprovals';
+
 
 const Stack = createStackNavigator();
 
@@ -110,13 +115,25 @@ const AppNavigator = () => {
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen
+
           name="Account"
           component={AccountSettings}
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen
-          name="Ad" // Add the Ad screen to the stack navigator for editing
+          name="Ad"
           component={Ad}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="BookAppointment"
+          component={BookAppointmentScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="PendingAppointments"
+          component={PendingAppointmentsScreen}
+
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
       </Stack.Navigator>
