@@ -1,30 +1,39 @@
-import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, Alert, ScrollView, Image, Text} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Alert, ScrollView, Image, Text, TouchableOpacity } from 'react-native';
 import {
   TextInput,
   Button,
-  RadioButton,
   Avatar,
   SegmentedButtons,
   useTheme,
 } from 'react-native-paper';
-import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
-import {useUser} from '../../utils/UserContext';
+import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
+import { useUser } from '../../utils/UserContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-const Profile = () => {
+const Profile = ({ navigation }) => {
   const theme = useTheme();
-  const {user, createOrUpdateProfile, fetchUserProfile, uploadProfilePicture} =
+  const { user, createOrUpdateProfile, fetchUserProfile, uploadImage } =
     useUser();
   const [selectedSegment, setSelectedSegment] = useState('user');
+  const [selectedPetIndex, setSelectedPetIndex] = useState(0);
   const [profileData, setProfileData] = useState({
-    name: '',
+    email: user.email,
+    firstName: '',
+    lastName: '',
+    age: '',
+    phoneNo: '',
+    address: '',
+    occupation: '',
     bio: '',
     profilePicture: '',
     pets: [
       {
         name: '',
+        species: '',
         breed: '',
         age: '',
+        gender: ''
       },
     ],
     otherInfo: {
@@ -38,7 +47,7 @@ const Profile = () => {
       if (user) {
         try {
           const userProfile = await fetchUserProfile();
-          setProfileData(userProfile);
+          setProfileData(userProfile || profileData);
         } catch (err) {
           console.error('Error fetching user profile:', err);
         }
@@ -62,7 +71,7 @@ const Profile = () => {
         const imageUri = response.assets[0].uri;
         console.log('Selected Image URI:', imageUri);
         try {
-          const downloadUrl = await uploadProfilePicture(imageUri);
+          const downloadUrl = await uploadImage(imageUri);
           console.log('Download URL:', downloadUrl);
           setProfileData(prevState => ({
             ...prevState,
@@ -84,7 +93,7 @@ const Profile = () => {
   const handlePetChange = (index, field, value) => {
     const updatedPets = [...profileData.pets];
     updatedPets[index][field] = value;
-    setProfileData({...profileData, pets: updatedPets});
+    setProfileData({ ...profileData, pets: updatedPets });
   };
 
   const renderUserInfo = () => (
@@ -93,7 +102,7 @@ const Profile = () => {
         {profileData.profilePicture ? (
           <Avatar.Image
             size={100}
-            source={{uri: profileData.profilePicture}}
+            source={{ uri: profileData.profilePicture }}
             style={styles.profilePicture}
           />
         ) : (
@@ -111,21 +120,54 @@ const Profile = () => {
         Select Profile Picture
       </Button>
       <TextInput
-        label="Name"
-        value={profileData.name}
-        onChangeText={text => setProfileData({...profileData, name: text})}
+        label="Email"
+        value={user.email}
+        disabled={true}
+        style={styles.input}
+      />
+      <TextInput
+        label="First Name"
+        value={profileData.firstName}
+        onChangeText={text => setProfileData({ ...profileData, firstName: text })}
+        style={styles.input}
+      />
+      <TextInput
+        label="Last Name"
+        value={profileData.lastName}
+        onChangeText={text => setProfileData({ ...profileData, lastName: text })}
+        style={styles.input}
+      />
+      <TextInput
+        label="Age"
+        value={profileData.age}
+        onChangeText={text => setProfileData({ ...profileData, age: text })}
+        style={styles.input}
+      />
+      <TextInput
+        label="Address"
+        value={profileData.address}
+        onChangeText={text => setProfileData({ ...profileData, address: text })}
+        style={styles.input}
+      />
+      <TextInput
+        label="Occupation"
+        value={profileData.occupation}
+        onChangeText={text => setProfileData({ ...profileData, occupation: text })}
         style={styles.input}
       />
       <TextInput
         label="Bio"
         value={profileData.bio}
-        onChangeText={text => setProfileData({...profileData, bio: text})}
+        onChangeText={text => setProfileData({ ...profileData, bio: text })}
         style={styles.input}
       />
       <Button
         mode="contained"
         style={styles.button}
-        onPress={handleSaveProfile}>
+        onPress={() => {
+          handleSaveProfile();
+          navigation.navigate('Home');
+        }}>
         Save Profile
       </Button>
     </View>
@@ -143,14 +185,26 @@ const Profile = () => {
           />
           <TextInput
             label="Pet Type"
-            value={pet.type}
-            onChangeText={text => handlePetChange(index, 'type', text)}
+            value={pet.species}
+            onChangeText={text => handlePetChange(index, 'species', text)}
+            style={styles.input}
+          />
+          <TextInput
+            label="Pet Breed"
+            value={pet.breed}
+            onChangeText={text => handlePetChange(index, 'breed', text)}
             style={styles.input}
           />
           <TextInput
             label="Pet Age"
             value={pet.age}
             onChangeText={text => handlePetChange(index, 'age', text)}
+            style={styles.input}
+          />
+          <TextInput
+            label="Pet Gender"
+            value={pet.gender}
+            onChangeText={text => handlePetChange(index, 'gender', text)}
             style={styles.input}
           />
         </View>
@@ -160,7 +214,7 @@ const Profile = () => {
         onPress={() =>
           setProfileData({
             ...profileData,
-            pets: [...profileData.pets, {name: '', type: '', age: ''}],
+            pets: [...profileData.pets, { name: '', type: '', age: '' }],
           })
         }
         style={styles.button}>
@@ -183,7 +237,7 @@ const Profile = () => {
         onChangeText={text =>
           setProfileData({
             ...profileData,
-            otherInfo: {...profileData.otherInfo, favoriteHobby: text},
+            otherInfo: { ...profileData.otherInfo, favoriteHobby: text },
           })
         }
         style={styles.input}
@@ -194,7 +248,7 @@ const Profile = () => {
         onChangeText={text =>
           setProfileData({
             ...profileData,
-            otherInfo: {...profileData.otherInfo, favoriteFood: text},
+            otherInfo: { ...profileData.otherInfo, favoriteFood: text },
           })
         }
         style={styles.input}
@@ -209,20 +263,22 @@ const Profile = () => {
   );
 
   return (
-    <ScrollView style={styles.container}>
-      <SegmentedButtons
-        value={selectedSegment}
-        onValueChange={setSelectedSegment}
-        buttons={[
-          {value: 'user', label: 'User Info'},
-          {value: 'pets', label: 'Pets'},
-          {value: 'other', label: 'Other'},
-        ]}
-      />
-      {selectedSegment === 'user' && renderUserInfo()}
-      {selectedSegment === 'pets' && renderPetInfo()}
-      {selectedSegment === 'other' && renderOtherInfo()}
-    </ScrollView>
+    <SafeAreaProvider>
+      <ScrollView style={styles.container}>
+        <SegmentedButtons
+          value={selectedSegment}
+          onValueChange={setSelectedSegment}
+          buttons={[
+            { value: 'user', label: 'User Info' },
+            { value: 'pets', label: 'Pets' },
+            { value: 'other', label: 'Other' },
+          ]}
+        />
+        {selectedSegment === 'user' && renderUserInfo()}
+        {selectedSegment === 'pets' && renderPetInfo()}
+        {selectedSegment === 'other' && renderOtherInfo()}
+      </ScrollView>
+    </SafeAreaProvider>
   );
 };
 

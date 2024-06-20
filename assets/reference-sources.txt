@@ -5,3 +5,5 @@ https://reactnative.dev/
 https://rnfirebase.io/
 https://callstack.github.io/react-native-paper/
 https://firebase.google.com/docs
+https://www.npmjs.com/package/react-native-google-places-autocomplete
+https://www.npmjs.com/package/@react-native-community/datetimepicker

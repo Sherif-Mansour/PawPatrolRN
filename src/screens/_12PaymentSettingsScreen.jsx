@@ -1,18 +1,19 @@
 // screens/PaymentSettingsScreen.js
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, FlatList} from 'react-native';
 
 const paymentMethods = [
-  { id: '1', method: 'Credit Card' },
-  { id: '2', method: 'PayPal' },
-  { id: '3', method: 'Bank Transfer' },
+  {id: '1', method: 'Credit Card'},
+  {id: '2', method: 'PayPal'},
+  {id: '3', method: 'Bank Transfer'},
 ];
 
-
-const PaymentSettingsScreen = ({ navigation }) => {
-  const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={()=> navigation.navigate("PaymentForm")} style={styles.paymentMethod}>
+const PaymentSettingsScreen = ({navigation}) => {
+  const renderItem = ({item}) => (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('AddPaymentInfo')}
+      style={styles.paymentMethod}>
       <Text>{item.method}</Text>
     </TouchableOpacity>
   );
@@ -34,7 +35,6 @@ const PaymentSettingsScreen = ({ navigation }) => {
       <TouchableOpacity style={styles.button}>
         <Text style={styles.buttonText}>Add Payment Method</Text>
       </TouchableOpacity>
-
     </View>
   );
 };
