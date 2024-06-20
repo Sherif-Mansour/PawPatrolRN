@@ -13,19 +13,27 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Profile = ({ navigation }) => {
   const theme = useTheme();
-  const {user, createOrUpdateProfile, fetchUserProfile, uploadImage} =
+  const { user, createOrUpdateProfile, fetchUserProfile, uploadImage } =
     useUser();
   const [selectedSegment, setSelectedSegment] = useState('user');
   const [selectedPetIndex, setSelectedPetIndex] = useState(0);
   const [profileData, setProfileData] = useState({
-    name: '',
+    email: user.email,
+    firstName: '',
+    lastName: '',
+    age: '',
+    phoneNo: '',
+    address: '',
+    occupation: '',
     bio: '',
     profilePicture: '',
     pets: [
       {
         name: '',
+        species: '',
         breed: '',
         age: '',
+        gender: ''
       },
     ],
     otherInfo: {
@@ -112,9 +120,39 @@ const Profile = ({ navigation }) => {
         Select Profile Picture
       </Button>
       <TextInput
-        label="Name"
-        value={profileData.name}
-        onChangeText={text => setProfileData({ ...profileData, name: text })}
+        label="Email"
+        value={user.email}
+        disabled={true}
+        style={styles.input}
+      />
+      <TextInput
+        label="First Name"
+        value={profileData.firstName}
+        onChangeText={text => setProfileData({ ...profileData, firstName: text })}
+        style={styles.input}
+      />
+      <TextInput
+        label="Last Name"
+        value={profileData.lastName}
+        onChangeText={text => setProfileData({ ...profileData, lastName: text })}
+        style={styles.input}
+      />
+      <TextInput
+        label="Age"
+        value={profileData.age}
+        onChangeText={text => setProfileData({ ...profileData, age: text })}
+        style={styles.input}
+      />
+      <TextInput
+        label="Address"
+        value={profileData.address}
+        onChangeText={text => setProfileData({ ...profileData, address: text })}
+        style={styles.input}
+      />
+      <TextInput
+        label="Occupation"
+        value={profileData.occupation}
+        onChangeText={text => setProfileData({ ...profileData, occupation: text })}
         style={styles.input}
       />
       <TextInput
@@ -128,7 +166,7 @@ const Profile = ({ navigation }) => {
         style={styles.button}
         onPress={() => {
           handleSaveProfile();
-          navigation.navigate('Account');
+          navigation.navigate('Home');
         }}>
         Save Profile
       </Button>
@@ -147,14 +185,26 @@ const Profile = ({ navigation }) => {
           />
           <TextInput
             label="Pet Type"
-            value={pet.type}
-            onChangeText={text => handlePetChange(index, 'type', text)}
+            value={pet.species}
+            onChangeText={text => handlePetChange(index, 'species', text)}
+            style={styles.input}
+          />
+          <TextInput
+            label="Pet Breed"
+            value={pet.breed}
+            onChangeText={text => handlePetChange(index, 'breed', text)}
             style={styles.input}
           />
           <TextInput
             label="Pet Age"
             value={pet.age}
             onChangeText={text => handlePetChange(index, 'age', text)}
+            style={styles.input}
+          />
+          <TextInput
+            label="Pet Gender"
+            value={pet.gender}
+            onChangeText={text => handlePetChange(index, 'gender', text)}
             style={styles.input}
           />
         </View>
