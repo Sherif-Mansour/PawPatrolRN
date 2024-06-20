@@ -121,9 +121,11 @@ const AppNavigator = () => {
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen
-          name="Ad" // Add the Ad screen to the stack navigator for editing
+          name="Ad"
           component={Ad}
-
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
           name="BookAppointment"
           component={BookAppointmentScreen}
           options={{header: () => <AppHeader showBackButton={true} />}}
