@@ -16,7 +16,7 @@ const theme = {
 const App = () => {
   return (
     <SafeAreaProvider>
-      <StripeProvider publishableKey="your-publishable-key-here">
+      <StripeProvider publishableKey="pk_test_51PTe3CFj066HqjnDgJz05WTDNEpUTHQoQUJMHLrErGJyHg89uy71MyuHZaco5NqXCwE8LF865yl7BCR7AStnepce00Ob23M6yw">
         <PaperProvider theme={theme}>
           <UserProvider>
             <AppNavigator />
