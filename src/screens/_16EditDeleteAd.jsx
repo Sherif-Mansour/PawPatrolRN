@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
@@ -9,12 +9,13 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
-import { useUser } from '../../utils/UserContext';
-import { useTheme, Card, Button } from 'react-native-paper';
+import {useUser} from '../../utils/UserContext';
+import {useTheme, Card, Button} from 'react-native-paper';
 
-const EditDeleteAd = ({ navigation }) => {
+const EditDeleteAd = ({navigation}) => {
   const theme = useTheme();
-  const { user, ads, fetchUserAds, deleteAd, loadingUserAds } = useUser();
+  const {user, ads, fetchUserAds, deleteAd, loadingUserAds, setCurrentAd} =
+    useUser();
 
   useEffect(() => {
     if (user) {
@@ -24,7 +25,7 @@ const EditDeleteAd = ({ navigation }) => {
 
   const handleDeleteAd = async adId => {
     Alert.alert('Delete Ad', 'Are you sure you want to delete this ad?', [
-      { text: 'Cancel', style: 'cancel' },
+      {text: 'Cancel', style: 'cancel'},
       {
         text: 'Delete',
         style: 'destructive',
@@ -33,15 +34,21 @@ const EditDeleteAd = ({ navigation }) => {
     ]);
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate('Ad', { ad: item })}
-    >
+  const handleEditAd = ad => {
+    setCurrentAd(ad); // Set the current ad in the context
+    navigation.navigate('Ad'); // Navigate to the Ad screen
+  };
+
+  const renderItem = ({item}) => (
+    <TouchableOpacity onPress={() => handleEditAd(item)}>
       <Card style={styles.adContainer}>
         {item.picture ? (
-          <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+          <Card.Cover source={{uri: item.picture}} style={styles.adImage} />
         ) : (
-          <Image source={require('../../assets/images/OIP.jpeg')} style={styles.adImage} />
+          <Image
+            source={require('../../assets/images/OIP.jpeg')}
+            style={styles.adImage}
+          />
         )}
         <Card.Title
           titleStyle={styles.adTitle}
@@ -58,7 +65,7 @@ const EditDeleteAd = ({ navigation }) => {
           <Button
             mode="contained"
             style={styles.editButton}
-            onPress={() => navigation.navigate('Ad', { ad: item })}>
+            onPress={() => handleEditAd(item)}>
             Edit
           </Button>
           <Button
@@ -143,6 +150,3 @@ const EditDeleteAd = ({ navigation }) => {
 };
 
 export default EditDeleteAd;
-
-// read document from firebase for firestore security rules
-// https://firebase.google.com/docs/firestore/security/rules-structure

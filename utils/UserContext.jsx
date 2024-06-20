@@ -18,6 +18,7 @@ export const UserProvider = ({children}) => {
   const [email, setEmail] = useState(null);
   const [ads, setAds] = useState([]);
   const [favorites, setFavorites] = useState([]);
+  const [currentAd, setCurrentAd] = useState(null);
 
   const resetLoadingStates = () => {
     setLoading(true);
@@ -523,6 +524,8 @@ export const UserProvider = ({children}) => {
         sendMultimediaMessage,
         fetchUserChats,
         createChat,
+        currentAd,
+        setCurrentAd,
       }}>
       {children}
     </UserContext.Provider>
