@@ -22,7 +22,7 @@ const categories = [
   'Training',
   'Veterinary',
   'Sitting',
-  'Pet Food',
+  'Pet Food', 
   'Pet Toys',
   'Pet Accessories',
   'Pet Adoption',
