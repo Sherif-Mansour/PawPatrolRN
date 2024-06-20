@@ -10,6 +10,7 @@ import {
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { useUser } from '../../utils/UserContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const Profile = ({ navigation }) => {
   const theme = useTheme();
@@ -122,7 +123,7 @@ const Profile = ({ navigation }) => {
       <TextInput
         label="Email"
         value={user.email}
-        disabled={true}
+        onChangeText={text => setProfileData({ ...profileData, email: text})}
         style={styles.input}
       />
       <TextInput
@@ -131,6 +132,7 @@ const Profile = ({ navigation }) => {
         onChangeText={text => setProfileData({ ...profileData, firstName: text })}
         style={styles.input}
       />
+
       <TextInput
         label="Last Name"
         value={profileData.lastName}
@@ -141,6 +143,12 @@ const Profile = ({ navigation }) => {
         label="Age"
         value={profileData.age}
         onChangeText={text => setProfileData({ ...profileData, age: text })}
+        style={styles.input}
+      />
+      <TextInput
+        label="Phone Number"
+        value={profileData.phoneNo}
+        onChangeText={text => setProfileData({ ...profileData, phoneNo: text })}
         style={styles.input}
       />
       <TextInput
