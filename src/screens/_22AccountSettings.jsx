@@ -51,7 +51,7 @@ const AccountSettings = ({ navigation }) => {
                                 </Card.Actions>
                             </Card>
                         ) : (
-                            <Text>Loading profile...</Text>
+                            <MyCustomButton onPress={() => navigation.navigate('Profile')} label="Create Profile Now!" />
                         )}
                         <Divider style={styles.divider} />
                     </View>
