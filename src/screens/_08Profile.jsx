@@ -10,6 +10,7 @@ import {
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { useUser } from '../../utils/UserContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const Profile = ({ navigation }) => {
   const theme = useTheme();
