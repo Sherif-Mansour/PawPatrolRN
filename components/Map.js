@@ -28,7 +28,7 @@ const Map = () => {
 const styles = StyleSheet.create({
     container: {
         width: '100%',
-        height: 350, // Define a fixed height for the map
+        height: 350,
     },
     map: {
         ...StyleSheet.absoluteFillObject,
