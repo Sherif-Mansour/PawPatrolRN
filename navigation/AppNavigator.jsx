@@ -21,6 +21,8 @@ import LocationScreen from './../src/screens/_18LocationScreen';
 import AdDetailsScreen from '../src/screens/_19AdDetailScreen';
 import InquirySubmissionScreen from '../src/screens/_21InquirySubmissionScreen';
 import IndividualChat from '../src/screens/_20IndividualChat';
+import BookAppointmentScreen from '../src/screens/_22BookAppointment';
+import PendingAppointmentsScreen from '../src/screens/_23PendingApprovals';
 
 const Stack = createStackNavigator();
 
@@ -111,6 +113,16 @@ const AppNavigator = () => {
         <Stack.Screen
           name="IndividualChat"
           component={IndividualChat}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="BookAppointment"
+          component={BookAppointmentScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="PendingAppointments"
+          component={PendingAppointmentsScreen}
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
       </Stack.Navigator>
