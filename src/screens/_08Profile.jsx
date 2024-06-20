@@ -19,8 +19,7 @@ const Profile = ({ navigation }) => {
   const [selectedSegment, setSelectedSegment] = useState('user');
   const [selectedPetIndex, setSelectedPetIndex] = useState(0);
   const [profileData, setProfileData] = useState({
-    authEmail: user.email,
-    email: '',
+    email: user.email,
     firstName: '',
     lastName: '',
     age: '',
@@ -123,11 +122,8 @@ const Profile = ({ navigation }) => {
       </Button>
       <TextInput
         label="Email"
-        value={profileData.authEmail}
-        onChangeText={text => {
-          setProfileData({ ...profileData, email: text });
-          setProfileData({ ...profileData, authEmail: text});
-        }}
+        value={user.email}
+        onChangeText={text => setProfileData({ ...profileData, email: text})}
         style={styles.input}
       />
       <TextInput
