@@ -7,13 +7,13 @@ import {
   Alert,
   TouchableOpacity,
   Image,
+  FlatList,
 } from 'react-native';
 import {Button, useTheme} from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {useUser} from '../../utils/UserContext';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
-import {FlatList} from 'react-native';
 
 const categories = [
   'Grooming',
@@ -29,57 +29,48 @@ const categories = [
   'Other',
 ];
 
-const Ad = ({navigation, route}) => {
+const Ad = ({navigation}) => {
   const theme = useTheme();
-  const {createOrUpdateAd, uploadImage} = useUser();
-  const adId = route.params?.ad?.id;
+  const {createOrUpdateAd, uploadImage, currentAd, setCurrentAd} = useUser();
 
-  const [title, setTitle] = useState('');
-  const [price, setPrice] = useState('');
-  const [description, setDescription] = useState('');
-  const [pictures, setPictures] = useState([]);
-  const [mainPicture, setMainPicture] = useState('');
-  const [services, setServices] = useState([]);
-  const [address, setAddress] = useState('');
-  const [category, setCategory] = useState(categories[0]);
-  const [serviceHours, setServiceHours] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
+  const [title, setTitle] = useState(currentAd?.title || '');
+  const [price, setPrice] = useState(currentAd?.price || '');
+  const [description, setDescription] = useState(currentAd?.description || '');
+  const [pictures, setPictures] = useState(currentAd?.pictures || []);
+  const [mainPicture, setMainPicture] = useState(currentAd?.mainPicture || '');
+  const [services, setServices] = useState(currentAd?.services || []);
+  const [address, setAddress] = useState(currentAd?.address || '');
+  const [category, setCategory] = useState(
+    currentAd?.category || categories[0],
+  );
+  const [serviceHours, setServiceHours] = useState(
+    currentAd?.serviceHours || '',
+  );
+  const [expiryDate, setExpiryDate] = useState(currentAd?.expiryDate || '');
   const [isExpiryDatePickerVisible, setExpiryDatePickerVisibility] =
     useState(false);
 
   useEffect(() => {
-    if (route.params?.ad) {
-      const {
-        title,
-        price,
-        description,
-        pictures,
-        mainPicture,
-        services,
-        address,
-        category,
-        serviceHours,
-        expiryDate,
-      } = route.params.ad;
-      setTitle(title);
-      setPrice(price);
-      setDescription(description);
-      setPictures(pictures);
-      setMainPicture(mainPicture);
-      setServices(services);
-      setAddress(address);
-      setCategory(category || categories[0]);
-      setServiceHours(serviceHours);
-      setExpiryDate(expiryDate || '');
+    if (currentAd) {
+      setTitle(currentAd.title);
+      setPrice(currentAd.price);
+      setDescription(currentAd.description);
+      setPictures(currentAd.pictures);
+      setMainPicture(currentAd.mainPicture);
+      setServices(currentAd.services);
+      setAddress(currentAd.address);
+      setCategory(currentAd.category || categories[0]);
+      setServiceHours(currentAd.serviceHours);
+      setExpiryDate(currentAd.expiryDate || '');
     }
-  }, [route.params?.ad]);
+  }, [currentAd]);
 
   const saveAd = async () => {
     const trimmedAddress = address.trim();
 
     if (title && price && trimmedAddress && services.length > 0 && category) {
       const adData = {
-        id: adId,
+        id: currentAd?.id,
         title,
         price,
         description,
@@ -94,7 +85,8 @@ const Ad = ({navigation, route}) => {
       try {
         await createOrUpdateAd(adData);
         Alert.alert('Success', 'Your ad has been saved successfully');
-        navigation.navigate('Home'); // Navigate back to the home screen
+        setCurrentAd(null); // Clear current ad after saving
+        navigation.navigate('Home');
       } catch (error) {
         Alert.alert('Error', 'There was an error saving your ad');
         console.error('Error saving ad:', error);
@@ -120,8 +112,8 @@ const Ad = ({navigation, route}) => {
     });
   };
 
-  const renderCategoryButtons = () => {
-    return categories.map(cat => (
+  const renderCategoryButtons = () =>
+    categories.map(cat => (
       <TouchableOpacity
         key={cat}
         style={[
@@ -138,7 +130,6 @@ const Ad = ({navigation, route}) => {
         </Text>
       </TouchableOpacity>
     ));
-  };
 
   const showExpiryDatePicker = () => {
     setExpiryDatePickerVisibility(true);
@@ -250,7 +241,7 @@ const Ad = ({navigation, route}) => {
     },
     rowContainer: {
       flexDirection: 'row',
-      justifyContent: 'space-evenly',
+      justifyContent: 'space-between',
       alignItems: 'center',
     },
     labelContainer: {
