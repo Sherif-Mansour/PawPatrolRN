@@ -33,7 +33,7 @@ const AppHeader = ({showBackButton}) => {
         icon="account-circle"
         size={36}
         color={theme.colors.onPrimary}
-        onPress={() => navigation.navigate('Profile')}
+        onPress={() => navigation.navigate('Account')}
       />
     </Appbar.Header>
   );
