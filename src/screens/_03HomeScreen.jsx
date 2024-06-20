@@ -17,8 +17,10 @@ import {
   Button,
   Card,
   Text,
+  Modal,
 } from 'react-native-paper';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const categories = [
   'All',
@@ -185,6 +187,8 @@ const HomeScreen = ({ navigation }) => {
   }
 
   return (
+    <SafeAreaProvider>
+      <Modal />
     <View style={styles.container}>
       <View style={{ flexDirection: 'row' }}>
         <Button
@@ -230,6 +234,7 @@ const HomeScreen = ({ navigation }) => {
         }
       />
     </View>
+    </SafeAreaProvider>
   );
 };
 
