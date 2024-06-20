@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import MyTextInput from '../../components/MyTextInput';
 import SocialMedia from '../../components/SocialMedia';
-import auth from '@react-native-firebase/auth';
 import {Button, useTheme} from 'react-native-paper';
 import {useUser} from '../../utils/UserContext';
 
@@ -49,28 +48,26 @@ const SignUpScreen = ({navigation}) => {
           />
         </View>
 
-        {/* <Text style={styles.title}>PetPal</Text> */}
-
         <View style={[styles.inputsContainer]}>
           <MyTextInput
             value={email}
             onChangeText={text => setEmail(text)}
             placeholder="Enter Email"
-            style={styles.input} // Apply styles from the theme
+            style={styles.input}
           />
           <MyTextInput
             value={password}
             onChangeText={text => setPassword(text)}
             placeholder="Enter Password"
             secureTextEntry={true}
-            style={styles.input} // Apply styles from the theme
+            style={styles.input}
           />
           <MyTextInput
             value={confirmPassword}
             onChangeText={text => setConfirmPassword(text)}
             placeholder="Confirm Password"
             secureTextEntry={true}
-            style={styles.input} // Apply styles from the theme
+            style={styles.input}
           />
 
           <Button mode="contained" buttonColor="#009B7D" onPress={handleSignUp}>

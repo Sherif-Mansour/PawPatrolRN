@@ -1,76 +1,139 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Image, StyleSheet } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import AppHeader from '../../components/Header';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
+import { useUser } from '../../utils/UserContext';
+import { Card, Text, Button, useTheme } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/Ionicons';
 
-const UsersList = () => {
+const FavoritesScreen = ({ navigation }) => {
+  const theme = useTheme();
+  const {
+    favorites,
+    ads,
+    handleAddToFavorites,
+    loadingAllAds,
+    fetchUserFavorites,
+    loadingFavorites,
+  } = useUser();
+  const [favoriteAds, setFavoriteAds] = useState([]);
 
-  const [users, setUsers] = useState([
-    { id: '1', username: 'user1', name: 'User One', profileImage: 'https://via.placeholder.com/100' },
-    { id: '2', username: 'user2', name: 'User Two', profileImage: 'https://via.placeholder.com/100' },
-    { id: '3', username: 'user3', name: 'User Three', profileImage: 'https://via.placeholder.com/100' },
-    // Add more users as needed
-  ]);
+  useEffect(() => {
+    const loadFavorites = async () => {
+      await fetchUserFavorites();
+    };
+    loadFavorites();
+  }, []);
 
-  const renderUserItem = ({ item }) => (
-    <View style={styles.itemContainer}>
-      <Image source={{ uri: item.profileImage }} style={styles.profileImage} />
-      <View style={styles.textContainer}>
-        <Text style={styles.nameText}>{item.name}</Text>
-        <Text style={styles.usernameText}>@{item.username}</Text>
-      </View>
-    </View>
+  useEffect(() => {
+    if (ads.length > 0) {
+      const favAds = ads.filter(ad => favorites.includes(ad.id));
+      setFavoriteAds(favAds);
+    }
+  }, [favorites, ads]);
+
+  const renderAd = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('AdDetails', { ad: item })}
+    >
+      <Card style={styles.adContainer}>
+        {item.picture ? (
+          <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+        ) : (
+          <Image source={require('../../assets/images/OIP.jpeg')} style={styles.adImage} />
+        )}
+        <Card.Title
+          titleStyle={styles.adTitle}
+          title={item.title}
+          subtitle={`Rating: ${item.rating || 'N/A'}`}
+          subtitleStyle={styles.adTitle}
+        />
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => handleAddToFavorites(item.id)}>
+          <Icon
+            name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
+            size={24}
+            color="#ff0000"
+          />
+        </TouchableOpacity>
+      </Card>
+    </TouchableOpacity>
   );
 
-  return (
-    <SafeAreaProvider>
-      <View style={styles.container}>
-       {users.map((user)=>renderUserItem({item:user}))}
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+      paddingTop: 5,
+      backgroundColor: '#FFF3D6',
+    },
+    headerText: {
+      fontSize: 32,
+      color: 'black',
+    },
+    adContainer: {
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      paddingTop: 5,
+      marginBottom: 10,
+      position: 'relative',
+      backgroundColor: theme.colors.secondaryContainer,
+    },
+    adImage: {
+      height: 200,
+      width: '90%',
+      alignSelf: 'center',
+    },
+    adTitle: {
+      fontWeight: 'bold',
+      color: theme.colors.onPrimaryContainer,
+    },
+    favoriteButton: {
+      position: 'absolute',
+      bottom: 10,
+      right: 10,
+    },
+    noFavoritesText: {
+      textAlign: 'center',
+      marginTop: 20,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  });
+
+  if (loadingAllAds || loadingFavorites) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
-    </SafeAreaProvider>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerText}>Favorites</Text>
+      </View>
+      {favoriteAds.length > 0 ? (
+        <FlatList
+          data={favoriteAds}
+          renderItem={renderAd}
+          keyExtractor={item => item.id}
+        />
+      ) : (
+        <Text style={styles.noFavoritesText}>No favorites added yet.</Text>
+      )}
+    </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding:10,
-    width:'100%',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-  },
-  listContent: {
-    padding: 16,
-  },
-  itemContainer: {
-    flexDirection: 'row',
-    width:"100%",
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'black',
-    padding: 16,
-    marginVertical: 8,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    width: '100%',
-  },
-  profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 16,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  nameText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  usernameText: {
-    fontSize: 14,
-    color: 'gray',
-  },
-});
-
-export default UsersList;
+export default FavoritesScreen;
