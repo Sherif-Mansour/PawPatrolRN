@@ -307,7 +307,7 @@ const Ad = ({navigation}) => {
                   console.log('Selected address:', fullAddress);
                 }}
                 query={{
-                  key: 'AIzaSyDlNi1nl06y1rcUF00ogB5t0ZPrr0PKASg',
+                  key: 'AIzaSyBMmlNExl86zceWTM0vfYKEkY1HJ-neIWk',
                   language: 'en',
                 }}
                 styles={{
