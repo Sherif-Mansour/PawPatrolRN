@@ -6,9 +6,14 @@ import {
   StyleSheet,
   Alert,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import {Button, useTheme} from 'react-native-paper';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {useUser} from '../../utils/UserContext';
+import {launchImageLibrary} from 'react-native-image-picker';
+import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
+import {FlatList} from 'react-native';
 
 const categories = [
   'Grooming',
@@ -17,42 +22,74 @@ const categories = [
   'Training',
   'Veterinary',
   'Sitting',
+  'Pet Food',
+  'Pet Toys',
+  'Pet Accessories',
+  'Pet Adoption',
+  'Other',
 ];
 
 const Ad = ({navigation, route}) => {
   const theme = useTheme();
-  const {createOrUpdateAd} = useUser();
+  const {createOrUpdateAd, uploadImage} = useUser();
+  const adId = route.params?.ad?.id;
+
   const [title, setTitle] = useState('');
+  const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
   const [pictures, setPictures] = useState([]);
+  const [mainPicture, setMainPicture] = useState('');
   const [services, setServices] = useState([]);
   const [address, setAddress] = useState('');
   const [category, setCategory] = useState(categories[0]);
-  const adId = route.params?.ad?.id;
+  const [serviceHours, setServiceHours] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [isExpiryDatePickerVisible, setExpiryDatePickerVisibility] =
+    useState(false);
 
   useEffect(() => {
     if (route.params?.ad) {
-      const {title, description, pictures, services, address, category} =
-        route.params.ad;
+      const {
+        title,
+        price,
+        description,
+        pictures,
+        mainPicture,
+        services,
+        address,
+        category,
+        serviceHours,
+        expiryDate,
+      } = route.params.ad;
       setTitle(title);
+      setPrice(price);
       setDescription(description);
       setPictures(pictures);
+      setMainPicture(mainPicture);
       setServices(services);
       setAddress(address);
       setCategory(category || categories[0]);
+      setServiceHours(serviceHours);
+      setExpiryDate(expiryDate || '');
     }
   }, [route.params?.ad]);
 
   const saveAd = async () => {
-    if (title && description && address && services.length > 0 && category) {
+    const trimmedAddress = address.trim();
+
+    if (title && price && trimmedAddress && services.length > 0 && category) {
       const adData = {
         id: adId,
         title,
+        price,
         description,
         pictures,
+        mainPicture,
         services,
-        address,
+        address: trimmedAddress,
         category,
+        serviceHours,
+        expiryDate,
       };
       try {
         await createOrUpdateAd(adData);
@@ -63,8 +100,24 @@ const Ad = ({navigation, route}) => {
         console.error('Error saving ad:', error);
       }
     } else {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Error', 'Please fill in all required fields');
     }
+  };
+
+  const handleSelectImage = () => {
+    launchImageLibrary({}, async response => {
+      if (response.assets && response.assets.length > 0) {
+        const newPictures = [];
+        for (const asset of response.assets) {
+          const downloadUrl = await uploadImage(asset.uri);
+          if (downloadUrl) {
+            newPictures.push(downloadUrl);
+          }
+        }
+        setPictures([...pictures, ...newPictures]);
+        if (!mainPicture) setMainPicture(newPictures[0]);
+      }
+    });
   };
 
   const renderCategoryButtons = () => {
@@ -87,21 +140,44 @@ const Ad = ({navigation, route}) => {
     ));
   };
 
+  const showExpiryDatePicker = () => {
+    setExpiryDatePickerVisibility(true);
+  };
+
+  const hideExpiryDatePicker = () => {
+    setExpiryDatePickerVisibility(false);
+  };
+
+  const handleExpiryConfirm = (event, date) => {
+    if (date) {
+      setExpiryDate(date.toISOString().split('T')[0]);
+    }
+    hideExpiryDatePicker();
+  };
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: 'white',
+      padding: 16,
+      backgroundColor: '#FFF3D6',
     },
     inputsContainer: {
-      backgroundColor: '#003d4d',
+      backgroundColor: theme.colors.secondaryContainer,
       padding: 20,
-      margin: 20,
-      marginTop: 50,
       borderRadius: 10,
     },
     label: {
-      color: 'white',
+      color: 'black',
       marginBottom: 5,
+    },
+    requiredLabel: {
+      color: 'black',
+      marginBottom: 5,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    requiredStar: {
+      color: 'red',
     },
     input: {
       backgroundColor: 'white',
@@ -129,57 +205,221 @@ const Ad = ({navigation, route}) => {
     selectedCategoryButtonText: {
       fontWeight: 'bold',
     },
+    button: {
+      marginBottom: 20,
+      marginTop: 20,
+    },
+    image: {
+      width: 100,
+      height: 100,
+      marginRight: 10,
+      borderWidth: 2,
+    },
+    mainImage: {
+      borderColor: 'green',
+    },
+    note: {
+      color: 'black',
+      fontSize: 12,
+      marginBottom: 15,
+    },
+    selectButton: {
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      borderRadius: 20,
+      marginTop: 10,
+    },
+    selectButtonLabel: {
+      color: theme.colors.primary,
+    },
+    expiryDateText: {
+      backgroundColor: 'white',
+      padding: 10,
+      borderRadius: 5,
+      textAlign: 'center',
+      marginTop: 10,
+    },
+    addressContainer: {
+      marginBottom: 10,
+    },
+    title: {
+      fontSize: 32,
+      fontWeight: 'bold',
+      color: 'black',
+      backgroundColor: theme.colors.secondaryContainer,
+    },
+    rowContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-evenly',
+      alignItems: 'center',
+    },
+    labelContainer: {
+      flex: 1,
+      marginRight: 10,
+    },
   });
 
   return (
-    <View style={styles.container}>
-      <View style={styles.inputsContainer}>
-        <Text style={styles.label}>Title</Text>
-        <TextInput style={styles.input} value={title} onChangeText={setTitle} />
-        <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={styles.input}
-          value={description}
-          onChangeText={setDescription}
-          multiline
-        />
-        <Text style={styles.label}>Pictures (URLs)</Text>
-        <TextInput
-          style={styles.input}
-          value={pictures.join('\n')}
-          onChangeText={text => setPictures(text.split('\n'))}
-          multiline
-        />
-        <Text style={styles.label}>Services Offered & Prices</Text>
-        <TextInput
-          style={styles.input}
-          value={services.join('\n')}
-          onChangeText={text => setServices(text.split('\n'))}
-          multiline
-        />
-        <Text style={styles.label}>Address</Text>
-        <TextInput
-          style={styles.input}
-          value={address}
-          onChangeText={setAddress}
-        />
-        <Text style={styles.label}>Category</Text>
-        <View style={styles.categoriesContainer}>
-          {renderCategoryButtons()}
-        </View>
-        <Button
-          mode="contained"
-          buttonColor="#FFBF5D"
-          contentStyle={{width: '100%'}}
-          onPress={saveAd}>
-          Save Ad
-        </Button>
-      </View>
-    </View>
+    <FlatList
+      ListHeaderComponent={
+        <>
+          <Text style={styles.title}>Post Listing Details:</Text>
+          <View style={styles.inputsContainer}>
+            <View style={styles.requiredLabel}>
+              <Text style={styles.label}>Category</Text>
+              <Text style={styles.requiredStar}>*</Text>
+            </View>
+            <View style={styles.categoriesContainer}>
+              {renderCategoryButtons()}
+            </View>
+            <View style={styles.requiredLabel}>
+              <Text style={styles.label}>Title</Text>
+              <Text style={styles.requiredStar}>*</Text>
+            </View>
+            <TextInput
+              style={styles.input}
+              value={title}
+              onChangeText={setTitle}
+              maxLength={100}
+              placeholder="Enter title"
+            />
+            <View style={styles.requiredLabel}>
+              <Text style={styles.label}>Price</Text>
+              <Text style={styles.requiredStar}>*</Text>
+            </View>
+            <TextInput
+              style={styles.input}
+              value={price}
+              onChangeText={setPrice}
+              placeholder="e.g. 50, TBD, Contact for more info"
+            />
+            <Text style={styles.label}>Description</Text>
+            <TextInput
+              style={styles.input}
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              placeholder="Enter description"
+            />
+            <View style={styles.requiredLabel}>
+              <Text style={styles.label}>Address</Text>
+              <Text style={styles.requiredStar}>*</Text>
+            </View>
+            <View style={styles.addressContainer}>
+              <GooglePlacesAutocomplete
+                placeholder="Search for an address"
+                onPress={(data, details = null) => {
+                  const fullAddress = details
+                    ? details.formatted_address
+                    : data.description;
+                  setAddress(fullAddress);
+                  console.log('Selected address:', fullAddress);
+                }}
+                query={{
+                  key: 'AIzaSyDlNi1nl06y1rcUF00ogB5t0ZPrr0PKASg',
+                  language: 'en',
+                }}
+                styles={{
+                  textInput: styles.input,
+                }}
+                fetchDetails={true}
+                textInputProps={{
+                  value: address,
+                  onChangeText: text => setAddress(text),
+                }}
+                debounce={200}
+                enablePoweredByContainer={false}
+                keyboardShouldPersistTaps="always"
+              />
+            </View>
+            <View style={styles.rowContainer}>
+              <Text style={[styles.label, styles.labelContainer]}>
+                Pictures
+              </Text>
+              <Button
+                onPress={handleSelectImage}
+                style={styles.selectButton}
+                labelStyle={styles.selectButtonLabel}>
+                Select Pictures
+              </Button>
+            </View>
+            <Text style={styles.note}>
+              Tap an image to select it as the main picture:
+            </Text>
+            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+              {pictures.map((pic, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => setMainPicture(pic)}>
+                  <Image
+                    source={{uri: pic}}
+                    style={[
+                      styles.image,
+                      mainPicture === pic && styles.mainImage,
+                    ]}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={styles.requiredLabel}>
+              <Text style={styles.label}>Services Offered & Prices</Text>
+              <Text style={styles.requiredStar}>*</Text>
+            </View>
+            <TextInput
+              style={styles.input}
+              value={services.join('\n')}
+              onChangeText={text => setServices(text.split('\n'))}
+              multiline
+              placeholder="Enter services and prices"
+            />
+            <Text style={styles.label}>Service Hours</Text>
+            <TextInput
+              style={styles.input}
+              value={serviceHours}
+              onChangeText={setServiceHours}
+              placeholder="e.g. 9am - 5pm"
+            />
+            <View style={styles.rowContainer}>
+              <Text style={[styles.label, styles.labelContainer]}>
+                Listing Expiry Date
+              </Text>
+              <Button
+                onPress={showExpiryDatePicker}
+                style={styles.selectButton}
+                labelStyle={styles.selectButtonLabel}>
+                Select Expiry Date
+              </Button>
+            </View>
+            {isExpiryDatePickerVisible && (
+              <DateTimePicker
+                value={new Date()}
+                mode="date"
+                display="default"
+                onChange={handleExpiryConfirm}
+              />
+            )}
+            <TextInput
+              style={[styles.input, styles.expiryDateText]}
+              value={expiryDate}
+              editable={false}
+              placeholder="Selected Expiry Date"
+            />
+            <Button
+              mode="contained"
+              buttonColor="#FFBF5D"
+              contentStyle={{width: '100%'}}
+              onPress={saveAd}
+              style={styles.button}>
+              Save Ad
+            </Button>
+          </View>
+        </>
+      }
+      data={[]}
+      renderItem={null}
+      keyExtractor={() => 'dummy-key'}
+    />
   );
 };
 
 export default Ad;
-
-// watched youtube video for firebase
-// https://www.youtube.com/watch?v=2hR-uWjBAgw
