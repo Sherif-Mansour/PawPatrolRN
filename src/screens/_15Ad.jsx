@@ -7,13 +7,13 @@ import {
   Alert,
   TouchableOpacity,
   Image,
-  FlatList,
 } from 'react-native';
 import {Button, useTheme} from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {useUser} from '../../utils/UserContext';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
+import {FlatList} from 'react-native';
 
 const categories = [
   'Grooming',
@@ -33,20 +33,16 @@ const Ad = ({navigation}) => {
   const theme = useTheme();
   const {createOrUpdateAd, uploadImage, currentAd, setCurrentAd} = useUser();
 
-  const [title, setTitle] = useState(currentAd?.title || '');
-  const [price, setPrice] = useState(currentAd?.price || '');
-  const [description, setDescription] = useState(currentAd?.description || '');
-  const [pictures, setPictures] = useState(currentAd?.pictures || []);
-  const [mainPicture, setMainPicture] = useState(currentAd?.mainPicture || '');
-  const [services, setServices] = useState(currentAd?.services || []);
-  const [address, setAddress] = useState(currentAd?.address || '');
-  const [category, setCategory] = useState(
-    currentAd?.category || categories[0],
-  );
-  const [serviceHours, setServiceHours] = useState(
-    currentAd?.serviceHours || '',
-  );
-  const [expiryDate, setExpiryDate] = useState(currentAd?.expiryDate || '');
+  const [title, setTitle] = useState('');
+  const [price, setPrice] = useState('');
+  const [description, setDescription] = useState('');
+  const [pictures, setPictures] = useState([]);
+  const [mainPicture, setMainPicture] = useState('');
+  const [services, setServices] = useState([]);
+  const [address, setAddress] = useState('');
+  const [category, setCategory] = useState(categories[0]);
+  const [serviceHours, setServiceHours] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
   const [isExpiryDatePickerVisible, setExpiryDatePickerVisibility] =
     useState(false);
 
@@ -62,6 +58,18 @@ const Ad = ({navigation}) => {
       setCategory(currentAd.category || categories[0]);
       setServiceHours(currentAd.serviceHours);
       setExpiryDate(currentAd.expiryDate || '');
+    } else {
+      // Clear fields when currentAd is null
+      setTitle('');
+      setPrice('');
+      setDescription('');
+      setPictures([]);
+      setMainPicture('');
+      setServices([]);
+      setAddress('');
+      setCategory(categories[0]);
+      setServiceHours('');
+      setExpiryDate('');
     }
   }, [currentAd]);
 
@@ -307,7 +315,7 @@ const Ad = ({navigation}) => {
                   console.log('Selected address:', fullAddress);
                 }}
                 query={{
-                  key: 'AIzaSyDlNi1nl06y1rcUF00ogB5t0ZPrr0PKASg',
+                  key: 'AIzaSyBMmlNExl86zceWTM0vfYKEkY1HJ-neIWk',
                   language: 'en',
                 }}
                 styles={{
