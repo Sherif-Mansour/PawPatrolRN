@@ -21,8 +21,8 @@ import LocationScreen from './../src/screens/_18LocationScreen';
 import AdDetailsScreen from '../src/screens/_19AdDetailScreen';
 import InquirySubmissionScreen from '../src/screens/_21InquirySubmissionScreen';
 import IndividualChat from '../src/screens/_20IndividualChat';
-import BookAppointmentScreen from '../src/screens/_22BookAppointment';
-import PendingAppointmentsScreen from '../src/screens/_23PendingApprovals';
+import BookAppointmentScreen from '../src/screens/_23BookAppointment';
+import PendingAppointmentsScreen from '../src/screens/_24PendingApprovals';
 
 const Stack = createStackNavigator();
 
