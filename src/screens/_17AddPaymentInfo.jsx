@@ -1,19 +1,15 @@
-import React, {useState} from 'react';
-import {View, Text, TextInput, Button, StyleSheet} from 'react-native';
-import {useUser} from '../../utils/UserContext';
-import {useTheme} from 'react-native-paper';
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { useUser } from '../../utils/UserContext';
+import { useTheme } from 'react-native-paper';
+import { CardField, useStripe } from '@stripe/stripe-react-native';
 
 const AddPaymentInfo = () => {
   const theme = useTheme();
-  const {savePaymentDetails} = useUser();
+  const { savePaymentDetails } = useUser();
+  const stripe = useStripe();
   const [paymentMethod, setPaymentMethod] = useState('creditCard');
-  const [creditCardInfo, setCreditCardInfo] = useState({
-    nameOnCard: '',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    address: '',
-  });
+  const [creditCardInfo, setCreditCardInfo] = useState({});
   const [paypalInfo, setPaypalInfo] = useState({
     email: '',
     password: '',
@@ -27,38 +23,28 @@ const AddPaymentInfo = () => {
   const [errors, setErrors] = useState({});
 
   const validateCreditCardInfo = () => {
-    let valid = true;
-    let errors = {};
+    if (!creditCardInfo.complete) {
+      Alert.alert('Please enter complete card details');
+      return false;
+    }
+    return true;
+  };
 
-    if (!creditCardInfo.nameOnCard) {
-      errors.nameOnCard = 'Name on card is required';
-      valid = false;
+  const validatePaypalInfo = () => {
+    if (!paypalInfo.email || !paypalInfo.password) {
+      Alert.alert('Please enter complete PayPal details');
+      return false;
     }
-    if (
-      !creditCardInfo.cardNumber ||
-      !/^\d{16}$/.test(creditCardInfo.cardNumber)
-    ) {
-      errors.cardNumber = 'Valid card number is required (16 digits)';
-      valid = false;
-    }
-    if (
-      !creditCardInfo.expiryDate ||
-      !/^(0[1-9]|1[0-2])\/\d{2}$/.test(creditCardInfo.expiryDate)
-    ) {
-      errors.expiryDate = 'Valid expiry date is required (MM/YY)';
-      valid = false;
-    }
-    if (!creditCardInfo.cvv || !/^\d{3,4}$/.test(creditCardInfo.cvv)) {
-      errors.cvv = 'Valid CVV is required (3 digits)';
-      valid = false;
-    }
-    if (!creditCardInfo.address) {
-      errors.address = 'Address is required';
-      valid = false;
-    }
+    return true;
+  };
 
-    setErrors(errors);
-    return valid;
+  const validateBankTransferInfo = () => {
+    const { accountNumber, bankName, transitNumber, institutionNumber } = bankTransferInfo;
+    if (!accountNumber || !bankName || !transitNumber || !institutionNumber) {
+      Alert.alert('Please enter complete bank transfer details');
+      return false;
+    }
+    return true;
   };
 
   const handleSave = async () => {
@@ -67,14 +53,34 @@ const AddPaymentInfo = () => {
 
     switch (paymentMethod) {
       case 'creditCard':
-        paymentDetails = creditCardInfo;
         valid = validateCreditCardInfo();
+        if (valid) {
+          const { error, paymentMethod: stripePaymentMethod } = await stripe.createPaymentMethod({
+            type: 'Card',
+            card: creditCardInfo,
+          });
+
+          if (error) {
+            Alert.alert(`Error: ${error.message}`);
+            valid = false;
+          } else {
+            paymentDetails = { id: stripePaymentMethod.id, ...creditCardInfo };
+          }
+        }
         break;
       case 'paypal':
-        paymentDetails = paypalInfo;
+        valid = validatePaypalInfo();
+        if (valid) {
+          paymentDetails = paypalInfo;
+          // Here you would integrate with PayPal SDK or API
+        }
         break;
       case 'bankTransfer':
-        paymentDetails = bankTransferInfo;
+        valid = validateBankTransferInfo();
+        if (valid) {
+          paymentDetails = bankTransferInfo;
+          // Here you would integrate with your backend to process the bank transfer
+        }
         break;
       default:
         return;
@@ -85,70 +91,24 @@ const AddPaymentInfo = () => {
     }
 
     await savePaymentDetails(paymentMethod, paymentDetails);
+    Alert.alert('Payment method saved successfully');
   };
 
   const renderAddPaymentInfo = () => {
     switch (paymentMethod) {
       case 'creditCard':
         return (
-          <>
-            <TextInput
-              style={styles.input}
-              placeholder="Name On The Card"
-              value={creditCardInfo.nameOnCard}
-              onChangeText={text =>
-                setCreditCardInfo({...creditCardInfo, nameOnCard: text})
-              }
-            />
-            {errors.nameOnCard && (
-              <Text style={styles.errorText}>{errors.nameOnCard}</Text>
-            )}
-            <TextInput
-              style={styles.input}
-              placeholder="Card Number"
-              value={creditCardInfo.cardNumber}
-              onChangeText={text =>
-                setCreditCardInfo({...creditCardInfo, cardNumber: text})
-              }
-              keyboardType="numeric"
-            />
-            {errors.cardNumber && (
-              <Text style={styles.errorText}>{errors.cardNumber}</Text>
-            )}
-            <TextInput
-              style={styles.input}
-              placeholder="Expiry Date (MM/YY)"
-              value={creditCardInfo.expiryDate}
-              onChangeText={text =>
-                setCreditCardInfo({...creditCardInfo, expiryDate: text})
-              }
-              keyboardType="numeric"
-            />
-            {errors.expiryDate && (
-              <Text style={styles.errorText}>{errors.expiryDate}</Text>
-            )}
-            <TextInput
-              style={styles.input}
-              placeholder="CVV"
-              value={creditCardInfo.cvv}
-              onChangeText={text =>
-                setCreditCardInfo({...creditCardInfo, cvv: text})
-              }
-              keyboardType="numeric"
-            />
-            {errors.cvv && <Text style={styles.errorText}>{errors.cvv}</Text>}
-            <TextInput
-              style={styles.input}
-              placeholder="Address"
-              value={creditCardInfo.address}
-              onChangeText={text =>
-                setCreditCardInfo({...creditCardInfo, address: text})
-              }
-            />
-            {errors.address && (
-              <Text style={styles.errorText}>{errors.address}</Text>
-            )}
-          </>
+          <CardField
+            postalCodeEnabled={true}
+            placeholders={{
+              number: '4242 4242 4242 4242',
+            }}
+            cardStyle={styles.card}
+            style={styles.cardContainer}
+            onCardChange={cardDetails => {
+              setCreditCardInfo(cardDetails);
+            }}
+          />
         );
       case 'paypal':
         return (
@@ -157,16 +117,14 @@ const AddPaymentInfo = () => {
               style={styles.input}
               placeholder="PayPal Email"
               value={paypalInfo.email}
-              onChangeText={text => setPaypalInfo({...paypalInfo, email: text})}
+              onChangeText={text => setPaypalInfo({ ...paypalInfo, email: text })}
               keyboardType="email-address"
             />
             <TextInput
               style={styles.input}
               placeholder="PayPal Password"
               value={paypalInfo.password}
-              onChangeText={text =>
-                setPaypalInfo({...paypalInfo, password: text})
-              }
+              onChangeText={text => setPaypalInfo({ ...paypalInfo, password: text })}
               secureTextEntry={true}
             />
           </>
@@ -178,38 +136,27 @@ const AddPaymentInfo = () => {
               style={styles.input}
               placeholder="Account Number"
               value={bankTransferInfo.accountNumber}
-              onChangeText={text =>
-                setBankTransferInfo({...bankTransferInfo, accountNumber: text})
-              }
+              onChangeText={text => setBankTransferInfo({ ...bankTransferInfo, accountNumber: text })}
               keyboardType="numeric"
             />
             <TextInput
               style={styles.input}
               placeholder="Bank Name"
               value={bankTransferInfo.bankName}
-              onChangeText={text =>
-                setBankTransferInfo({...bankTransferInfo, bankName: text})
-              }
+              onChangeText={text => setBankTransferInfo({ ...bankTransferInfo, bankName: text })}
             />
             <TextInput
               style={styles.input}
               placeholder="Transit Number"
               value={bankTransferInfo.transitNumber}
-              onChangeText={text =>
-                setBankTransferInfo({...bankTransferInfo, transitNumber: text})
-              }
+              onChangeText={text => setBankTransferInfo({ ...bankTransferInfo, transitNumber: text })}
               keyboardType="numeric"
             />
             <TextInput
               style={styles.input}
               placeholder="Institution Number"
               value={bankTransferInfo.institutionNumber}
-              onChangeText={text =>
-                setBankTransferInfo({
-                  ...bankTransferInfo,
-                  institutionNumber: text,
-                })
-              }
+              onChangeText={text => setBankTransferInfo({ ...bankTransferInfo, institutionNumber: text })}
               keyboardType="numeric"
             />
           </>
@@ -247,6 +194,14 @@ const AddPaymentInfo = () => {
       flexDirection: 'row',
       justifyContent: 'space-around',
       marginBottom: 20,
+    },
+    cardContainer: {
+      height: 50,
+      marginVertical: 30,
+    },
+    card: {
+      borderColor: '#000000',
+      borderWidth: 1,
     },
   });
 
