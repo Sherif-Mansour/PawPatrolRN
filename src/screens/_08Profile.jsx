@@ -132,7 +132,6 @@ const Profile = ({ navigation }) => {
         onChangeText={text => setProfileData({ ...profileData, firstName: text })}
         style={styles.input}
       />
-
       <TextInput
         label="Last Name"
         value={profileData.lastName}
