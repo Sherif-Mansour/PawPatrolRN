@@ -23,6 +23,7 @@ import {
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../../components/Map';
+import MapContainer from '../../components/MapContainer';
 
 const categories = [
   'All',
@@ -186,12 +187,15 @@ const HomeScreen = ({ navigation }) => {
     modalStyle: {
       backgroundColor: 'white',
       margin: 20,
-      padding: 20,
       alignItems: 'center',
       justifyContent: 'center',
+      width: '90%',
+      height: '66%',
       borderRadius: 10,
     },
     modalContent: {
+      width: '100%',
+      height: '100%',
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -210,7 +214,7 @@ const HomeScreen = ({ navigation }) => {
       <Portal>
         <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalStyle}>
           <View style={styles.modalContent}>
-            <Map />
+            <MapContainer />
           </View>
         </Modal>
       </Portal>
