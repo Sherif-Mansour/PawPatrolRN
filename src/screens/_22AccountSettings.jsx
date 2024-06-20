@@ -42,7 +42,7 @@ const AccountSettings = ({ navigation }) => {
                         {profile ? (
                             <Card>
                                 <Card.Title
-                                    title={profile.name}
+                                    title={profile.firstName + ' ' + profile.lastName}
                                     subtitle={user ? user.email : ''}
                                     left={LeftContent}
                                 />
