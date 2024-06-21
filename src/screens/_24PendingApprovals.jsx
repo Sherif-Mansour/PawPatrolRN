@@ -3,14 +3,26 @@ import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
 import { Button, Card } from 'react-native-paper';
+import { useRoute } from '@react-navigation/native';
 
 const PendingAppointmentsScreen = () => {
   const [appointments, setAppointments] = useState([]);
   const { user } = useUser();
+  const route = useRoute();
+  const { chatId } = route.params;
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
+        // Fetch chat participants
+        const chatDoc = await firestore().collection('chats').doc(chatId).get();
+        if (!chatDoc.exists) {
+          Alert.alert('Error', 'Chat does not exist.');
+          return;
+        }
+
+        const chatParticipants = chatDoc.data().participants;
+
         const appointmentsSnapshot = await firestore()
           .collection('appointments')
           .where('status', '==', 'pending')
@@ -22,7 +34,14 @@ const PendingAppointmentsScreen = () => {
             id: doc.id,
             ...doc.data(),
           }))
-          .filter(appointment => appointment.requesterId  == user.uid);
+          .filter(appointment => {
+            const appointmentParticipants = appointment.participants;
+            return (
+              appointmentParticipants.length === 2 &&
+              appointmentParticipants.includes(chatParticipants[0]) &&
+              appointmentParticipants.includes(chatParticipants[1])
+            );
+          });
 
         setAppointments(fetchedAppointments);
       } catch (error) {
@@ -32,7 +51,7 @@ const PendingAppointmentsScreen = () => {
     };
 
     fetchAppointments();
-  }, [user.uid]);
+  }, [user.uid, chatId]);
 
   const handleApprove = async (appointmentId) => {
     try {
