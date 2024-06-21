@@ -129,7 +129,7 @@ const NotificationSettingsScreen = () => {
       if (user) {
         await firestore().collection('profiles').doc(user.uid).set(
           {
-            phoneNumber: userPhoneNumber,
+            phoneNo: userPhoneNumber,
           },
           { merge: true }
         );

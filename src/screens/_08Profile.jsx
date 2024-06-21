@@ -123,7 +123,7 @@ const Profile = ({ navigation }) => {
       <TextInput
         label="Email"
         value={user.email}
-        disabled={true}
+        onChangeText={text => setProfileData({ ...profileData, email: text})}
         style={styles.input}
       />
       <TextInput
@@ -142,6 +142,12 @@ const Profile = ({ navigation }) => {
         label="Age"
         value={profileData.age}
         onChangeText={text => setProfileData({ ...profileData, age: text })}
+        style={styles.input}
+      />
+      <TextInput
+        label="Phone Number"
+        value={profileData.phoneNo}
+        onChangeText={text => setProfileData({ ...profileData, phoneNo: text })}
         style={styles.input}
       />
       <TextInput
