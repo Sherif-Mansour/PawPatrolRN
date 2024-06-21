@@ -6,6 +6,7 @@ import {Alert, Platform} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import {GiftedChat} from 'react-native-gifted-chat';
+import {useConfirmPayment} from '@stripe/stripe-react-native';
 
 const UserContext = createContext();
 
@@ -19,6 +20,10 @@ export const UserProvider = ({children}) => {
   const [ads, setAds] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [currentAd, setCurrentAd] = useState(null);
+  const {confirmPayment} = useConfirmPayment();
+  const [transactionDetails, setTransactionDetails] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
   const resetLoadingStates = () => {
     setLoading(true);
@@ -36,11 +41,13 @@ export const UserProvider = ({children}) => {
         await fetchUserAds();
         await fetchAllAds();
         await fetchUserFavorites();
+        await fetchPaymentMethods();
       } else {
         setUser(null);
         setEmail(null);
         setAds([]);
         setFavorites([]);
+        setPaymentMethods([]);
       }
       setLoading(false);
       setLoadingUserAds(false);
@@ -391,21 +398,6 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const savePaymentDetails = async (paymentMethod, paymentDetails) => {
-    try {
-      if (!user) throw new Error('User not logged in');
-
-      await firestore()
-        .collection('paymentMethods')
-        .doc(user.uid)
-        .set({paymentMethod, ...paymentDetails});
-      console.log('Payment details saved successfully:', paymentDetails);
-    } catch (err) {
-      console.error('Error saving payment details:', err);
-      Alert.alert('Payment Error', 'Failed to save payment details');
-    }
-  };
-
   const sendMessage = async (chatId, text) => {
     try {
       const messageData = {
@@ -494,6 +486,176 @@ export const UserProvider = ({children}) => {
     }
   };
 
+  const createPaymentIntent = async (amount, currency, description) => {
+    try {
+      const response = await fetch(
+        'http://localhost:3000/create-payment-intent',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({amount, currency, description}),
+        },
+      );
+
+      const data = await response.json();
+      return data.clientSecret;
+    } catch (error) {
+      console.error('Error creating payment intent', error);
+      throw error;
+    }
+  };
+
+  const handlePayment = async transaction => {
+    try {
+      const clientSecret = await createPaymentIntent(
+        transaction.amount,
+        transaction.currency,
+        transaction.description,
+      );
+      const {paymentIntent, error} = await confirmPayment(clientSecret, {
+        type: 'Card',
+        billingDetails: {email: user.email},
+      });
+
+      if (error) {
+        console.log('Payment confirmation error', error);
+        Alert.alert(
+          'Payment Error',
+          'There was an issue with your payment. Please try again.',
+        );
+      } else if (paymentIntent) {
+        console.log('Payment successful', paymentIntent);
+
+        // Save transaction details to Firestore
+        const newTransaction = {
+          ...transaction,
+          userId: user.uid,
+          paymentIntentId: paymentIntent.id,
+          status: paymentIntent.status,
+          createdAt: firestore.FieldValue.serverTimestamp(),
+        };
+        await firestore().collection('transactions').add(newTransaction);
+
+        // Update the transaction details state with the new transaction
+        setTransactionDetails(prevTransactions => [
+          ...prevTransactions,
+          newTransaction,
+        ]);
+
+        Alert.alert('Payment Success', 'Your payment was successful.');
+      }
+    } catch (error) {
+      console.error('Payment error', error);
+      Alert.alert(
+        'Payment Error',
+        'There was an issue processing your payment. Please try again.',
+      );
+    }
+  };
+
+  const savePaymentDetails = async paymentDetails => {
+    try {
+      if (!user) throw new Error('User not logged in');
+
+      const userPaymentRef = firestore()
+        .collection('paymentMethods')
+        .doc(user.uid);
+      const userPaymentDoc = await userPaymentRef.get();
+
+      let paymentMethods = [];
+      if (userPaymentDoc.exists) {
+        paymentMethods = userPaymentDoc.data().paymentMethods || [];
+      }
+
+      paymentMethods.push(paymentDetails);
+
+      await userPaymentRef.set({paymentMethods});
+      setPaymentMethods(paymentMethods); // Update local state
+      console.log('Payment details saved successfully:', paymentMethods);
+    } catch (err) {
+      console.error('Error saving payment details:', err);
+      Alert.alert('Payment Error', 'Failed to save payment details');
+    }
+  };
+
+  const fetchPaymentMethods = async () => {
+    if (!user) return;
+
+    const userPaymentRef = firestore()
+      .collection('paymentMethods')
+      .doc(user.uid);
+    const userPaymentDoc = await userPaymentRef.get();
+
+    if (userPaymentDoc.exists) {
+      const fetchedPaymentMethods = userPaymentDoc.data().paymentMethods || [];
+      setPaymentMethods(fetchedPaymentMethods);
+      const selectedMethod =
+        userPaymentDoc.data().selectedPaymentMethod || null;
+      setSelectedPaymentMethod(selectedMethod);
+      console.log('Fetched payment methods:', fetchedPaymentMethods);
+    } else {
+      console.log('No payment methods found for user');
+    }
+  };
+
+  const setPreferredMethod = async methodIndex => {
+    try {
+      if (!user) throw new Error('User not logged in');
+
+      setSelectedPaymentMethod(methodIndex);
+
+      const userPaymentRef = firestore()
+        .collection('paymentMethods')
+        .doc(user.uid);
+      await userPaymentRef.update({selectedPaymentMethod: methodIndex});
+
+      console.log('Preferred payment method set:', methodIndex);
+    } catch (err) {
+      console.error('Error setting preferred payment method:', err);
+      Alert.alert('Error', 'Failed to set preferred payment method');
+    }
+  };
+
+  const editPaymentDetails = async (index, paymentDetails) => {
+    try {
+      if (!user || !paymentMethods[index]) return;
+
+      const paymentMethod = paymentMethods[index];
+      const paymentMethodsRef = firestore()
+        .collection('paymentMethods')
+        .doc(user.uid);
+      paymentMethods[index] = paymentDetails;
+
+      await paymentMethodsRef.update({paymentMethods});
+      await fetchPaymentMethods(); // Refresh the payment methods list
+      console.log('Payment method edited successfully:', paymentDetails);
+    } catch (err) {
+      console.error('Error editing payment details:', err);
+      Alert.alert('Error', 'Failed to edit payment details');
+    }
+  };
+
+  const deletePaymentMethod = async index => {
+    try {
+      if (!user || !paymentMethods[index]) return;
+
+      const paymentMethodsRef = firestore()
+        .collection('paymentMethods')
+        .doc(user.uid);
+      const updatedPaymentMethods = [...paymentMethods];
+      updatedPaymentMethods.splice(index, 1);
+
+      await paymentMethodsRef.update({paymentMethods: updatedPaymentMethods});
+      setPaymentMethods(updatedPaymentMethods); // Update local state
+      console.log('Payment method deleted successfully');
+    } catch (err) {
+      console.error('Error deleting payment method:', err);
+      Alert.alert('Error', 'Failed to delete payment method');
+    }
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -518,7 +680,6 @@ export const UserProvider = ({children}) => {
         uploadImage,
         createOrUpdateAd,
         signOut,
-        savePaymentDetails,
         sendMessage,
         subscribeToMessages,
         sendMultimediaMessage,
@@ -526,6 +687,14 @@ export const UserProvider = ({children}) => {
         createChat,
         currentAd,
         setCurrentAd,
+        handlePayment,
+        savePaymentDetails,
+        fetchPaymentMethods,
+        paymentMethods,
+        selectedPaymentMethod,
+        setPreferredMethod,
+        editPaymentDetails,
+        deletePaymentMethod,
       }}>
       {children}
     </UserContext.Provider>
