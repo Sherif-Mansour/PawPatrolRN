@@ -7,6 +7,7 @@ import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import {GiftedChat} from 'react-native-gifted-chat';
 import {useConfirmPayment} from '@stripe/stripe-react-native';
+import notifee, {EventType} from '@notifee/react-native'; // Importing Notifee
 
 const UserContext = createContext();
 
@@ -37,6 +38,8 @@ export const UserProvider = ({children}) => {
       resetLoadingStates();
       if (currentUser) {
         setUser(currentUser);
+        requestUserPermission();
+        getToken();
         setEmail(currentUser.email);
         await fetchUserAds();
         await fetchAllAds();
@@ -84,6 +87,13 @@ export const UserProvider = ({children}) => {
       try {
         const token = await messaging().getToken();
         console.log('Token:', token);
+
+        if (user) {
+          // Save the FCM token to Firestore
+          await firestore().collection('profiles').doc(user.uid).update({
+            fcmToken: token,
+          });
+        }
       } catch (err) {
         console.log('Error getting token:', err);
       }
@@ -94,8 +104,29 @@ export const UserProvider = ({children}) => {
 
     const unsubscribe = messaging().onTokenRefresh(token => {
       console.log('Refreshed token:', token);
+
+      if (user) {
+        // Save the refreshed FCM token to Firestore
+        firestore().collection('profiles').doc(user.uid).update({
+          fcmToken: token,
+        });
+      }
     });
 
+    return () => unsubscribe();
+  }, [user]);
+
+  // Notification handler
+  useEffect(() => {
+    const handleForegroundNotification = async message => {
+      console.log('Foreground notification:', message);
+      await notifee.displayNotification({
+        title: message.notification.title,
+        body: message.notification.body,
+      });
+    };
+
+    const unsubscribe = messaging().onMessage(handleForegroundNotification);
     return () => unsubscribe();
   }, []);
 

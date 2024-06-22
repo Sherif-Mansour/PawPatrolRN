@@ -1,17 +1,18 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { GiftedChat, Bubble, Send } from 'react-native-gifted-chat';
-import { IconButton, Button, useTheme } from 'react-native-paper';
-import { useUser } from '../../utils/UserContext';
-import { launchImageLibrary } from 'react-native-image-picker';
+import React, {useEffect, useState, useCallback} from 'react';
+import {View, StyleSheet} from 'react-native';
+import {useRoute, useNavigation} from '@react-navigation/native';
+import {GiftedChat, Bubble, Send} from 'react-native-gifted-chat';
+import {IconButton, Button, useTheme} from 'react-native-paper';
+import {useUser} from '../../utils/UserContext';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 const IndividualChat = () => {
   const theme = useTheme();
-  const { user, sendMessage, subscribeToMessages, sendMultimediaMessage } = useUser();
+  const {user, sendMessage, subscribeToMessages, sendMultimediaMessage} =
+    useUser();
   const route = useRoute();
   const navigation = useNavigation();
-  const { chatId } = route.params;
+  const {chatId} = route.params;
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
@@ -22,16 +23,19 @@ const IndividualChat = () => {
     return () => unsubscribe();
   }, [chatId]);
 
-  const onSend = useCallback((messages = []) => {
-    console.log('Sending messages:', messages);
-    messages.forEach(message => {
-      if (message.image) {
-        sendMultimediaMessage(chatId, message.image);
-      } else {
-        sendMessage(chatId, message.text);
-      }
-    });
-  }, [chatId]);
+  const onSend = useCallback(
+    (messages = []) => {
+      console.log('Sending messages:', messages);
+      messages.forEach(message => {
+        if (message.image) {
+          sendMultimediaMessage(chatId, message.image);
+        } else {
+          sendMessage(chatId, message.text);
+        }
+      });
+    },
+    [chatId],
+  );
 
   const renderBubble = props => (
     <Bubble
@@ -86,15 +90,13 @@ const IndividualChat = () => {
         <Button
           icon="calendar"
           mode="contained"
-          onPress={() => navigation.navigate('BookAppointment', { chatId })}
-        >
+          onPress={() => navigation.navigate('BookAppointment', {chatId})}>
           Book Appointment
         </Button>
         <Button
           icon="alert"
           mode="contained"
-          onPress={() => navigation.navigate('PendingAppointments', { chatId })}
-        >
+          onPress={() => navigation.navigate('PendingAppointments', {chatId})}>
           Pending Approvals
         </Button>
       </View>
@@ -102,8 +104,7 @@ const IndividualChat = () => {
         icon="camera"
         mode="contained"
         onPress={pickImage}
-        style={styles.imageButton}
-      >
+        style={styles.imageButton}>
         Send Image
       </Button>
     </View>
