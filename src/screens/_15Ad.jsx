@@ -36,6 +36,7 @@ const Ad = ({navigation}) => {
     setCurrentAd,
     fetchUserProfile,
     isProfileComplete,
+    fetchAllAds,
   } = useUser();
 
   const [title, setTitle] = useState('');

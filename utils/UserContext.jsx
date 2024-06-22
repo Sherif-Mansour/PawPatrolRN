@@ -502,10 +502,45 @@ export const UserProvider = ({children}) => {
         .collection('chats')
         .where('participants', 'array-contains', userId)
         .get();
-      const userChats = userChatsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const userChats = [];
+
+      for (const doc of userChatsSnapshot.docs) {
+        const chatData = doc.data();
+        const otherUserId = chatData.participants.find(
+          participant => participant !== userId,
+        );
+
+        const otherUserProfileSnapshot = await firestore()
+          .collection('profiles')
+          .doc(otherUserId)
+          .get();
+
+        const otherUserProfile = otherUserProfileSnapshot.data();
+
+        const lastMessageSnapshot = await firestore()
+          .collection('chats')
+          .doc(doc.id)
+          .collection('messages')
+          .orderBy('createdAt', 'desc')
+          .limit(1)
+          .get();
+
+        const lastMessage =
+          lastMessageSnapshot.docs.length > 0
+            ? lastMessageSnapshot.docs[0].data().text
+            : 'No messages yet.';
+
+        console.log('Other User Profile:', otherUserProfile);
+        console.log('Last Message:', lastMessage);
+
+        userChats.push({
+          id: doc.id,
+          otherUserName: `${otherUserProfile.firstName} ${otherUserProfile.lastName}`,
+          otherUserAvatar: otherUserProfile.profilePicture,
+          lastMessageReceived: lastMessage,
+        });
+      }
+
       return userChats;
     } catch (err) {
       console.error('Error fetching user chats:', err);
