@@ -1,5 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Alert, ScrollView, Image, Text, TouchableOpacity } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  StyleSheet,
+  Alert,
+  ScrollView,
+  Image,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
 import {
   TextInput,
   Button,
@@ -7,14 +15,14 @@ import {
   SegmentedButtons,
   useTheme,
 } from 'react-native-paper';
-import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
-import { useUser } from '../../utils/UserContext';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
+import {useUser} from '../../utils/UserContext';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 
-const Profile = ({ navigation }) => {
+const Profile = ({navigation}) => {
   const theme = useTheme();
-  const { user, createOrUpdateProfile, fetchUserProfile, uploadImage } =
+  const {user, createOrUpdateProfile, fetchUserProfile, uploadImage} =
     useUser();
   const [selectedSegment, setSelectedSegment] = useState('user');
   const [selectedPetIndex, setSelectedPetIndex] = useState(0);
@@ -34,7 +42,7 @@ const Profile = ({ navigation }) => {
         species: '',
         breed: '',
         age: '',
-        gender: ''
+        gender: '',
       },
     ],
     otherInfo: {
@@ -94,7 +102,7 @@ const Profile = ({ navigation }) => {
   const handlePetChange = (index, field, value) => {
     const updatedPets = [...profileData.pets];
     updatedPets[index][field] = value;
-    setProfileData({ ...profileData, pets: updatedPets });
+    setProfileData({...profileData, pets: updatedPets});
   };
 
   const renderUserInfo = () => (
@@ -103,7 +111,7 @@ const Profile = ({ navigation }) => {
         {profileData.profilePicture ? (
           <Avatar.Image
             size={100}
-            source={{ uri: profileData.profilePicture }}
+            source={{uri: profileData.profilePicture}}
             style={styles.profilePicture}
           />
         ) : (
@@ -123,49 +131,52 @@ const Profile = ({ navigation }) => {
       <TextInput
         label="Email"
         value={user.email}
-        onChangeText={text => setProfileData({ ...profileData, email: text})}
+        onChangeText={text => setProfileData({...profileData, email: text})}
         style={styles.input}
       />
       <TextInput
         label="First Name"
         value={profileData.firstName}
-        onChangeText={text => setProfileData({ ...profileData, firstName: text })}
+        onChangeText={text => setProfileData({...profileData, firstName: text})}
         style={styles.input}
       />
       <TextInput
         label="Last Name"
         value={profileData.lastName}
-        onChangeText={text => setProfileData({ ...profileData, lastName: text })}
+        onChangeText={text => setProfileData({...profileData, lastName: text})}
         style={styles.input}
       />
       <TextInput
         label="Age"
         value={profileData.age}
-        onChangeText={text => setProfileData({ ...profileData, age: text })}
+        onChangeText={text => setProfileData({...profileData, age: text})}
         style={styles.input}
       />
       <TextInput
         label="Phone Number"
         value={profileData.phoneNo}
-        onChangeText={text => setProfileData({ ...profileData, phoneNo: text })}
+        onChangeText={text => setProfileData({...profileData, phoneNo: text})}
         style={styles.input}
       />
       <TextInput
         label="Address"
         value={profileData.address}
-        onChangeText={text => setProfileData({ ...profileData, address: text })}
+        onChangeText={text => setProfileData({...profileData, address: text})}
         style={styles.input}
+        placeholder="Address, City, Province, Postal Code, Country"
       />
       <TextInput
         label="Occupation"
         value={profileData.occupation}
-        onChangeText={text => setProfileData({ ...profileData, occupation: text })}
+        onChangeText={text =>
+          setProfileData({...profileData, occupation: text})
+        }
         style={styles.input}
       />
       <TextInput
         label="Bio"
         value={profileData.bio}
-        onChangeText={text => setProfileData({ ...profileData, bio: text })}
+        onChangeText={text => setProfileData({...profileData, bio: text})}
         style={styles.input}
       />
       <Button
@@ -221,7 +232,7 @@ const Profile = ({ navigation }) => {
         onPress={() =>
           setProfileData({
             ...profileData,
-            pets: [...profileData.pets, { name: '', type: '', age: '' }],
+            pets: [...profileData.pets, {name: '', type: '', age: ''}],
           })
         }
         style={styles.button}>
@@ -244,7 +255,7 @@ const Profile = ({ navigation }) => {
         onChangeText={text =>
           setProfileData({
             ...profileData,
-            otherInfo: { ...profileData.otherInfo, favoriteHobby: text },
+            otherInfo: {...profileData.otherInfo, favoriteHobby: text},
           })
         }
         style={styles.input}
@@ -255,7 +266,7 @@ const Profile = ({ navigation }) => {
         onChangeText={text =>
           setProfileData({
             ...profileData,
-            otherInfo: { ...profileData.otherInfo, favoriteFood: text },
+            otherInfo: {...profileData.otherInfo, favoriteFood: text},
           })
         }
         style={styles.input}
@@ -276,9 +287,9 @@ const Profile = ({ navigation }) => {
           value={selectedSegment}
           onValueChange={setSelectedSegment}
           buttons={[
-            { value: 'user', label: 'User Info' },
-            { value: 'pets', label: 'Pets' },
-            { value: 'other', label: 'Other' },
+            {value: 'user', label: 'User Info'},
+            {value: 'pets', label: 'Pets'},
+            {value: 'other', label: 'Other'},
           ]}
         />
         {selectedSegment === 'user' && renderUserInfo()}

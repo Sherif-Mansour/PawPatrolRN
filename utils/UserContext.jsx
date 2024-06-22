@@ -187,10 +187,10 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const fetchUserProfile = async () => {
-    if (!user) throw new Error('User not logged in');
+  const fetchUserProfile = async (userId = user.uid) => {
+    if (!userId) throw new Error('User ID is missing');
 
-    const userProfileRef = firestore().collection('profiles').doc(user.uid);
+    const userProfileRef = firestore().collection('profiles').doc(userId);
     const userProfileDoc = await userProfileRef.get();
 
     if (userProfileDoc.exists) {
@@ -217,9 +217,39 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const createOrUpdateAd = async adData => {
+  const isProfileComplete = profile => {
+    return (
+      profile &&
+      profile.firstName &&
+      profile.lastName &&
+      profile.phoneNo &&
+      profile.address &&
+      profile.firstName.trim() !== '' &&
+      profile.lastName.trim() !== '' &&
+      profile.phoneNo.trim() !== '' &&
+      profile.address.trim() !== ''
+    );
+  };
+
+  const createOrUpdateAd = async (adData, navigation) => {
     try {
       if (!user) throw new Error('User not logged in');
+
+      const profileData = await fetchUserProfile();
+      if (!isProfileComplete(profileData)) {
+        Alert.alert(
+          'Profile Incomplete',
+          'Please complete your profile before creating an ad.',
+          [
+            {
+              text: 'Go to Profile',
+              onPress: () => navigation.navigate('Profile'),
+            },
+          ],
+          {cancelable: false},
+        );
+        return;
+      }
 
       const userAdRef = firestore()
         .collection('ads')
@@ -229,12 +259,10 @@ export const UserProvider = ({children}) => {
       let adDocRef;
 
       if (adData.id) {
-        // If adData already has an ID, update the existing ad
         adDocRef = userAdRef.doc(adData.id);
       } else {
-        // If adData does not have an ID, create a new ad with an auto-generated ID
-        adDocRef = userAdRef.doc(); // Firestore will generate a unique ID
-        adData.id = adDocRef.id; // Associate the auto-generated ID with the ad data
+        adDocRef = userAdRef.doc();
+        adData.id = adDocRef.id;
       }
 
       const adDataWithUserId = {
@@ -244,9 +272,8 @@ export const UserProvider = ({children}) => {
         updatedAt: firestore.FieldValue.serverTimestamp(),
       };
 
-      console.log('Setting ad data:', adDataWithUserId); // Log the ad data being set
+      console.log('Setting ad data:', adDataWithUserId);
 
-      // Set ad data and timestamps
       await adDocRef.set(adDataWithUserId);
 
       if (adData.id) {
@@ -677,6 +704,7 @@ export const UserProvider = ({children}) => {
         onGoogleButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
+        isProfileComplete,
         uploadImage,
         createOrUpdateAd,
         signOut,
