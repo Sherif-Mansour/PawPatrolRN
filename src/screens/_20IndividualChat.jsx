@@ -1,27 +1,50 @@
 import React, {useEffect, useState, useCallback} from 'react';
 import {View, StyleSheet} from 'react-native';
-import {useRoute, useNavigation} from '@react-navigation/native';
 import {GiftedChat, Bubble, Send} from 'react-native-gifted-chat';
 import {IconButton, Button, useTheme} from 'react-native-paper';
+import {useRoute, useNavigation} from '@react-navigation/native';
+import messaging from '@react-native-firebase/messaging';
 import {useUser} from '../../utils/UserContext';
 import {launchImageLibrary} from 'react-native-image-picker';
 
-const IndividualChat = () => {
+const IndividualChat = ({route, navigation}) => {
   const theme = useTheme();
-  const {user, sendMessage, subscribeToMessages, sendMultimediaMessage} =
-    useUser();
-  const route = useRoute();
-  const navigation = useNavigation();
+  const {
+    user,
+    sendMessage,
+    subscribeToMessages,
+    sendMultimediaMessage,
+    xmppClient,
+  } = useUser();
   const {chatId} = route.params;
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
+    if (xmppClient) {
+      xmppClient.on('stanza', stanza => {
+        if (stanza.is('message')) {
+          console.log('Incoming message:', stanza.toString());
+          const message = {
+            _id: stanza.attrs.id,
+            text: stanza.getChildText('body'),
+            createdAt: new Date(),
+            user: {
+              _id: stanza.attrs.from,
+            },
+          };
+          setMessages(previousMessages =>
+            GiftedChat.append(previousMessages, message),
+          );
+        }
+      });
+    }
+
     const unsubscribe = subscribeToMessages(chatId, msgs => {
       console.log('Messages received:', msgs);
       setMessages(msgs);
     });
     return () => unsubscribe();
-  }, [chatId]);
+  }, [chatId, xmppClient]);
 
   const onSend = useCallback(
     (messages = []) => {
@@ -91,7 +114,7 @@ const IndividualChat = () => {
           icon="calendar"
           mode="contained"
           onPress={() => navigation.navigate('BookAppointment', {chatId})}>
-          Book Appointment
+          Place Request
         </Button>
         <Button
           icon="alert"

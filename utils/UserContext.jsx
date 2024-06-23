@@ -7,6 +7,7 @@ import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import {GiftedChat} from 'react-native-gifted-chat';
 import {useConfirmPayment} from '@stripe/stripe-react-native';
+import {client, xml} from '@xmpp/client';
 
 const UserContext = createContext();
 
@@ -24,6 +25,7 @@ export const UserProvider = ({children}) => {
   const [transactionDetails, setTransactionDetails] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [xmppClient, setXmppClient] = useState(null);
 
   const requestUserPermission = async () => {
     try {
@@ -63,6 +65,57 @@ export const UserProvider = ({children}) => {
     setLoadingFavorites(true);
   };
 
+  const connectXMPP = async user => {
+    try {
+      const token = await messaging().getToken();
+      console.log('XMPP Token:', token);
+
+      const xmpp = client({
+        service: 'ws://10.0.0.242:5222', // XMPP server address
+        domain: 'localhost',
+        resource: 'example',
+      });
+
+      xmpp.on('error', err => {
+        console.error('XMPP Error:', err);
+      });
+
+      xmpp.on('offline', () => {
+        console.log('XMPP Client is offline');
+      });
+
+      xmpp.on('stanza', stanza => {
+        if (stanza.is('message')) {
+          console.log('Incoming message:', stanza.toString());
+          const message = {
+            _id: stanza.attrs.id,
+            text: stanza.getChildText('body'),
+            createdAt: new Date(),
+            user: {
+              _id: stanza.attrs.from,
+            },
+          };
+          setMessages(previousMessages =>
+            GiftedChat.append(previousMessages, message),
+          );
+        }
+      });
+
+      xmpp.on('online', async address => {
+        console.log('XMPP Client is online as', address.toString());
+
+        // Send a presence stanza
+        const presence = xml('presence', {});
+        await xmpp.send(presence);
+      });
+
+      await xmpp.start();
+      setXmppClient(xmpp);
+    } catch (error) {
+      console.error('Error connecting to XMPP:', error);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async currentUser => {
       resetLoadingStates();
@@ -70,6 +123,7 @@ export const UserProvider = ({children}) => {
         setUser(currentUser);
         requestUserPermission();
         getToken();
+        connectXMPP(currentUser);
         setEmail(currentUser.email);
         await fetchUserAds();
         await fetchAllAds();
@@ -116,11 +170,18 @@ export const UserProvider = ({children}) => {
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       console.log('Foreground notification:', remoteMessage);
-      Alert.alert(
-        remoteMessage.notification.title,
-        remoteMessage.notification.body,
-      );
+
+      // Check if remoteMessage.notification is defined
+      if (remoteMessage.notification) {
+        Alert.alert(
+          remoteMessage.notification.title,
+          remoteMessage.notification.body,
+        );
+      } else {
+        console.log('Notification data is missing in the message');
+      }
     });
+
     return unsubscribe;
   }, []);
 
@@ -832,6 +893,7 @@ export const UserProvider = ({children}) => {
         setPreferredMethod,
         editPaymentDetails,
         deletePaymentMethod,
+        xmppClient,
       }}>
       {children}
     </UserContext.Provider>
