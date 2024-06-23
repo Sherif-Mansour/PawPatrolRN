@@ -7,7 +7,6 @@ import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import {GiftedChat} from 'react-native-gifted-chat';
 import {useConfirmPayment} from '@stripe/stripe-react-native';
-import notifee, {EventType} from '@notifee/react-native'; // Importing Notifee
 
 const UserContext = createContext();
 
@@ -25,6 +24,37 @@ export const UserProvider = ({children}) => {
   const [transactionDetails, setTransactionDetails] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+
+  const requestUserPermission = async () => {
+    try {
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (enabled) {
+        console.log('Authorization status:', authStatus);
+      }
+    } catch (err) {
+      console.log('Error requesting permission:', err);
+    }
+  };
+
+  const getToken = async () => {
+    try {
+      const token = await messaging().getToken();
+      console.log('Token:', token);
+
+      if (user) {
+        // Save the FCM token to Firestore
+        await firestore().collection('profiles').doc(user.uid).update({
+          fcmToken: token,
+        });
+      }
+    } catch (err) {
+      console.log('Error getting token:', err);
+    }
+  };
 
   const resetLoadingStates = () => {
     setLoading(true);
@@ -68,40 +98,6 @@ export const UserProvider = ({children}) => {
   }, []);
 
   useEffect(() => {
-    const requestUserPermission = async () => {
-      try {
-        const authStatus = await messaging().requestPermission();
-        const enabled =
-          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-          authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-        if (enabled) {
-          console.log('Authorization status:', authStatus);
-        }
-      } catch (err) {
-        console.log('Error requesting permission:', err);
-      }
-    };
-
-    const getToken = async () => {
-      try {
-        const token = await messaging().getToken();
-        console.log('Token:', token);
-
-        if (user) {
-          // Save the FCM token to Firestore
-          await firestore().collection('profiles').doc(user.uid).update({
-            fcmToken: token,
-          });
-        }
-      } catch (err) {
-        console.log('Error getting token:', err);
-      }
-    };
-
-    requestUserPermission();
-    getToken();
-
     const unsubscribe = messaging().onTokenRefresh(token => {
       console.log('Refreshed token:', token);
 
@@ -116,18 +112,16 @@ export const UserProvider = ({children}) => {
     return () => unsubscribe();
   }, [user]);
 
-  // Notification handler
+  // Notification handler for foreground
   useEffect(() => {
-    const handleForegroundNotification = async message => {
-      console.log('Foreground notification:', message);
-      await notifee.displayNotification({
-        title: message.notification.title,
-        body: message.notification.body,
-      });
-    };
-
-    const unsubscribe = messaging().onMessage(handleForegroundNotification);
-    return () => unsubscribe();
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log('Foreground notification:', remoteMessage);
+      Alert.alert(
+        remoteMessage.notification.title,
+        remoteMessage.notification.body,
+      );
+    });
+    return unsubscribe;
   }, []);
 
   async function onGoogleButtonPress(navigation) {
@@ -474,6 +468,31 @@ export const UserProvider = ({children}) => {
         .doc(chatId)
         .collection('messages')
         .add(messageData);
+
+      // Fetch the recipient's FCM token from their profile
+      const chatDoc = await firestore().collection('chats').doc(chatId).get();
+      const participants = chatDoc.data().participants;
+      const recipientId = participants.find(id => id !== user.uid);
+      const recipientProfile = await firestore()
+        .collection('profiles')
+        .doc(recipientId)
+        .get();
+      const recipientFcmToken = recipientProfile.data().fcmToken;
+
+      // Send a push notification
+      if (recipientFcmToken) {
+        await messaging().sendMessage({
+          token: recipientFcmToken,
+          notification: {
+            title: 'New Message',
+            body: text,
+          },
+        });
+        console.log('Notification sent successfully');
+      } else {
+        console.log('No FCM token found for recipient');
+      }
+
       console.log('Message sent successfully');
     } catch (error) {
       console.error('Error sending message:', error);
@@ -492,6 +511,30 @@ export const UserProvider = ({children}) => {
           createdAt: firestore.FieldValue.serverTimestamp(),
           userId: user.uid,
         });
+
+      // Fetch the recipient's FCM token from their profile
+      const chatDoc = await firestore().collection('chats').doc(chatId).get();
+      const participants = chatDoc.data().participants;
+      const recipientId = participants.find(id => id !== user.uid);
+      const recipientProfile = await firestore()
+        .collection('profiles')
+        .doc(recipientId)
+        .get();
+      const recipientFcmToken = recipientProfile.data().fcmToken;
+
+      // Send a push notification
+      if (recipientFcmToken) {
+        await messaging().sendMessage({
+          token: recipientFcmToken,
+          notification: {
+            title: 'New Image Message',
+            body: 'You have received a new image',
+          },
+        });
+        console.log('Notification sent successfully');
+      } else {
+        console.log('No FCM token found for recipient');
+      }
     }
   };
 
