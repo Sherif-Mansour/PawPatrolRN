@@ -1,123 +1,155 @@
-import React from 'react';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {View, Text, ScrollView, StyleSheet} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {Button, useTheme} from 'react-native-paper';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, Alert, Image } from 'react-native';
+import firestore from '@react-native-firebase/firestore';
+import { useUser } from '../../utils/UserContext';
+import { Card } from 'react-native-paper';
 
 const BookingScreen = () => {
-  const navigation = useNavigation();
-  const theme = useTheme();
+  const [upcomingRequests, setUpcomingRequests] = useState([]);
+  const [pastRequests, setPastRequests] = useState([]);
+  const { user } = useUser();
 
-  // will fetch data future
-  const bookings = [];
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const requestsSnapshot = await firestore()
+          .collection('appointments')
+          .where('status', '==', 'approved')
+          .where('participants', 'array-contains', user.uid)
+          .get();
 
-  // fake booking history here now:
-  const bookingHistory = [
-    {id: 1, serviceName: 'Dog Walking', name: 'John', date: '2022-05-20'},
-    {id: 2, serviceName: 'Pet Grooming', name: 'Alice', date: '2022-06-15'},
-    {id: 3, serviceName: 'Vet Appointment', name: 'Sarah', date: '2023-10-10'},
-  ];
+        const fetchedRequests = await Promise.all(
+          requestsSnapshot.docs.map(async doc => {
+            const requestData = doc.data();
+            const otherUserId = requestData.participants.find(
+              participant => participant !== user.uid
+            );
+            const otherUserProfile = await fetchUserProfile(otherUserId);
+            return {
+              id: doc.id,
+              ...requestData,
+              otherUserProfile,
+            };
+          })
+        );
+
+        const now = new Date();
+        const upcoming = fetchedRequests.filter(request => new Date(request.date) >= now);
+        const past = fetchedRequests.filter(request => new Date(request.date) < now);
+
+        setUpcomingRequests(upcoming);
+        setPastRequests(past);
+      } catch (error) {
+        console.error('Error fetching approved requests:', error);
+        Alert.alert('Error', 'There was an error fetching approved requests.');
+      }
+    };
+
+    fetchRequests();
+  }, [user.uid]);
+
+  const fetchUserProfile = async userId => {
+    const userProfileRef = firestore().collection('profiles').doc(userId);
+    const userProfileDoc = await userProfileRef.get();
+    if (userProfileDoc.exists) {
+      return userProfileDoc.data();
+    }
+    return null;
+  };
+
+  const renderRequest = ({ item }) => (
+    <Card style={styles.card}>
+      <View style={styles.cardContent}>
+        {item.otherUserProfile?.profilePicture ? (
+          <Image
+            source={{ uri: item.otherUserProfile.profilePicture }}
+            style={styles.profilePicture}
+          />
+        ) : (
+          <Image
+            source={require('../../assets/images/default-profile.jpg')}
+            style={styles.profilePicture}
+          />
+        )}
+        <View style={styles.infoContainer}>
+          <Text style={styles.nameText}>
+            Request with {item.otherUserProfile?.firstName} {item.otherUserProfile?.lastName}
+          </Text>
+          <Text style={styles.dateText}>Date: {item.date} - Time: {item.time}</Text>
+          <Text style={styles.locationText}>Location: {item.location}</Text>
+          <Text style={styles.priceText}>Price: {item.price}</Text>
+        </View>
+      </View>
+    </Card>
+  );
 
   return (
-    <SafeAreaProvider>
-      <ScrollView contentContainerStyle={styles.ScrollView}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerText}>Bookings</Text>
-        </View>
+    <View style={styles.container}>
+      <Text style={styles.sectionTitle}>Upcoming Requests</Text>
+      {upcomingRequests.length === 0 ? (
+        <Text>No upcoming requests available.</Text>
+      ) : (
+        <FlatList
+          data={upcomingRequests}
+          renderItem={renderRequest}
+          keyExtractor={item => item.id}
+        />
+      )}
 
-        {/* if there is no upcoming booking, then show this card to let user go to home page */}
-        {bookings.length === 0 ? (
-          <View style={styles.noBookingContainer}>
-            <Text style={styles.emoji}>🐕‍🦺</Text>
-            <Text style={styles.noBookingText}>No Bookings Yet</Text>
-            <Text style={styles.noBookingSubText}>
-              Time to find some lovely services for your pets
-            </Text>
-            <Button
-              mode="contained"
-              // need to work out how to navigate to home page.
-              onPress={() => navigation.navigate('Home')}>
-              Start Searching
-            </Button>
-          </View>
-        ) : (
-          <View>{/* new bookings here */}</View>
-        )}
-
-        <View style={styles.historyHeaderContainer}>
-          <Text style={styles.historyHeaderText}>Booking History</Text>
-        </View>
-
-        {bookingHistory.map(booking => (
-          <View key={booking.id} style={styles.historyContainer}>
-            <Text style={styles.historyText}>
-              Service Name: {booking.serviceName}
-            </Text>
-            <Text style={styles.historyText}>Name: {booking.name}</Text>
-            <Text style={styles.historyText}>Date: {booking.date}</Text>
-          </View>
-        ))}
-      </ScrollView>
-    </SafeAreaProvider>
+      <Text style={styles.sectionTitle}>Past Requests</Text>
+      {pastRequests.length === 0 ? (
+        <Text>No past requests available.</Text>
+      ) : (
+        <FlatList
+          data={pastRequests}
+          renderItem={renderRequest}
+          keyExtractor={item => item.id}
+        />
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  ScrollView: {
-    flexGrow: 1,
-    padding: 16,
+  container: {
+    flex: 1,
+    padding: 20,
     backgroundColor: '#FFF3D6',
   },
-  headerContainer: {
-    marginBottom: 16,
-  },
-  headerText: {
-    fontSize: 32,
-    color: 'black',
-  },
-  noBookingContainer: {
-    margin: 10,
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderColor: 'grey',
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 16,
-    backgroundColor: '#f9f9f9',
-  },
-  emoji: {
-    fontSize: 48,
-  },
-  noBookingText: {
-    fontSize: 28,
-    marginBottom: 8,
-  },
-  noBookingSubText: {
-    margin: 12,
-    textAlign: 'center',
-    color: '#555',
-  },
-  historyHeaderContainer: {
-    marginTop: 16,
-    marginBottom: 16,
-  },
-  historyHeaderText: {
+  sectionTitle: {
     fontSize: 20,
-    color: 'black',
+    marginVertical: 10,
+    fontWeight: 'bold',
   },
-  historyContainer: {
-    margin: 10,
+  card: {
+    marginBottom: 10,
+  },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 10,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderRadius: 10,
-    borderColor: 'grey',
   },
-  historyText: {
+  profilePicture: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  infoContainer: {
+    flex: 1,
+  },
+  nameText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  dateText: {
     fontSize: 16,
-    color: '#333',
-    marginBottom: 4,
+  },
+  locationText: {
+    fontSize: 16,
+  },
+  priceText: {
+    fontSize: 16,
   },
 });
 
