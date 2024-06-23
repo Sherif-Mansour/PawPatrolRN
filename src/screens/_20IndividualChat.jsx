@@ -1,6 +1,6 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {View, StyleSheet} from 'react-native';
-import {useRoute} from '@react-navigation/native';
+import {useRoute, useNavigation} from '@react-navigation/native';
 import {GiftedChat, Bubble, Send} from 'react-native-gifted-chat';
 import {IconButton, Button, useTheme} from 'react-native-paper';
 import {useUser} from '../../utils/UserContext';
@@ -11,6 +11,7 @@ const IndividualChat = () => {
   const {user, sendMessage, subscribeToMessages, sendMultimediaMessage} =
     useUser();
   const route = useRoute();
+  const navigation = useNavigation();
   const {chatId} = route.params;
   const [messages, setMessages] = useState([]);
 
@@ -22,16 +23,19 @@ const IndividualChat = () => {
     return () => unsubscribe();
   }, [chatId]);
 
-  const onSend = useCallback((messages = []) => {
-    console.log('Sending messages:', messages);
-    messages.forEach(message => {
-      if (message.image) {
-        sendMultimediaMessage(chatId, message.image);
-      } else {
-        sendMessage(chatId, message.text);
-      }
-    });
-  }, []);
+  const onSend = useCallback(
+    (messages = []) => {
+      console.log('Sending messages:', messages);
+      messages.forEach(message => {
+        if (message.image) {
+          sendMultimediaMessage(chatId, message.image);
+        } else {
+          sendMessage(chatId, message.text);
+        }
+      });
+    },
+    [chatId],
+  );
 
   const renderBubble = props => (
     <Bubble
@@ -69,21 +73,6 @@ const IndividualChat = () => {
     });
   };
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-    },
-    sendingContainer: {
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: 10,
-    },
-    imageButton: {
-      margin: 10,
-    },
-  });
-
   return (
     <View style={styles.container}>
       <GiftedChat
@@ -97,6 +86,20 @@ const IndividualChat = () => {
         renderBubble={renderBubble}
         renderSend={renderSend}
       />
+      <View style={styles.buttonContainer}>
+        <Button
+          icon="calendar"
+          mode="contained"
+          onPress={() => navigation.navigate('BookAppointment', {chatId})}>
+          Book Appointment
+        </Button>
+        <Button
+          icon="alert"
+          mode="contained"
+          onPress={() => navigation.navigate('PendingAppointments', {chatId})}>
+          Pending Approvals
+        </Button>
+      </View>
       <Button
         icon="camera"
         mode="contained"
@@ -107,5 +110,25 @@ const IndividualChat = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  sendingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 10,
+  },
+  imageButton: {
+    margin: 10,
+  },
+});
 
 export default IndividualChat;
