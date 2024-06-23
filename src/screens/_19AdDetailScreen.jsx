@@ -1,17 +1,34 @@
-import React from 'react';
-import {View, Text, StyleSheet, Image, ScrollView} from 'react-native';
+import React, {useEffect} from 'react';
+import {View, Text, StyleSheet, Image, ScrollView, Alert} from 'react-native';
 import {useTheme, Card, Button} from 'react-native-paper';
-import {useRoute} from '@react-navigation/native';
 import {useUser} from '../../utils/UserContext';
 
-const AdDetails = ({navigation}) => {
+const AdDetails = ({navigation, route}) => {
   const theme = useTheme();
-  const {user, createChat} = useUser();
-  const route = useRoute();
+  const {user, createChat, fetchUserProfile, isProfileComplete} = useUser();
   const {ad} = route.params;
 
-  console.log('Ad object in AdDetails:', ad);
-  console.log('User object in AdDetails:', user);
+  useEffect(() => {
+    const checkProfileCompletion = async () => {
+      if (user) {
+        const profileData = await fetchUserProfile();
+        if (!isProfileComplete(profileData)) {
+          Alert.alert(
+            'Profile Incomplete',
+            'Please complete your profile before contacting the seller.',
+            [
+              {
+                text: 'Go to Profile',
+                onPress: () => navigation.navigate('Profile'),
+              },
+            ],
+            {cancelable: false},
+          );
+        }
+      }
+    };
+    checkProfileCompletion();
+  }, [user, fetchUserProfile, isProfileComplete, navigation]);
 
   const handleContactPress = async () => {
     if (!user || !ad.userId) {
@@ -19,6 +36,38 @@ const AdDetails = ({navigation}) => {
       return;
     }
     try {
+      const profileData = await fetchUserProfile();
+      if (!isProfileComplete(profileData)) {
+        Alert.alert(
+          'Profile Incomplete',
+          'Please complete your profile before contacting the seller.',
+          [
+            {
+              text: 'Go to Profile',
+              onPress: () => navigation.navigate('Profile'),
+            },
+          ],
+          {cancelable: false},
+        );
+        return;
+      }
+
+      const adUserProfile = await fetchUserProfile(ad.userId);
+      if (!isProfileComplete(adUserProfile)) {
+        Alert.alert(
+          'Seller Profile Incomplete',
+          'The seller has an incomplete profile. Contacting them is not allowed at the moment.',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('Home'),
+            },
+          ],
+          {cancelable: false},
+        );
+        return;
+      }
+
       const chatId = await createChat(user.uid, ad.userId);
       if (chatId) {
         navigation.navigate('IndividualChat', {chatId});

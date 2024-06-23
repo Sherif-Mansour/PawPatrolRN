@@ -1,19 +1,16 @@
 import React, {useState, useEffect} from 'react';
 import {
   View,
-  Text,
-  TextInput,
   StyleSheet,
   Alert,
   TouchableOpacity,
+  FlatList,
   Image,
 } from 'react-native';
-import {Button, useTheme} from 'react-native-paper';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import {Button, TextInput, useTheme, Text} from 'react-native-paper';
 import {useUser} from '../../utils/UserContext';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
-import {FlatList} from 'react-native';
 
 const categories = [
   'Grooming',
@@ -31,7 +28,16 @@ const categories = [
 
 const Ad = ({navigation}) => {
   const theme = useTheme();
-  const {createOrUpdateAd, uploadImage, currentAd, setCurrentAd} = useUser();
+  const {
+    user,
+    createOrUpdateAd,
+    uploadImage,
+    currentAd,
+    setCurrentAd,
+    fetchUserProfile,
+    isProfileComplete,
+    fetchAllAds,
+  } = useUser();
 
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
@@ -77,20 +83,37 @@ const Ad = ({navigation}) => {
     const trimmedAddress = address.trim();
 
     if (title && price && trimmedAddress && services.length > 0 && category) {
-      const adData = {
-        id: currentAd?.id,
-        title,
-        price,
-        description,
-        pictures,
-        mainPicture,
-        services,
-        address: trimmedAddress,
-        category,
-        serviceHours,
-        expiryDate,
-      };
       try {
+        const profileData = await fetchUserProfile();
+        if (!isProfileComplete(profileData)) {
+          Alert.alert(
+            'Profile Incomplete',
+            'Please complete your profile before posting an ad.',
+            [
+              {
+                text: 'Go to Profile',
+                onPress: () => navigation.navigate('Profile'),
+              },
+            ],
+            {cancelable: false},
+          );
+          return;
+        }
+
+        const adData = {
+          id: currentAd?.id,
+          title,
+          price,
+          description,
+          pictures,
+          mainPicture,
+          services,
+          address: trimmedAddress,
+          category,
+          serviceHours,
+          expiryDate,
+        };
+
         await createOrUpdateAd(adData);
         Alert.alert('Success', 'Your ad has been saved successfully');
         setCurrentAd(null); // Clear current ad after saving
@@ -122,21 +145,13 @@ const Ad = ({navigation}) => {
 
   const renderCategoryButtons = () =>
     categories.map(cat => (
-      <TouchableOpacity
+      <Button
         key={cat}
-        style={[
-          styles.categoryButton,
-          category === cat ? styles.selectedCategoryButton : null,
-        ]}
-        onPress={() => setCategory(cat)}>
-        <Text
-          style={[
-            styles.categoryButtonText,
-            category === cat ? styles.selectedCategoryButtonText : null,
-          ]}>
-          {cat}
-        </Text>
-      </TouchableOpacity>
+        mode={category === cat ? 'contained' : 'outlined'}
+        onPress={() => setCategory(cat)}
+        style={styles.categoryButton}>
+        {cat}
+      </Button>
     ));
 
   const showExpiryDatePicker = () => {
@@ -147,9 +162,9 @@ const Ad = ({navigation}) => {
     setExpiryDatePickerVisibility(false);
   };
 
-  const handleExpiryConfirm = (event, date) => {
-    if (date) {
-      setExpiryDate(date.toISOString().split('T')[0]);
+  const handleExpiryConfirm = (event, selectedDate) => {
+    if (selectedDate) {
+      setExpiryDate(selectedDate.toISOString().split('T')[0]);
     }
     hideExpiryDatePicker();
   };
@@ -158,19 +173,19 @@ const Ad = ({navigation}) => {
     container: {
       flex: 1,
       padding: 16,
-      backgroundColor: '#FFF3D6',
+      backgroundColor: theme.colors.background,
     },
     inputsContainer: {
-      backgroundColor: theme.colors.secondaryContainer,
+      backgroundColor: theme.colors.surface,
       padding: 20,
       borderRadius: 10,
     },
     label: {
-      color: 'black',
+      color: theme.colors.text,
       marginBottom: 5,
     },
     requiredLabel: {
-      color: 'black',
+      color: theme.colors.text,
       marginBottom: 5,
       flexDirection: 'row',
       alignItems: 'center',
@@ -179,10 +194,8 @@ const Ad = ({navigation}) => {
       color: 'red',
     },
     input: {
-      backgroundColor: 'white',
-      padding: 10,
+      backgroundColor: theme.colors.background,
       marginBottom: 10,
-      borderRadius: 5,
     },
     categoriesContainer: {
       flexDirection: 'row',
@@ -190,19 +203,7 @@ const Ad = ({navigation}) => {
       marginVertical: 10,
     },
     categoryButton: {
-      backgroundColor: '#007bff',
-      padding: 10,
-      borderRadius: 5,
       margin: 5,
-    },
-    selectedCategoryButton: {
-      backgroundColor: '#0056b3',
-    },
-    categoryButtonText: {
-      color: 'white',
-    },
-    selectedCategoryButtonText: {
-      fontWeight: 'bold',
     },
     button: {
       marginBottom: 20,
@@ -218,7 +219,7 @@ const Ad = ({navigation}) => {
       borderColor: 'green',
     },
     note: {
-      color: 'black',
+      color: theme.colors.text,
       fontSize: 12,
       marginBottom: 15,
     },
@@ -232,7 +233,7 @@ const Ad = ({navigation}) => {
       color: theme.colors.primary,
     },
     expiryDateText: {
-      backgroundColor: 'white',
+      backgroundColor: theme.colors.background,
       padding: 10,
       borderRadius: 5,
       textAlign: 'center',
@@ -242,10 +243,10 @@ const Ad = ({navigation}) => {
       marginBottom: 10,
     },
     title: {
-      fontSize: 32,
+      fontSize: 24,
       fontWeight: 'bold',
-      color: 'black',
-      backgroundColor: theme.colors.secondaryContainer,
+      color: theme.colors.text,
+      marginBottom: 20,
     },
     rowContainer: {
       flexDirection: 'row',
@@ -264,49 +265,10 @@ const Ad = ({navigation}) => {
         <>
           <Text style={styles.title}>Post Listing Details:</Text>
           <View style={styles.inputsContainer}>
-            <View style={styles.requiredLabel}>
-              <Text style={styles.label}>Category</Text>
-              <Text style={styles.requiredStar}>*</Text>
-            </View>
-            <View style={styles.categoriesContainer}>
-              {renderCategoryButtons()}
-            </View>
-            <View style={styles.requiredLabel}>
-              <Text style={styles.label}>Title</Text>
-              <Text style={styles.requiredStar}>*</Text>
-            </View>
-            <TextInput
-              style={styles.input}
-              value={title}
-              onChangeText={setTitle}
-              maxLength={100}
-              placeholder="Enter title"
-            />
-            <View style={styles.requiredLabel}>
-              <Text style={styles.label}>Price</Text>
-              <Text style={styles.requiredStar}>*</Text>
-            </View>
-            <TextInput
-              style={styles.input}
-              value={price}
-              onChangeText={setPrice}
-              placeholder="e.g. 50, TBD, Contact for more info"
-            />
-            <Text style={styles.label}>Description</Text>
-            <TextInput
-              style={styles.input}
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              placeholder="Enter description"
-            />
-            <View style={styles.requiredLabel}>
-              <Text style={styles.label}>Address</Text>
-              <Text style={styles.requiredStar}>*</Text>
-            </View>
+            <TextInput label="Address" style={styles.input} editable={false} />
             <View style={styles.addressContainer}>
               <GooglePlacesAutocomplete
-                placeholder="Search for an address"
+                placeholder="Enter Address"
                 onPress={(data, details = null) => {
                   const fullAddress = details
                     ? details.formatted_address
@@ -319,7 +281,11 @@ const Ad = ({navigation}) => {
                   language: 'en',
                 }}
                 styles={{
-                  textInput: styles.input,
+                  textInput: {
+                    backgroundColor: theme.colors.background,
+                    padding: 10,
+                    borderRadius: 5,
+                  },
                 }}
                 fetchDetails={true}
                 textInputProps={{
@@ -328,23 +294,16 @@ const Ad = ({navigation}) => {
                 }}
                 debounce={200}
                 enablePoweredByContainer={false}
-                keyboardShouldPersistTaps="always"
+                keyboardShouldPersistTaps="handled"
+                listViewDisplayed="auto"
               />
             </View>
-            <View style={styles.rowContainer}>
-              <Text style={[styles.label, styles.labelContainer]}>
-                Pictures
-              </Text>
-              <Button
-                onPress={handleSelectImage}
-                style={styles.selectButton}
-                labelStyle={styles.selectButtonLabel}>
-                Select Pictures
-              </Button>
-            </View>
-            <Text style={styles.note}>
-              Tap an image to select it as the main picture:
-            </Text>
+            <TextInput
+              label="Pictures"
+              style={styles.input}
+              placeholder="Select Pictures"
+              editable={false}
+            />
             <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
               {pictures.map((pic, index) => (
                 <TouchableOpacity
@@ -360,52 +319,59 @@ const Ad = ({navigation}) => {
                 </TouchableOpacity>
               ))}
             </View>
-            <View style={styles.requiredLabel}>
-              <Text style={styles.label}>Services Offered & Prices</Text>
-              <Text style={styles.requiredStar}>*</Text>
+            <Button
+              onPress={handleSelectImage}
+              style={styles.selectButton}
+              labelStyle={styles.selectButtonLabel}>
+              Select Pictures
+            </Button>
+            <TextInput label="Category" style={styles.input} editable={false} />
+            <View style={styles.categoriesContainer}>
+              {renderCategoryButtons()}
             </View>
             <TextInput
+              label="Title"
+              value={title}
+              onChangeText={setTitle}
               style={styles.input}
+              placeholder="Enter Title"
+              right={<TextInput.Affix text="*" />}
+            />
+            <TextInput
+              label="Price"
+              value={price}
+              onChangeText={setPrice}
+              style={styles.input}
+              placeholder="e.g. 50, TBD, Contact for more info"
+              right={<TextInput.Affix text="*" />}
+            />
+            <TextInput
+              label="Description"
+              value={description}
+              onChangeText={setDescription}
+              style={styles.input}
+              multiline
+              placeholder="Enter Description"
+            />
+            <TextInput
+              label="Services Offered & Prices"
               value={services.join('\n')}
               onChangeText={text => setServices(text.split('\n'))}
-              multiline
-              placeholder="Enter services and prices"
-            />
-            <Text style={styles.label}>Service Hours</Text>
-            <TextInput
               style={styles.input}
+              multiline
+              placeholder="Enter Services and Prices"
+              right={<TextInput.Affix text="*" />}
+            />
+            <TextInput
+              label="Service Hours"
               value={serviceHours}
               onChangeText={setServiceHours}
+              style={styles.input}
               placeholder="e.g. 9am - 5pm"
-            />
-            <View style={styles.rowContainer}>
-              <Text style={[styles.label, styles.labelContainer]}>
-                Listing Expiry Date
-              </Text>
-              <Button
-                onPress={showExpiryDatePicker}
-                style={styles.selectButton}
-                labelStyle={styles.selectButtonLabel}>
-                Select Expiry Date
-              </Button>
-            </View>
-            {isExpiryDatePickerVisible && (
-              <DateTimePicker
-                value={new Date()}
-                mode="date"
-                display="default"
-                onChange={handleExpiryConfirm}
-              />
-            )}
-            <TextInput
-              style={[styles.input, styles.expiryDateText]}
-              value={expiryDate}
-              editable={false}
-              placeholder="Selected Expiry Date"
             />
             <Button
               mode="contained"
-              buttonColor="#FFBF5D"
+              buttonColor={theme.colors.primary}
               contentStyle={{width: '100%'}}
               onPress={saveAd}
               style={styles.button}>

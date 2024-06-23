@@ -25,6 +25,37 @@ export const UserProvider = ({children}) => {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
+  const requestUserPermission = async () => {
+    try {
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (enabled) {
+        console.log('Authorization status:', authStatus);
+      }
+    } catch (err) {
+      console.log('Error requesting permission:', err);
+    }
+  };
+
+  const getToken = async () => {
+    try {
+      const token = await messaging().getToken();
+      console.log('Token:', token);
+
+      if (user) {
+        // Save the FCM token to Firestore
+        await firestore().collection('profiles').doc(user.uid).update({
+          fcmToken: token,
+        });
+      }
+    } catch (err) {
+      console.log('Error getting token:', err);
+    }
+  };
+
   const resetLoadingStates = () => {
     setLoading(true);
     setLoadingUserAds(true);
@@ -37,6 +68,8 @@ export const UserProvider = ({children}) => {
       resetLoadingStates();
       if (currentUser) {
         setUser(currentUser);
+        requestUserPermission();
+        getToken();
         setEmail(currentUser.email);
         await fetchUserAds();
         await fetchAllAds();
@@ -65,38 +98,30 @@ export const UserProvider = ({children}) => {
   }, []);
 
   useEffect(() => {
-    const requestUserPermission = async () => {
-      try {
-        const authStatus = await messaging().requestPermission();
-        const enabled =
-          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-          authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-        if (enabled) {
-          console.log('Authorization status:', authStatus);
-        }
-      } catch (err) {
-        console.log('Error requesting permission:', err);
-      }
-    };
-
-    const getToken = async () => {
-      try {
-        const token = await messaging().getToken();
-        console.log('Token:', token);
-      } catch (err) {
-        console.log('Error getting token:', err);
-      }
-    };
-
-    requestUserPermission();
-    getToken();
-
     const unsubscribe = messaging().onTokenRefresh(token => {
       console.log('Refreshed token:', token);
+
+      if (user) {
+        // Save the refreshed FCM token to Firestore
+        firestore().collection('profiles').doc(user.uid).update({
+          fcmToken: token,
+        });
+      }
     });
 
     return () => unsubscribe();
+  }, [user]);
+
+  // Notification handler for foreground
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log('Foreground notification:', remoteMessage);
+      Alert.alert(
+        remoteMessage.notification.title,
+        remoteMessage.notification.body,
+      );
+    });
+    return unsubscribe;
   }, []);
 
   async function onGoogleButtonPress(navigation) {
@@ -187,10 +212,10 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const fetchUserProfile = async () => {
-    if (!user) throw new Error('User not logged in');
+  const fetchUserProfile = async (userId = user.uid) => {
+    if (!userId) throw new Error('User ID is missing');
 
-    const userProfileRef = firestore().collection('profiles').doc(user.uid);
+    const userProfileRef = firestore().collection('profiles').doc(userId);
     const userProfileDoc = await userProfileRef.get();
 
     if (userProfileDoc.exists) {
@@ -217,9 +242,39 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const createOrUpdateAd = async adData => {
+  const isProfileComplete = profile => {
+    return (
+      profile &&
+      profile.firstName &&
+      profile.lastName &&
+      profile.phoneNo &&
+      profile.address &&
+      profile.firstName.trim() !== '' &&
+      profile.lastName.trim() !== '' &&
+      profile.phoneNo.trim() !== '' &&
+      profile.address.trim() !== ''
+    );
+  };
+
+  const createOrUpdateAd = async (adData, navigation) => {
     try {
       if (!user) throw new Error('User not logged in');
+
+      const profileData = await fetchUserProfile();
+      if (!isProfileComplete(profileData)) {
+        Alert.alert(
+          'Profile Incomplete',
+          'Please complete your profile before creating an ad.',
+          [
+            {
+              text: 'Go to Profile',
+              onPress: () => navigation.navigate('Profile'),
+            },
+          ],
+          {cancelable: false},
+        );
+        return;
+      }
 
       const userAdRef = firestore()
         .collection('ads')
@@ -229,12 +284,10 @@ export const UserProvider = ({children}) => {
       let adDocRef;
 
       if (adData.id) {
-        // If adData already has an ID, update the existing ad
         adDocRef = userAdRef.doc(adData.id);
       } else {
-        // If adData does not have an ID, create a new ad with an auto-generated ID
-        adDocRef = userAdRef.doc(); // Firestore will generate a unique ID
-        adData.id = adDocRef.id; // Associate the auto-generated ID with the ad data
+        adDocRef = userAdRef.doc();
+        adData.id = adDocRef.id;
       }
 
       const adDataWithUserId = {
@@ -244,9 +297,8 @@ export const UserProvider = ({children}) => {
         updatedAt: firestore.FieldValue.serverTimestamp(),
       };
 
-      console.log('Setting ad data:', adDataWithUserId); // Log the ad data being set
+      console.log('Setting ad data:', adDataWithUserId);
 
-      // Set ad data and timestamps
       await adDocRef.set(adDataWithUserId);
 
       if (adData.id) {
@@ -416,6 +468,31 @@ export const UserProvider = ({children}) => {
         .doc(chatId)
         .collection('messages')
         .add(messageData);
+
+      // Fetch the recipient's FCM token from their profile
+      const chatDoc = await firestore().collection('chats').doc(chatId).get();
+      const participants = chatDoc.data().participants;
+      const recipientId = participants.find(id => id !== user.uid);
+      const recipientProfile = await firestore()
+        .collection('profiles')
+        .doc(recipientId)
+        .get();
+      const recipientFcmToken = recipientProfile.data().fcmToken;
+
+      // Send a push notification
+      if (recipientFcmToken) {
+        await messaging().sendMessage({
+          token: recipientFcmToken,
+          notification: {
+            title: 'New Message',
+            body: text,
+          },
+        });
+        console.log('Notification sent successfully');
+      } else {
+        console.log('No FCM token found for recipient');
+      }
+
       console.log('Message sent successfully');
     } catch (error) {
       console.error('Error sending message:', error);
@@ -434,6 +511,30 @@ export const UserProvider = ({children}) => {
           createdAt: firestore.FieldValue.serverTimestamp(),
           userId: user.uid,
         });
+
+      // Fetch the recipient's FCM token from their profile
+      const chatDoc = await firestore().collection('chats').doc(chatId).get();
+      const participants = chatDoc.data().participants;
+      const recipientId = participants.find(id => id !== user.uid);
+      const recipientProfile = await firestore()
+        .collection('profiles')
+        .doc(recipientId)
+        .get();
+      const recipientFcmToken = recipientProfile.data().fcmToken;
+
+      // Send a push notification
+      if (recipientFcmToken) {
+        await messaging().sendMessage({
+          token: recipientFcmToken,
+          notification: {
+            title: 'New Image Message',
+            body: 'You have received a new image',
+          },
+        });
+        console.log('Notification sent successfully');
+      } else {
+        console.log('No FCM token found for recipient');
+      }
     }
   };
 
@@ -475,10 +576,45 @@ export const UserProvider = ({children}) => {
         .collection('chats')
         .where('participants', 'array-contains', userId)
         .get();
-      const userChats = userChatsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const userChats = [];
+
+      for (const doc of userChatsSnapshot.docs) {
+        const chatData = doc.data();
+        const otherUserId = chatData.participants.find(
+          participant => participant !== userId,
+        );
+
+        const otherUserProfileSnapshot = await firestore()
+          .collection('profiles')
+          .doc(otherUserId)
+          .get();
+
+        const otherUserProfile = otherUserProfileSnapshot.data();
+
+        const lastMessageSnapshot = await firestore()
+          .collection('chats')
+          .doc(doc.id)
+          .collection('messages')
+          .orderBy('createdAt', 'desc')
+          .limit(1)
+          .get();
+
+        const lastMessage =
+          lastMessageSnapshot.docs.length > 0
+            ? lastMessageSnapshot.docs[0].data().text
+            : 'No messages yet.';
+
+        console.log('Other User Profile:', otherUserProfile);
+        console.log('Last Message:', lastMessage);
+
+        userChats.push({
+          id: doc.id,
+          otherUserName: `${otherUserProfile.firstName} ${otherUserProfile.lastName}`,
+          otherUserAvatar: otherUserProfile.profilePicture,
+          lastMessageReceived: lastMessage,
+        });
+      }
+
       return userChats;
     } catch (err) {
       console.error('Error fetching user chats:', err);
@@ -677,6 +813,7 @@ export const UserProvider = ({children}) => {
         onGoogleButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
+        isProfileComplete,
         uploadImage,
         createOrUpdateAd,
         signOut,
