@@ -1,16 +1,28 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, FlatList, Alert} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
-import {useUser} from '../../utils/UserContext';
-import {Button, Card} from 'react-native-paper';
+import { useUser } from '../../utils/UserContext';
+import { Button, Card } from 'react-native-paper';
+import { useRoute } from '@react-navigation/native';
 
 const PendingAppointmentsScreen = () => {
   const [appointments, setAppointments] = useState([]);
-  const {user} = useUser();
+  const { user } = useUser();
+  const route = useRoute();
+  const { chatId } = route.params;
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
+        // Fetch chat participants
+        const chatDoc = await firestore().collection('chats').doc(chatId).get();
+        if (!chatDoc.exists) {
+          Alert.alert('Error', 'Chat does not exist.');
+          return;
+        }
+
+        const chatParticipants = chatDoc.data().participants;
+
         const appointmentsSnapshot = await firestore()
           .collection('appointments')
           .where('status', '==', 'pending')
@@ -22,57 +34,55 @@ const PendingAppointmentsScreen = () => {
             id: doc.id,
             ...doc.data(),
           }))
-          .filter(appointment => appointment.requesterId == user.uid);
+          .filter(appointment => {
+            const appointmentParticipants = appointment.participants;
+            return (
+              appointmentParticipants.length === 2 &&
+              appointmentParticipants.includes(chatParticipants[0]) &&
+              appointmentParticipants.includes(chatParticipants[1])
+            );
+          });
 
         setAppointments(fetchedAppointments);
       } catch (error) {
         console.error('Error fetching pending appointments:', error);
-        Alert.alert(
-          'Error',
-          'There was an error fetching pending appointments.',
-        );
+        Alert.alert('Error', 'There was an error fetching pending appointments.');
       }
     };
 
     fetchAppointments();
-  }, [user.uid]);
+  }, [user.uid, chatId]);
 
-  const handleApprove = async appointmentId => {
+  const handleApprove = async (appointmentId) => {
     try {
       await firestore().collection('appointments').doc(appointmentId).update({
         status: 'approved',
       });
       Alert.alert('Success', 'Appointment approved successfully.');
-      setAppointments(
-        appointments.filter(appointment => appointment.id !== appointmentId),
-      );
+      setAppointments(appointments.filter(appointment => appointment.id !== appointmentId));
     } catch (error) {
       console.error('Error approving appointment:', error);
       Alert.alert('Error', 'There was an error approving the appointment.');
     }
   };
 
-  const handleReject = async appointmentId => {
+  const handleReject = async (appointmentId) => {
     try {
       await firestore().collection('appointments').doc(appointmentId).update({
         status: 'rejected',
       });
       Alert.alert('Success', 'Appointment rejected successfully.');
-      setAppointments(
-        appointments.filter(appointment => appointment.id !== appointmentId),
-      );
+      setAppointments(appointments.filter(appointment => appointment.id !== appointmentId));
     } catch (error) {
       console.error('Error rejecting appointment:', error);
       Alert.alert('Error', 'There was an error rejecting the appointment.');
     }
   };
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <Card style={styles.card}>
       <Card.Title
-        title={`Appointment with ${
-          item.participants.filter(participant => participant !== user.uid)[0]
-        }`}
+        title={`Appointment with ${item.participants.filter(participant => participant !== user.uid)[0]}`}
         subtitle={`Date: ${item.date} - Time: ${item.time}`}
       />
       <Card.Content>
