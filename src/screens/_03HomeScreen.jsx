@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
   RefreshControl,
   Image,
 } from 'react-native';
-import { useUser } from '../../utils/UserContext';
+import {useUser} from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
   Searchbar,
@@ -20,8 +20,8 @@ import {
   Modal,
   Portal,
 } from 'react-native-paper';
-import { FlatList, ScrollView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {FlatList, ScrollView} from 'react-native-gesture-handler';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import Map from '../../components/Map';
 import MapContainer from '../../components/MapContainer';
 
@@ -35,7 +35,7 @@ const categories = [
   'Sitting',
 ];
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({navigation}) => {
   const theme = useTheme();
   const {
     ads,
@@ -58,7 +58,6 @@ const HomeScreen = ({ navigation }) => {
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
-
   useEffect(() => {
     if (user) {
       const loadFavorites = async () => {
@@ -73,7 +72,7 @@ const HomeScreen = ({ navigation }) => {
       fetchAllAds();
       setAdsFetched(true);
     }
-  }, [adsFetched, loadingAllAds]);
+  }, [adsFetched, loadingAllAds, fetchAllAds]);
 
   useEffect(() => {
     filterAds();
@@ -119,15 +118,17 @@ const HomeScreen = ({ navigation }) => {
     </Chip>
   );
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({item}) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('AdDetails', { ad: item })}
-    >
+      onPress={() => navigation.navigate('AdDetails', {ad: item})}>
       <Card style={styles.adContainer}>
         {item.picture ? (
-          <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+          <Card.Cover source={{uri: item.picture}} style={styles.adImage} />
         ) : (
-          <Image source={require('../../assets/images/OIP.jpeg')} style={styles.adImage} />
+          <Image
+            source={require('../../assets/images/OIP.jpeg')}
+            style={styles.adImage}
+          />
         )}
         <Card.Title
           titleStyle={styles.adTitle}
@@ -212,16 +213,19 @@ const HomeScreen = ({ navigation }) => {
   return (
     <SafeAreaProvider>
       <Portal>
-        <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalStyle}>
+        <Modal
+          visible={visible}
+          onDismiss={hideModal}
+          contentContainerStyle={styles.modalStyle}>
           <View style={styles.modalContent}>
             <MapContainer />
           </View>
         </Modal>
       </Portal>
       <View style={styles.container}>
-        <View style={{ flexDirection: 'row' }}>
+        <View style={{flexDirection: 'row'}}>
           <Button
-            style={{ backgroundColor: 'transparent' }}
+            style={{backgroundColor: 'transparent'}}
             onPress={showModal}
             icon="map-marker">
             Location
