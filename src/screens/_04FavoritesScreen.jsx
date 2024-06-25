@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { useUser } from '../../utils/UserContext';
-import { Card, Text, Button, useTheme } from 'react-native-paper';
+import {useUser} from '../../utils/UserContext';
+import {Card, Text, Button, useTheme} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const FavoritesScreen = ({ navigation }) => {
+const FavoritesScreen = ({navigation}) => {
   const theme = useTheme();
   const {
     favorites,
@@ -37,15 +37,17 @@ const FavoritesScreen = ({ navigation }) => {
     }
   }, [favorites, ads]);
 
-  const renderAd = ({ item }) => (
+  const renderAd = ({item}) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('AdDetails', { ad: item })}
-    >
+      onPress={() => navigation.navigate('AdDetails', {ad: item})}>
       <Card style={styles.adContainer}>
         {item.picture ? (
-          <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+          <Card.Cover source={{uri: item.picture}} style={styles.adImage} />
         ) : (
-          <Image source={require('../../assets/images/OIP.jpeg')} style={styles.adImage} />
+          <Image
+            source={require('../../assets/images/OIP.jpeg')}
+            style={styles.adImage}
+          />
         )}
         <Card.Title
           titleStyle={styles.adTitle}

@@ -29,10 +29,9 @@ const categories = [
   'Other',
 ];
 
-const Ad = ({navigation, route}) => {
+const Ad = ({navigation}) => {
   const theme = useTheme();
-  const {createOrUpdateAd, uploadImage} = useUser();
-  const adId = route.params?.ad?.id;
+  const {createOrUpdateAd, uploadImage, currentAd, setCurrentAd} = useUser();
 
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
@@ -48,38 +47,38 @@ const Ad = ({navigation, route}) => {
     useState(false);
 
   useEffect(() => {
-    if (route.params?.ad) {
-      const {
-        title,
-        price,
-        description,
-        pictures,
-        mainPicture,
-        services,
-        address,
-        category,
-        serviceHours,
-        expiryDate,
-      } = route.params.ad;
-      setTitle(title);
-      setPrice(price);
-      setDescription(description);
-      setPictures(pictures);
-      setMainPicture(mainPicture);
-      setServices(services);
-      setAddress(address);
-      setCategory(category || categories[0]);
-      setServiceHours(serviceHours);
-      setExpiryDate(expiryDate || '');
+    if (currentAd) {
+      setTitle(currentAd.title);
+      setPrice(currentAd.price);
+      setDescription(currentAd.description);
+      setPictures(currentAd.pictures);
+      setMainPicture(currentAd.mainPicture);
+      setServices(currentAd.services);
+      setAddress(currentAd.address);
+      setCategory(currentAd.category || categories[0]);
+      setServiceHours(currentAd.serviceHours);
+      setExpiryDate(currentAd.expiryDate || '');
+    } else {
+      // Clear fields when currentAd is null
+      setTitle('');
+      setPrice('');
+      setDescription('');
+      setPictures([]);
+      setMainPicture('');
+      setServices([]);
+      setAddress('');
+      setCategory(categories[0]);
+      setServiceHours('');
+      setExpiryDate('');
     }
-  }, [route.params?.ad]);
+  }, [currentAd]);
 
   const saveAd = async () => {
     const trimmedAddress = address.trim();
 
     if (title && price && trimmedAddress && services.length > 0 && category) {
       const adData = {
-        id: adId,
+        id: currentAd?.id,
         title,
         price,
         description,
@@ -94,7 +93,8 @@ const Ad = ({navigation, route}) => {
       try {
         await createOrUpdateAd(adData);
         Alert.alert('Success', 'Your ad has been saved successfully');
-        navigation.navigate('Home'); // Navigate back to the home screen
+        setCurrentAd(null); // Clear current ad after saving
+        navigation.navigate('Home');
       } catch (error) {
         Alert.alert('Error', 'There was an error saving your ad');
         console.error('Error saving ad:', error);
@@ -120,8 +120,8 @@ const Ad = ({navigation, route}) => {
     });
   };
 
-  const renderCategoryButtons = () => {
-    return categories.map(cat => (
+  const renderCategoryButtons = () =>
+    categories.map(cat => (
       <TouchableOpacity
         key={cat}
         style={[
@@ -138,7 +138,6 @@ const Ad = ({navigation, route}) => {
         </Text>
       </TouchableOpacity>
     ));
-  };
 
   const showExpiryDatePicker = () => {
     setExpiryDatePickerVisibility(true);
@@ -250,7 +249,7 @@ const Ad = ({navigation, route}) => {
     },
     rowContainer: {
       flexDirection: 'row',
-      justifyContent: 'space-evenly',
+      justifyContent: 'space-between',
       alignItems: 'center',
     },
     labelContainer: {
@@ -316,7 +315,7 @@ const Ad = ({navigation, route}) => {
                   console.log('Selected address:', fullAddress);
                 }}
                 query={{
-                  key: 'AIzaSyDlNi1nl06y1rcUF00ogB5t0ZPrr0PKASg',
+                  key: 'AIzaSyBMmlNExl86zceWTM0vfYKEkY1HJ-neIWk',
                   language: 'en',
                 }}
                 styles={{

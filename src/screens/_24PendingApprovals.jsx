@@ -2,19 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert, Image } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
-import { Card } from 'react-native-paper';
+import { Button, Card } from 'react-native-paper';
 
-const BookingScreen = () => {
-  const [upcomingRequests, setUpcomingRequests] = useState([]);
-  const [pastRequests, setPastRequests] = useState([]);
+const PendingRequestsScreen = () => {
+  const [requests, setRequests] = useState([]);
   const { user } = useUser();
 
   useEffect(() => {
     const fetchRequests = async () => {
       try {
         const requestsSnapshot = await firestore()
-          .collection('appointments')
-          .where('status', '==', 'approved')
+          .collection('appointments') // Assuming your collection is named 'appointments'
+          .where('status', '==', 'pending')
           .where('participants', 'array-contains', user.uid)
           .get();
 
@@ -33,15 +32,10 @@ const BookingScreen = () => {
           })
         );
 
-        const now = new Date();
-        const upcoming = fetchedRequests.filter(request => new Date(request.date) >= now);
-        const past = fetchedRequests.filter(request => new Date(request.date) < now);
-
-        setUpcomingRequests(upcoming);
-        setPastRequests(past);
+        setRequests(fetchedRequests);
       } catch (error) {
-        console.error('Error fetching approved requests:', error);
-        Alert.alert('Error', 'There was an error fetching approved requests.');
+        console.error('Error fetching pending requests:', error);
+        Alert.alert('Error', 'There was an error fetching pending requests.');
       }
     };
 
@@ -57,7 +51,33 @@ const BookingScreen = () => {
     return null;
   };
 
-  const renderRequest = ({ item }) => (
+  const handleApprove = async requestId => {
+    try {
+      await firestore().collection('appointments').doc(requestId).update({
+        status: 'approved',
+      });
+      Alert.alert('Success', 'Request approved successfully.');
+      setRequests(requests.filter(request => request.id !== requestId));
+    } catch (error) {
+      console.error('Error approving request:', error);
+      Alert.alert('Error', 'There was an error approving the request.');
+    }
+  };
+
+  const handleReject = async requestId => {
+    try {
+      await firestore().collection('appointments').doc(requestId).update({
+        status: 'rejected',
+      });
+      Alert.alert('Success', 'Request rejected successfully.');
+      setRequests(requests.filter(request => request.id !== requestId));
+    } catch (error) {
+      console.error('Error rejecting request:', error);
+      Alert.alert('Error', 'There was an error rejecting the request.');
+    }
+  };
+
+  const renderItem = ({ item }) => (
     <Card style={styles.card}>
       <View style={styles.cardContent}>
         {item.otherUserProfile?.profilePicture ? (
@@ -80,32 +100,21 @@ const BookingScreen = () => {
           <Text style={styles.priceText}>Price: {item.price}</Text>
         </View>
       </View>
+      <Card.Actions>
+        <Button onPress={() => handleApprove(item.id)}>Approve</Button>
+        <Button onPress={() => handleReject(item.id)}>Reject</Button>
+      </Card.Actions>
     </Card>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Upcoming Requests</Text>
-      {upcomingRequests.length === 0 ? (
-        <Text>No upcoming requests available.</Text>
-      ) : (
-        <FlatList
-          data={upcomingRequests}
-          renderItem={renderRequest}
-          keyExtractor={item => item.id}
-        />
-      )}
-
-      <Text style={styles.sectionTitle}>Past Requests</Text>
-      {pastRequests.length === 0 ? (
-        <Text>No past requests available.</Text>
-      ) : (
-        <FlatList
-          data={pastRequests}
-          renderItem={renderRequest}
-          keyExtractor={item => item.id}
-        />
-      )}
+      <FlatList
+        data={requests}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        ListEmptyComponent={<Text>No pending requests.</Text>}
+      />
     </View>
   );
 };
@@ -115,11 +124,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#FFF3D6',
-  },
-  sectionTitle: {
-    fontSize: 20,
-    marginVertical: 10,
-    fontWeight: 'bold',
   },
   card: {
     marginBottom: 10,
@@ -153,4 +157,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BookingScreen;
+export default PendingRequestsScreen;
