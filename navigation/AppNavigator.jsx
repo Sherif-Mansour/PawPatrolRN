@@ -116,7 +116,7 @@ const AppNavigator = () => {
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen
-          name="BookAppointment"
+          name="BookRequest"
           component={BookRequestScreen}
           options={{header: () => <AppHeader showBackButton={true} />}}
         />

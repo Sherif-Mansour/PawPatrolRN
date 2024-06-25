@@ -86,7 +86,7 @@ const IndividualChat = () => {
         <Button
           icon="calendar"
           mode="contained"
-          onPress={() => navigation.navigate('BookAppointment', { chatId })}
+          onPress={() => navigation.navigate('BookRequest', { chatId })}
         >
           Make Request
         </Button>
