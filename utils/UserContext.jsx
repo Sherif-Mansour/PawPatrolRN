@@ -26,6 +26,60 @@ export const UserProvider = ({children}) => {
     setLoadingFavorites(true);
   };
 
+<<<<<<< Updated upstream
+=======
+  const connectXMPP = async user => {
+    try {
+      const token = await messaging().getToken();
+      console.log('XMPP Token:', token);
+
+      const xmpp = client({
+        service: 'ws://10.243.75.216:5222', // XMPP server address
+        domain: 'localhost',
+        resource: 'example',
+      });
+
+      xmpp.on('error', err => {
+        console.error('XMPP Error:', err);
+      });
+
+      xmpp.on('offline', () => {
+        console.log('XMPP Client is offline');
+      });
+
+      xmpp.on('stanza', stanza => {
+        if (stanza.is('message')) {
+          console.log('Incoming message:', stanza.toString());
+          const message = {
+            _id: stanza.attrs.id,
+            text: stanza.getChildText('body'),
+            createdAt: new Date(),
+            user: {
+              _id: stanza.attrs.from,
+            },
+          };
+          setMessages(previousMessages =>
+            GiftedChat.append(previousMessages, message),
+          );
+        }
+      });
+
+      xmpp.on('online', async address => {
+        console.log('XMPP Client is online as', address.toString());
+
+        // Send a presence stanza
+        const presence = xml('presence', {});
+        await xmpp.send(presence);
+      });
+
+      await xmpp.start();
+      setXmppClient(xmpp);
+    } catch (error) {
+      console.error('Error connecting to XMPP:', error);
+    }
+  };
+
+>>>>>>> Stashed changes
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async currentUser => {
       resetLoadingStates();
