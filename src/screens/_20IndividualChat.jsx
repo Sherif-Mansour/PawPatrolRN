@@ -1,64 +1,37 @@
-import React, {useEffect, useState, useCallback} from 'react';
-import {View, StyleSheet} from 'react-native';
-import {GiftedChat, Bubble, Send} from 'react-native-gifted-chat';
-import {IconButton, Button, useTheme} from 'react-native-paper';
-import {useRoute, useNavigation} from '@react-navigation/native';
-import messaging from '@react-native-firebase/messaging';
-import {useUser} from '../../utils/UserContext';
-import {launchImageLibrary} from 'react-native-image-picker';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { GiftedChat, Bubble, Send } from 'react-native-gifted-chat';
+import { IconButton, Button, useTheme } from 'react-native-paper';
+import { useUser } from '../../utils/UserContext';
+import { launchImageLibrary } from 'react-native-image-picker';
 
-const IndividualChat = ({route, navigation}) => {
+const IndividualChat = () => {
   const theme = useTheme();
-  const {
-    user,
-    sendMessage,
-    subscribeToMessages,
-    sendMultimediaMessage,
-    xmppClient,
-  } = useUser();
-  const {chatId} = route.params;
+  const { user, sendMessage, subscribeToMessages, sendMultimediaMessage } = useUser();
+  const route = useRoute();
+  const navigation = useNavigation();
+  const { chatId } = route.params;
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    if (xmppClient) {
-      xmppClient.on('stanza', stanza => {
-        if (stanza.is('message')) {
-          console.log('Incoming message:', stanza.toString());
-          const message = {
-            _id: stanza.attrs.id,
-            text: stanza.getChildText('body'),
-            createdAt: new Date(),
-            user: {
-              _id: stanza.attrs.from,
-            },
-          };
-          setMessages(previousMessages =>
-            GiftedChat.append(previousMessages, message),
-          );
-        }
-      });
-    }
-
     const unsubscribe = subscribeToMessages(chatId, msgs => {
       console.log('Messages received:', msgs);
       setMessages(msgs);
     });
     return () => unsubscribe();
-  }, [chatId, xmppClient]);
+  }, [chatId]);
 
-  const onSend = useCallback(
-    (messages = []) => {
-      console.log('Sending messages:', messages);
-      messages.forEach(message => {
-        if (message.image) {
-          sendMultimediaMessage(chatId, message.image);
-        } else {
-          sendMessage(chatId, message.text);
-        }
-      });
-    },
-    [chatId],
-  );
+  const onSend = useCallback((messages = []) => {
+    console.log('Sending messages:', messages);
+    messages.forEach(message => {
+      if (message.image) {
+        sendMultimediaMessage(chatId, message.image);
+      } else {
+        sendMessage(chatId, message.text);
+      }
+    });
+  }, [chatId]);
 
   const renderBubble = props => (
     <Bubble
@@ -113,13 +86,15 @@ const IndividualChat = ({route, navigation}) => {
         <Button
           icon="calendar"
           mode="contained"
-          onPress={() => navigation.navigate('BookAppointment', {chatId})}>
-          Place Request
+          onPress={() => navigation.navigate('BookRequest', { chatId })}
+        >
+          Make Request
         </Button>
         <Button
           icon="alert"
           mode="contained"
-          onPress={() => navigation.navigate('PendingAppointments', {chatId})}>
+          onPress={() => navigation.navigate('PendingAppointments', { chatId })}
+        >
           Pending Approvals
         </Button>
       </View>
@@ -127,7 +102,8 @@ const IndividualChat = ({route, navigation}) => {
         icon="camera"
         mode="contained"
         onPress={pickImage}
-        style={styles.imageButton}>
+        style={styles.imageButton}
+      >
         Send Image
       </Button>
     </View>

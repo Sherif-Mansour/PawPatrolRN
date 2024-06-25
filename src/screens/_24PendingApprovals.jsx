@@ -1,94 +1,105 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Alert, Image } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
 import { Button, Card } from 'react-native-paper';
-import { useRoute } from '@react-navigation/native';
 
-const PendingAppointmentsScreen = () => {
-  const [appointments, setAppointments] = useState([]);
+const PendingRequestsScreen = () => {
+  const [requests, setRequests] = useState([]);
   const { user } = useUser();
-  const route = useRoute();
-  const { chatId } = route.params;
 
   useEffect(() => {
-    const fetchAppointments = async () => {
+    const fetchRequests = async () => {
       try {
-        // Fetch chat participants
-        const chatDoc = await firestore().collection('chats').doc(chatId).get();
-        if (!chatDoc.exists) {
-          Alert.alert('Error', 'Chat does not exist.');
-          return;
-        }
-
-        const chatParticipants = chatDoc.data().participants;
-
-        const appointmentsSnapshot = await firestore()
-          .collection('appointments')
+        const requestsSnapshot = await firestore()
+          .collection('appointments') // Assuming your collection is named 'appointments'
           .where('status', '==', 'pending')
           .where('participants', 'array-contains', user.uid)
           .get();
 
-        const fetchedAppointments = appointmentsSnapshot.docs
-          .map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-          .filter(appointment => {
-            const appointmentParticipants = appointment.participants;
-            return (
-              appointmentParticipants.length === 2 &&
-              appointmentParticipants.includes(chatParticipants[0]) &&
-              appointmentParticipants.includes(chatParticipants[1])
+        const fetchedRequests = await Promise.all(
+          requestsSnapshot.docs.map(async doc => {
+            const requestData = doc.data();
+            const otherUserId = requestData.participants.find(
+              participant => participant !== user.uid
             );
-          });
+            const otherUserProfile = await fetchUserProfile(otherUserId);
+            return {
+              id: doc.id,
+              ...requestData,
+              otherUserProfile,
+            };
+          })
+        );
 
-        setAppointments(fetchedAppointments);
+        setRequests(fetchedRequests);
       } catch (error) {
-        console.error('Error fetching pending appointments:', error);
-        Alert.alert('Error', 'There was an error fetching pending appointments.');
+        console.error('Error fetching pending requests:', error);
+        Alert.alert('Error', 'There was an error fetching pending requests.');
       }
     };
 
-    fetchAppointments();
-  }, [user.uid, chatId]);
+    fetchRequests();
+  }, [user.uid]);
 
-  const handleApprove = async (appointmentId) => {
+  const fetchUserProfile = async userId => {
+    const userProfileRef = firestore().collection('profiles').doc(userId);
+    const userProfileDoc = await userProfileRef.get();
+    if (userProfileDoc.exists) {
+      return userProfileDoc.data();
+    }
+    return null;
+  };
+
+  const handleApprove = async requestId => {
     try {
-      await firestore().collection('appointments').doc(appointmentId).update({
+      await firestore().collection('appointments').doc(requestId).update({
         status: 'approved',
       });
-      Alert.alert('Success', 'Appointment approved successfully.');
-      setAppointments(appointments.filter(appointment => appointment.id !== appointmentId));
+      Alert.alert('Success', 'Request approved successfully.');
+      setRequests(requests.filter(request => request.id !== requestId));
     } catch (error) {
-      console.error('Error approving appointment:', error);
-      Alert.alert('Error', 'There was an error approving the appointment.');
+      console.error('Error approving request:', error);
+      Alert.alert('Error', 'There was an error approving the request.');
     }
   };
 
-  const handleReject = async (appointmentId) => {
+  const handleReject = async requestId => {
     try {
-      await firestore().collection('appointments').doc(appointmentId).update({
+      await firestore().collection('appointments').doc(requestId).update({
         status: 'rejected',
       });
-      Alert.alert('Success', 'Appointment rejected successfully.');
-      setAppointments(appointments.filter(appointment => appointment.id !== appointmentId));
+      Alert.alert('Success', 'Request rejected successfully.');
+      setRequests(requests.filter(request => request.id !== requestId));
     } catch (error) {
-      console.error('Error rejecting appointment:', error);
-      Alert.alert('Error', 'There was an error rejecting the appointment.');
+      console.error('Error rejecting request:', error);
+      Alert.alert('Error', 'There was an error rejecting the request.');
     }
   };
 
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
-      <Card.Title
-        title={`Appointment with ${item.participants.filter(participant => participant !== user.uid)[0]}`}
-        subtitle={`Date: ${item.date} - Time: ${item.time}`}
-      />
-      <Card.Content>
-        <Text>Location: {item.location}</Text>
-        <Text>Price: {item.price}</Text>
-      </Card.Content>
+      <View style={styles.cardContent}>
+        {item.otherUserProfile?.profilePicture ? (
+          <Image
+            source={{ uri: item.otherUserProfile.profilePicture }}
+            style={styles.profilePicture}
+          />
+        ) : (
+          <Image
+            source={require('../../assets/images/default-profile.jpg')}
+            style={styles.profilePicture}
+          />
+        )}
+        <View style={styles.infoContainer}>
+          <Text style={styles.nameText}>
+            Request with {item.otherUserProfile?.firstName} {item.otherUserProfile?.lastName}
+          </Text>
+          <Text style={styles.dateText}>Date: {item.date} - Time: {item.time}</Text>
+          <Text style={styles.locationText}>Location: {item.location}</Text>
+          <Text style={styles.priceText}>Price: {item.price}</Text>
+        </View>
+      </View>
       <Card.Actions>
         <Button onPress={() => handleApprove(item.id)}>Approve</Button>
         <Button onPress={() => handleReject(item.id)}>Reject</Button>
@@ -99,10 +110,10 @@ const PendingAppointmentsScreen = () => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={appointments}
+        data={requests}
         renderItem={renderItem}
         keyExtractor={item => item.id}
-        ListEmptyComponent={<Text>No pending appointments.</Text>}
+        ListEmptyComponent={<Text>No pending requests.</Text>}
       />
     </View>
   );
@@ -117,6 +128,33 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: 10,
   },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  profilePicture: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  infoContainer: {
+    flex: 1,
+  },
+  nameText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  dateText: {
+    fontSize: 16,
+  },
+  locationText: {
+    fontSize: 16,
+  },
+  priceText: {
+    fontSize: 16,
+  },
 });
 
-export default PendingAppointmentsScreen;
+export default PendingRequestsScreen;

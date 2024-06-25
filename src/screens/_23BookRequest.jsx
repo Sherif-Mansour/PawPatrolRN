@@ -4,7 +4,7 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-const BookAppointmentScreen = () => {
+const BookRequestScreen = () => {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
@@ -40,7 +40,7 @@ const BookAppointmentScreen = () => {
     }
 
     try {
-      const appointmentData = {
+      const requestData = {
         chatId,
         requesterId: otherParticipantId,
         date,
@@ -51,18 +51,18 @@ const BookAppointmentScreen = () => {
         participants: [user.uid, otherParticipantId],
       };
 
-      await firestore().collection('appointments').add(appointmentData);
-      Alert.alert('Appointment Request Sent', 'Your appointment request has been sent.');
+      await firestore().collection('appointments').add(requestData); // Assuming your collection is named 'appointments'
+      Alert.alert('Request Sent', 'Your request has been sent.');
       navigation.goBack();
     } catch (error) {
-      console.error('Error submitting appointment:', error);
-      Alert.alert('Error', 'There was an error submitting your appointment request.');
+      console.error('Error submitting request:', error);
+      Alert.alert('Error', 'There was an error submitting your request.');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Book Appointment</Text>
+      <Text style={styles.title}>Book Request</Text>
       <TextInput
         style={styles.input}
         value={date}
@@ -110,4 +110,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BookAppointmentScreen;
+export default BookRequestScreen;
