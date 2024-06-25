@@ -6,6 +6,8 @@ import {Alert, Platform} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import {GiftedChat} from 'react-native-gifted-chat';
+import {useConfirmPayment} from '@stripe/stripe-react-native';
+import {client, xml} from '@xmpp/client';
 
 const UserContext = createContext();
 
@@ -18,6 +20,43 @@ export const UserProvider = ({children}) => {
   const [email, setEmail] = useState(null);
   const [ads, setAds] = useState([]);
   const [favorites, setFavorites] = useState([]);
+  const [currentAd, setCurrentAd] = useState(null);
+  const {confirmPayment} = useConfirmPayment();
+  const [transactionDetails, setTransactionDetails] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [xmppClient, setXmppClient] = useState(null);
+
+  const requestUserPermission = async () => {
+    try {
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (enabled) {
+        console.log('Authorization status:', authStatus);
+      }
+    } catch (err) {
+      console.log('Error requesting permission:', err);
+    }
+  };
+
+  const getToken = async () => {
+    try {
+      const token = await messaging().getToken();
+      console.log('Token:', token);
+
+      if (user) {
+        // Save the FCM token to Firestore
+        await firestore().collection('profiles').doc(user.uid).update({
+          fcmToken: token,
+        });
+      }
+    } catch (err) {
+      console.log('Error getting token:', err);
+    }
+  };
 
   const resetLoadingStates = () => {
     setLoading(true);
@@ -26,15 +65,22 @@ export const UserProvider = ({children}) => {
     setLoadingFavorites(true);
   };
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> b4c89a09f2f7d751d75755662f1a73cb782b2af9
   const connectXMPP = async user => {
     try {
       const token = await messaging().getToken();
       console.log('XMPP Token:', token);
 
       const xmpp = client({
+<<<<<<< HEAD
         service: 'ws://10.243.75.216:5222', // XMPP server address
+=======
+        service: 'ws://10.0.0.242:5222', // XMPP server address
+>>>>>>> b4c89a09f2f7d751d75755662f1a73cb782b2af9
         domain: 'localhost',
         resource: 'example',
       });
@@ -79,21 +125,29 @@ export const UserProvider = ({children}) => {
     }
   };
 
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> b4c89a09f2f7d751d75755662f1a73cb782b2af9
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async currentUser => {
       resetLoadingStates();
       if (currentUser) {
         setUser(currentUser);
+        requestUserPermission();
+        getToken();
+        connectXMPP(currentUser);
         setEmail(currentUser.email);
         await fetchUserAds();
         await fetchAllAds();
         await fetchUserFavorites();
+        await fetchPaymentMethods();
       } else {
         setUser(null);
         setEmail(null);
         setAds([]);
         setFavorites([]);
+        setPaymentMethods([]);
       }
       setLoading(false);
       setLoadingUserAds(false);
@@ -111,38 +165,37 @@ export const UserProvider = ({children}) => {
   }, []);
 
   useEffect(() => {
-    const requestUserPermission = async () => {
-      try {
-        const authStatus = await messaging().requestPermission();
-        const enabled =
-          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-          authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-        if (enabled) {
-          console.log('Authorization status:', authStatus);
-        }
-      } catch (err) {
-        console.log('Error requesting permission:', err);
-      }
-    };
-
-    const getToken = async () => {
-      try {
-        const token = await messaging().getToken();
-        console.log('Token:', token);
-      } catch (err) {
-        console.log('Error getting token:', err);
-      }
-    };
-
-    requestUserPermission();
-    getToken();
-
     const unsubscribe = messaging().onTokenRefresh(token => {
       console.log('Refreshed token:', token);
+
+      if (user) {
+        // Save the refreshed FCM token to Firestore
+        firestore().collection('profiles').doc(user.uid).update({
+          fcmToken: token,
+        });
+      }
     });
 
     return () => unsubscribe();
+  }, [user]);
+
+  // Notification handler for foreground
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log('Foreground notification:', remoteMessage);
+
+      // Check if remoteMessage.notification is defined
+      if (remoteMessage.notification) {
+        Alert.alert(
+          remoteMessage.notification.title,
+          remoteMessage.notification.body,
+        );
+      } else {
+        console.log('Notification data is missing in the message');
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   async function onGoogleButtonPress(navigation) {
@@ -233,10 +286,10 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const fetchUserProfile = async () => {
-    if (!user) throw new Error('User not logged in');
+  const fetchUserProfile = async (userId = user.uid) => {
+    if (!userId) throw new Error('User ID is missing');
 
-    const userProfileRef = firestore().collection('profiles').doc(user.uid);
+    const userProfileRef = firestore().collection('profiles').doc(userId);
     const userProfileDoc = await userProfileRef.get();
 
     if (userProfileDoc.exists) {
@@ -263,9 +316,39 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const createOrUpdateAd = async adData => {
+  const isProfileComplete = profile => {
+    return (
+      profile &&
+      profile.firstName &&
+      profile.lastName &&
+      profile.phoneNo &&
+      profile.address &&
+      profile.firstName.trim() !== '' &&
+      profile.lastName.trim() !== '' &&
+      profile.phoneNo.trim() !== '' &&
+      profile.address.trim() !== ''
+    );
+  };
+
+  const createOrUpdateAd = async (adData, navigation) => {
     try {
       if (!user) throw new Error('User not logged in');
+
+      const profileData = await fetchUserProfile();
+      if (!isProfileComplete(profileData)) {
+        Alert.alert(
+          'Profile Incomplete',
+          'Please complete your profile before creating an ad.',
+          [
+            {
+              text: 'Go to Profile',
+              onPress: () => navigation.navigate('Profile'),
+            },
+          ],
+          {cancelable: false},
+        );
+        return;
+      }
 
       const userAdRef = firestore()
         .collection('ads')
@@ -275,12 +358,10 @@ export const UserProvider = ({children}) => {
       let adDocRef;
 
       if (adData.id) {
-        // If adData already has an ID, update the existing ad
         adDocRef = userAdRef.doc(adData.id);
       } else {
-        // If adData does not have an ID, create a new ad with an auto-generated ID
-        adDocRef = userAdRef.doc(); // Firestore will generate a unique ID
-        adData.id = adDocRef.id; // Associate the auto-generated ID with the ad data
+        adDocRef = userAdRef.doc();
+        adData.id = adDocRef.id;
       }
 
       const adDataWithUserId = {
@@ -290,9 +371,8 @@ export const UserProvider = ({children}) => {
         updatedAt: firestore.FieldValue.serverTimestamp(),
       };
 
-      console.log('Setting ad data:', adDataWithUserId); // Log the ad data being set
+      console.log('Setting ad data:', adDataWithUserId);
 
-      // Set ad data and timestamps
       await adDocRef.set(adDataWithUserId);
 
       if (adData.id) {
@@ -444,21 +524,6 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const savePaymentDetails = async (paymentMethod, paymentDetails) => {
-    try {
-      if (!user) throw new Error('User not logged in');
-
-      await firestore()
-        .collection('paymentMethods')
-        .doc(user.uid)
-        .set({paymentMethod, ...paymentDetails});
-      console.log('Payment details saved successfully:', paymentDetails);
-    } catch (err) {
-      console.error('Error saving payment details:', err);
-      Alert.alert('Payment Error', 'Failed to save payment details');
-    }
-  };
-
   const sendMessage = async (chatId, text) => {
     try {
       const messageData = {
@@ -477,6 +542,31 @@ export const UserProvider = ({children}) => {
         .doc(chatId)
         .collection('messages')
         .add(messageData);
+
+      // Fetch the recipient's FCM token from their profile
+      const chatDoc = await firestore().collection('chats').doc(chatId).get();
+      const participants = chatDoc.data().participants;
+      const recipientId = participants.find(id => id !== user.uid);
+      const recipientProfile = await firestore()
+        .collection('profiles')
+        .doc(recipientId)
+        .get();
+      const recipientFcmToken = recipientProfile.data().fcmToken;
+
+      // Send a push notification
+      if (recipientFcmToken) {
+        await messaging().sendMessage({
+          token: recipientFcmToken,
+          notification: {
+            title: 'New Message',
+            body: text,
+          },
+        });
+        console.log('Notification sent successfully');
+      } else {
+        console.log('No FCM token found for recipient');
+      }
+
       console.log('Message sent successfully');
     } catch (error) {
       console.error('Error sending message:', error);
@@ -495,6 +585,30 @@ export const UserProvider = ({children}) => {
           createdAt: firestore.FieldValue.serverTimestamp(),
           userId: user.uid,
         });
+
+      // Fetch the recipient's FCM token from their profile
+      const chatDoc = await firestore().collection('chats').doc(chatId).get();
+      const participants = chatDoc.data().participants;
+      const recipientId = participants.find(id => id !== user.uid);
+      const recipientProfile = await firestore()
+        .collection('profiles')
+        .doc(recipientId)
+        .get();
+      const recipientFcmToken = recipientProfile.data().fcmToken;
+
+      // Send a push notification
+      if (recipientFcmToken) {
+        await messaging().sendMessage({
+          token: recipientFcmToken,
+          notification: {
+            title: 'New Image Message',
+            body: 'You have received a new image',
+          },
+        });
+        console.log('Notification sent successfully');
+      } else {
+        console.log('No FCM token found for recipient');
+      }
     }
   };
 
@@ -536,14 +650,219 @@ export const UserProvider = ({children}) => {
         .collection('chats')
         .where('participants', 'array-contains', userId)
         .get();
-      const userChats = userChatsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const userChats = [];
+
+      for (const doc of userChatsSnapshot.docs) {
+        const chatData = doc.data();
+        const otherUserId = chatData.participants.find(
+          participant => participant !== userId,
+        );
+
+        const otherUserProfileSnapshot = await firestore()
+          .collection('profiles')
+          .doc(otherUserId)
+          .get();
+
+        const otherUserProfile = otherUserProfileSnapshot.data();
+
+        const lastMessageSnapshot = await firestore()
+          .collection('chats')
+          .doc(doc.id)
+          .collection('messages')
+          .orderBy('createdAt', 'desc')
+          .limit(1)
+          .get();
+
+        const lastMessage =
+          lastMessageSnapshot.docs.length > 0
+            ? lastMessageSnapshot.docs[0].data().text
+            : 'No messages yet.';
+
+        console.log('Other User Profile:', otherUserProfile);
+        console.log('Last Message:', lastMessage);
+
+        userChats.push({
+          id: doc.id,
+          otherUserName: `${otherUserProfile.firstName} ${otherUserProfile.lastName}`,
+          otherUserAvatar: otherUserProfile.profilePicture,
+          lastMessageReceived: lastMessage,
+        });
+      }
+
       return userChats;
     } catch (err) {
       console.error('Error fetching user chats:', err);
       return [];
+    }
+  };
+
+  const createPaymentIntent = async (amount, currency, description) => {
+    try {
+      const response = await fetch(
+        'http://localhost:3000/create-payment-intent',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({amount, currency, description}),
+        },
+      );
+
+      const data = await response.json();
+      return data.clientSecret;
+    } catch (error) {
+      console.error('Error creating payment intent', error);
+      throw error;
+    }
+  };
+
+  const handlePayment = async transaction => {
+    try {
+      const clientSecret = await createPaymentIntent(
+        transaction.amount,
+        transaction.currency,
+        transaction.description,
+      );
+      const {paymentIntent, error} = await confirmPayment(clientSecret, {
+        type: 'Card',
+        billingDetails: {email: user.email},
+      });
+
+      if (error) {
+        console.log('Payment confirmation error', error);
+        Alert.alert(
+          'Payment Error',
+          'There was an issue with your payment. Please try again.',
+        );
+      } else if (paymentIntent) {
+        console.log('Payment successful', paymentIntent);
+
+        // Save transaction details to Firestore
+        const newTransaction = {
+          ...transaction,
+          userId: user.uid,
+          paymentIntentId: paymentIntent.id,
+          status: paymentIntent.status,
+          createdAt: firestore.FieldValue.serverTimestamp(),
+        };
+        await firestore().collection('transactions').add(newTransaction);
+
+        // Update the transaction details state with the new transaction
+        setTransactionDetails(prevTransactions => [
+          ...prevTransactions,
+          newTransaction,
+        ]);
+
+        Alert.alert('Payment Success', 'Your payment was successful.');
+      }
+    } catch (error) {
+      console.error('Payment error', error);
+      Alert.alert(
+        'Payment Error',
+        'There was an issue processing your payment. Please try again.',
+      );
+    }
+  };
+
+  const savePaymentDetails = async paymentDetails => {
+    try {
+      if (!user) throw new Error('User not logged in');
+
+      const userPaymentRef = firestore()
+        .collection('paymentMethods')
+        .doc(user.uid);
+      const userPaymentDoc = await userPaymentRef.get();
+
+      let paymentMethods = [];
+      if (userPaymentDoc.exists) {
+        paymentMethods = userPaymentDoc.data().paymentMethods || [];
+      }
+
+      paymentMethods.push(paymentDetails);
+
+      await userPaymentRef.set({paymentMethods});
+      setPaymentMethods(paymentMethods); // Update local state
+      console.log('Payment details saved successfully:', paymentMethods);
+    } catch (err) {
+      console.error('Error saving payment details:', err);
+      Alert.alert('Payment Error', 'Failed to save payment details');
+    }
+  };
+
+  const fetchPaymentMethods = async () => {
+    if (!user) return;
+
+    const userPaymentRef = firestore()
+      .collection('paymentMethods')
+      .doc(user.uid);
+    const userPaymentDoc = await userPaymentRef.get();
+
+    if (userPaymentDoc.exists) {
+      const fetchedPaymentMethods = userPaymentDoc.data().paymentMethods || [];
+      setPaymentMethods(fetchedPaymentMethods);
+      const selectedMethod =
+        userPaymentDoc.data().selectedPaymentMethod || null;
+      setSelectedPaymentMethod(selectedMethod);
+      console.log('Fetched payment methods:', fetchedPaymentMethods);
+    } else {
+      console.log('No payment methods found for user');
+    }
+  };
+
+  const setPreferredMethod = async methodIndex => {
+    try {
+      if (!user) throw new Error('User not logged in');
+
+      setSelectedPaymentMethod(methodIndex);
+
+      const userPaymentRef = firestore()
+        .collection('paymentMethods')
+        .doc(user.uid);
+      await userPaymentRef.update({selectedPaymentMethod: methodIndex});
+
+      console.log('Preferred payment method set:', methodIndex);
+    } catch (err) {
+      console.error('Error setting preferred payment method:', err);
+      Alert.alert('Error', 'Failed to set preferred payment method');
+    }
+  };
+
+  const editPaymentDetails = async (index, paymentDetails) => {
+    try {
+      if (!user || !paymentMethods[index]) return;
+
+      const paymentMethod = paymentMethods[index];
+      const paymentMethodsRef = firestore()
+        .collection('paymentMethods')
+        .doc(user.uid);
+      paymentMethods[index] = paymentDetails;
+
+      await paymentMethodsRef.update({paymentMethods});
+      await fetchPaymentMethods(); // Refresh the payment methods list
+      console.log('Payment method edited successfully:', paymentDetails);
+    } catch (err) {
+      console.error('Error editing payment details:', err);
+      Alert.alert('Error', 'Failed to edit payment details');
+    }
+  };
+
+  const deletePaymentMethod = async index => {
+    try {
+      if (!user || !paymentMethods[index]) return;
+
+      const paymentMethodsRef = firestore()
+        .collection('paymentMethods')
+        .doc(user.uid);
+      const updatedPaymentMethods = [...paymentMethods];
+      updatedPaymentMethods.splice(index, 1);
+
+      await paymentMethodsRef.update({paymentMethods: updatedPaymentMethods});
+      setPaymentMethods(updatedPaymentMethods); // Update local state
+      console.log('Payment method deleted successfully');
+    } catch (err) {
+      console.error('Error deleting payment method:', err);
+      Alert.alert('Error', 'Failed to delete payment method');
     }
   };
 
@@ -568,15 +887,26 @@ export const UserProvider = ({children}) => {
         onGoogleButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
+        isProfileComplete,
         uploadImage,
         createOrUpdateAd,
         signOut,
-        savePaymentDetails,
         sendMessage,
         subscribeToMessages,
         sendMultimediaMessage,
         fetchUserChats,
         createChat,
+        currentAd,
+        setCurrentAd,
+        handlePayment,
+        savePaymentDetails,
+        fetchPaymentMethods,
+        paymentMethods,
+        selectedPaymentMethod,
+        setPreferredMethod,
+        editPaymentDetails,
+        deletePaymentMethod,
+        xmppClient,
       }}>
       {children}
     </UserContext.Provider>
