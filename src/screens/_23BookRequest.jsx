@@ -1,18 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, Button, Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-const BookAppointmentScreen = () => {
+const BookRequestScreen = () => {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
   const [price, setPrice] = useState('');
+  const [otherParticipantId, setOtherParticipantId] = useState(null);
   const navigation = useNavigation();
   const route = useRoute();
   const { chatId } = route.params;
   const user = auth().currentUser;
+
+  useEffect(() => {
+    const fetchParticipants = async () => {
+      try {
+        const chatDoc = await firestore().collection('chats').doc(chatId).get();
+        if (chatDoc.exists) {
+          const { participants } = chatDoc.data();
+          const otherParticipant = participants.find(participant => participant !== user.uid);
+          setOtherParticipantId(otherParticipant);
+        }
+      } catch (error) {
+        console.error('Error fetching chat participants:', error);
+        Alert.alert('Error', 'There was an error fetching chat participants.');
+      }
+    };
+
+    fetchParticipants();
+  }, [chatId, user.uid]);
 
   const handleSubmit = async () => {
     if (!date || !time || !location || !price) {
@@ -21,29 +40,29 @@ const BookAppointmentScreen = () => {
     }
 
     try {
-      const appointmentData = {
+      const requestData = {
         chatId,
-        requesterId: user.uid,
+        requesterId: otherParticipantId,
         date,
         time,
         location,
         price,
         status: 'pending',
-        participants: [user.uid, chatId],
+        participants: [user.uid, otherParticipantId],
       };
 
-      await firestore().collection('appointments').add(appointmentData);
-      Alert.alert('Appointment Request Sent', 'Your appointment request has been sent.');
+      await firestore().collection('appointments').add(requestData); // Assuming your collection is named 'appointments'
+      Alert.alert('Request Sent', 'Your request has been sent.');
       navigation.goBack();
     } catch (error) {
-      console.error('Error submitting appointment:', error);
-      Alert.alert('Error', 'There was an error submitting your appointment request.');
+      console.error('Error submitting request:', error);
+      Alert.alert('Error', 'There was an error submitting your request.');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Book Appointment</Text>
+      <Text style={styles.title}>Book Request</Text>
       <TextInput
         style={styles.input}
         value={date}
@@ -91,4 +110,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BookAppointmentScreen;
+export default BookRequestScreen;
