@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
   RefreshControl,
   Image,
 } from 'react-native';
-import { useUser } from '../../utils/UserContext';
+import {useUser} from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
   Searchbar,
@@ -18,9 +18,12 @@ import {
   Card,
   Text,
   Modal,
+  Portal,
 } from 'react-native-paper';
-import { FlatList, ScrollView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {FlatList, ScrollView} from 'react-native-gesture-handler';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import Map from '../../components/Map';
+import MapContainer from '../../components/MapContainer';
 
 const categories = [
   'All',
@@ -32,7 +35,7 @@ const categories = [
   'Sitting',
 ];
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({navigation}) => {
   const theme = useTheme();
   const {
     ads,
@@ -50,6 +53,10 @@ const HomeScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
   const [adsFetched, setAdsFetched] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  const showModal = () => setVisible(true);
+  const hideModal = () => setVisible(false);
 
   useEffect(() => {
     if (user) {
@@ -65,7 +72,7 @@ const HomeScreen = ({ navigation }) => {
       fetchAllAds();
       setAdsFetched(true);
     }
-  }, [adsFetched, loadingAllAds]);
+  }, [adsFetched, loadingAllAds, fetchAllAds]);
 
   useEffect(() => {
     filterAds();
@@ -111,15 +118,17 @@ const HomeScreen = ({ navigation }) => {
     </Chip>
   );
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({item}) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('AdDetails', { ad: item })}
-    >
+      onPress={() => navigation.navigate('AdDetails', {ad: item})}>
       <Card style={styles.adContainer}>
         {item.picture ? (
-          <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+          <Card.Cover source={{uri: item.picture}} style={styles.adImage} />
         ) : (
-          <Image source={require('../../assets/images/OIP.jpeg')} style={styles.adImage} />
+          <Image
+            source={require('../../assets/images/OIP.jpeg')}
+            style={styles.adImage}
+          />
         )}
         <Card.Title
           titleStyle={styles.adTitle}
@@ -176,6 +185,21 @@ const HomeScreen = ({ navigation }) => {
       bottom: 10,
       right: 10,
     },
+    modalStyle: {
+      backgroundColor: 'white',
+      margin: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '90%',
+      height: '66%',
+      borderRadius: 10,
+    },
+    modalContent: {
+      width: '100%',
+      height: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
   });
 
   if (loading || loadingAllAds || loadingFavorites) {
@@ -188,52 +212,61 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaProvider>
-      <Modal />
-    <View style={styles.container}>
-      <View style={{ flexDirection: 'row' }}>
-        <Button
-          style={{ backgroundColor: 'transparent' }}
-          onPress={() => navigation.navigate('Location')}
-          icon="map-marker">
-          Location
-        </Button>
-      </View>
-      <Searchbar
-        style={{
-          backgroundColor: theme.colors.elevation.level5,
-          borderWidth: 1,
-          borderColor: theme.colors.outline,
-        }}
-        placeholder="Search for services"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <View style={styles.categoriesScrollContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {categories.map(renderCategory)}
-          </ScrollView>
+      <Portal>
+        <Modal
+          visible={visible}
+          onDismiss={hideModal}
+          contentContainerStyle={styles.modalStyle}>
+          <View style={styles.modalContent}>
+            <MapContainer />
+          </View>
+        </Modal>
+      </Portal>
+      <View style={styles.container}>
+        <View style={{flexDirection: 'row'}}>
+          <Button
+            style={{backgroundColor: 'transparent'}}
+            onPress={showModal}
+            icon="map-marker">
+            Location
+          </Button>
         </View>
+        <Searchbar
+          style={{
+            backgroundColor: theme.colors.elevation.level5,
+            borderWidth: 1,
+            borderColor: theme.colors.outline,
+          }}
+          placeholder="Search for services"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <View style={styles.categoriesScrollContainer}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {categories.map(renderCategory)}
+            </ScrollView>
+          </View>
+        </View>
+        <FlatList
+          data={filteredAds}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          ListEmptyComponent={<Text>No ads found.</Text>}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[theme.colors.primary]}
+            />
+          }
+        />
       </View>
-      <FlatList
-        data={filteredAds}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        ListEmptyComponent={<Text>No ads found.</Text>}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[theme.colors.primary]}
-          />
-        }
-      />
-    </View>
     </SafeAreaProvider>
   );
 };

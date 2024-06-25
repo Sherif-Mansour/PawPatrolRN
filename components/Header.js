@@ -30,7 +30,7 @@ const AppHeader = ({showBackButton}) => {
         }
       />
       <Appbar.Action
-        icon="account-circle"
+        icon="cog"
         size={36}
         color={theme.colors.onPrimary}
         onPress={() => navigation.navigate('Account')}

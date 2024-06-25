@@ -20,7 +20,7 @@ const styles=StyleSheet.create({
         width: '100%'
     },
     buttonContent: {
-        flexDirection: 'row-reverse', // Places the icon to the right of the text
+        flexDirection: 'row-reverse',
         justifyContent: 'space-between',
         alignItems: 'center'
     },
