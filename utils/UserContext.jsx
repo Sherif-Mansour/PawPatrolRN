@@ -71,7 +71,7 @@ export const UserProvider = ({children}) => {
       console.log('XMPP Token:', token);
 
       const xmpp = client({
-        service: 'ws://192.168.1.74:5222', // XMPP server address
+        service: 'ws://10.187.163.238:5222', // XMPP server address
         domain: 'localhost',
         resource: 'example',
       });
