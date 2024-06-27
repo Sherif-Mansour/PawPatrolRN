@@ -20,7 +20,7 @@ const MapContainer = () => {
   const getMapDeltaForPlaceType = (types) => {
     if (types.includes('locality')) {
       return {
-        latitudeDelta: 0.0922,
+        latitudeDelta: 0.6,
         longitudeDelta: 0.0421,
       };
     } else if (types.includes('postal_code')) {
@@ -30,7 +30,7 @@ const MapContainer = () => {
       };
     } else {
       return {
-        latitudeDelta: 0.6,
+        latitudeDelta: 0.0622,
         longitudeDelta: 0.0421,
       };
     }
@@ -39,11 +39,11 @@ const MapContainer = () => {
 
   const getRadiusForPlaceType = (types) => {
     if (types.includes('locality')) {
-      return 1000; // City radius
+      return 20000; // City radius
     } else if (types.includes('postal_code')) {
       return 2500; // Postal code radius
     } else {
-      return 20000; // Address radius
+      return 1000; // Address radius
     }
   };
 
