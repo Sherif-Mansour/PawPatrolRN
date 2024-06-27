@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
   RefreshControl,
   Image,
 } from 'react-native';
-import {useUser} from '../../utils/UserContext';
+import { useUser } from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
   Searchbar,
@@ -20,9 +20,8 @@ import {
   Modal,
   Portal,
 } from 'react-native-paper';
-import {FlatList, ScrollView} from 'react-native-gesture-handler';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import Map from '../../components/Map';
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MapContainer from '../../components/MapContainer';
 
 const categories = [
@@ -35,7 +34,7 @@ const categories = [
   'Sitting',
 ];
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({ navigation }) => {
   const theme = useTheme();
   const {
     ads,
@@ -82,12 +81,12 @@ const HomeScreen = ({navigation}) => {
     let filtered = ads;
 
     if (selectedCategory && selectedCategory !== 'All') {
-      filtered = filtered.filter(ad => ad.category === selectedCategory);
+      filtered = filtered.filter((ad) => ad.category === selectedCategory);
     }
 
     if (searchQuery.trim() !== '') {
-      filtered = filtered.filter(ad =>
-        ad.title.toLowerCase().includes(searchQuery.toLowerCase()),
+      filtered = filtered.filter((ad) =>
+        ad.title.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -108,22 +107,24 @@ const HomeScreen = ({navigation}) => {
     }
   };
 
-  const renderCategory = category => (
+  const renderCategory = (category) => (
     <Chip
       key={category}
       onPress={() => setSelectedCategory(category)}
       selected={selectedCategory === category}
-      style={[styles.categoryChip]}>
+      style={[styles.categoryChip]}
+    >
       {category}
     </Chip>
   );
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('AdDetails', {ad: item})}>
+      onPress={() => navigation.navigate('AdDetails', { ad: item })}
+    >
       <Card style={styles.adContainer}>
         {item.picture ? (
-          <Card.Cover source={{uri: item.picture}} style={styles.adImage} />
+          <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
         ) : (
           <Image
             source={require('../../assets/images/OIP.jpeg')}
@@ -138,7 +139,8 @@ const HomeScreen = ({navigation}) => {
         />
         <TouchableOpacity
           style={styles.favoriteButton}
-          onPress={() => handleAddToFavorites(item.id)}>
+          onPress={() => handleAddToFavorites(item.id)}
+        >
           <Icon
             name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
             size={24}
@@ -218,20 +220,28 @@ const HomeScreen = ({navigation}) => {
         <Modal
           visible={visible}
           onDismiss={hideModal}
-          contentContainerStyle={styles.modalStyle}>
+          contentContainerStyle={styles.modalStyle}
+        >
           <View style={styles.modalContent}>
             <MapContainer />
           </View>
         </Modal>
       </Portal>
       <View style={styles.container}>
-        <View style={{flexDirection: 'row'}}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Button
-            style={{backgroundColor: 'transparent'}}
+            style={{ backgroundColor: 'transparent' }}
             onPress={showModal}
-            icon="map-marker">
+            icon="map-marker"
+          >
             Location
           </Button>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('CalendarScreen')}
+            style={{ marginRight: 15 }}
+          >
+            <Icon name="calendar" size={24} color={theme.colors.primary} />
+          </TouchableOpacity>
         </View>
         <Searchbar
           style={{
@@ -248,7 +258,8 @@ const HomeScreen = ({navigation}) => {
             flexDirection: 'row',
             justifyContent: 'center',
             alignItems: 'center',
-          }}>
+          }}
+        >
           <View style={styles.categoriesScrollContainer}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {categories.map(renderCategory)}
@@ -258,7 +269,7 @@ const HomeScreen = ({navigation}) => {
         <FlatList
           data={filteredAds}
           renderItem={renderItem}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           ListEmptyComponent={<Text>No ads found.</Text>}
           refreshControl={
             <RefreshControl
@@ -274,9 +285,3 @@ const HomeScreen = ({navigation}) => {
 };
 
 export default HomeScreen;
-
-// took help of chatgpt to get contrasting colors for the app
-// what color is gonna look good with : 'rgb(0, 104, 123)', for app
-
-// got icons for home screen from react-icons
-// https://react-icons.github.
