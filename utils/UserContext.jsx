@@ -5,9 +5,14 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {Alert, Platform} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
-import {GiftedChat} from 'react-native-gifted-chat';
 import {useConfirmPayment} from '@stripe/stripe-react-native';
-import {client, xml} from '@xmpp/client';
+import {useConnection, useSendbirdChat} from '@sendbird/uikit-react-native';
+import {SENDBIRD_APP_ID, SENDBIRD_API_TOKEN} from '@env';
+import {
+  GroupChannelModule,
+  GroupChannelCreateParams,
+} from '@sendbird/chat/groupChannel';
+import SendbirdChat from '@sendbird/chat';
 
 const UserContext = createContext();
 
@@ -25,96 +30,10 @@ export const UserProvider = ({children}) => {
   const [transactionDetails, setTransactionDetails] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
-  const [xmppClient, setXmppClient] = useState(null);
-
-  const requestUserPermission = async () => {
-    try {
-      const authStatus = await messaging().requestPermission();
-      const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-      if (enabled) {
-        console.log('Authorization status:', authStatus);
-      }
-    } catch (err) {
-      console.log('Error requesting permission:', err);
-    }
-  };
-
-  const getToken = async () => {
-    try {
-      const token = await messaging().getToken();
-      console.log('Token:', token);
-
-      if (user) {
-        // Save the FCM token to Firestore
-        await firestore().collection('profiles').doc(user.uid).update({
-          fcmToken: token,
-        });
-      }
-    } catch (err) {
-      console.log('Error getting token:', err);
-    }
-  };
-
-  const resetLoadingStates = () => {
-    setLoading(true);
-    setLoadingUserAds(true);
-    setLoadingAllAds(true);
-    setLoadingFavorites(true);
-  };
-
-  const connectXMPP = async user => {
-    try {
-      const token = await messaging().getToken();
-      console.log('XMPP Token:', token);
-
-      const xmpp = client({
-        service: 'ws://10.0.0.242:5222', // XMPP server address
-        domain: 'localhost',
-        resource: 'example',
-      });
-
-      xmpp.on('error', err => {
-        console.error('XMPP Error:', err);
-      });
-
-      xmpp.on('offline', () => {
-        console.log('XMPP Client is offline');
-      });
-
-      xmpp.on('stanza', stanza => {
-        if (stanza.is('message')) {
-          console.log('Incoming message:', stanza.toString());
-          const message = {
-            _id: stanza.attrs.id,
-            text: stanza.getChildText('body'),
-            createdAt: new Date(),
-            user: {
-              _id: stanza.attrs.from,
-            },
-          };
-          setMessages(previousMessages =>
-            GiftedChat.append(previousMessages, message),
-          );
-        }
-      });
-
-      xmpp.on('online', async address => {
-        console.log('XMPP Client is online as', address.toString());
-
-        // Send a presence stanza
-        const presence = xml('presence', {});
-        await xmpp.send(presence);
-      });
-
-      await xmpp.start();
-      setXmppClient(xmpp);
-    } catch (error) {
-      console.error('Error connecting to XMPP:', error);
-    }
-  };
+  const [fcmToken, setFcmToken] = useState(null);
+  const {connect, disconnect} = useConnection();
+  const {sdk, currentUser} = useSendbirdChat();
+  const [sendbirdInstance, setSendbirdInstance] = useState(null);
 
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async currentUser => {
@@ -123,7 +42,6 @@ export const UserProvider = ({children}) => {
         setUser(currentUser);
         requestUserPermission();
         getToken();
-        connectXMPP(currentUser);
         setEmail(currentUser.email);
         await fetchUserAds();
         await fetchAllAds();
@@ -166,44 +84,125 @@ export const UserProvider = ({children}) => {
     return () => unsubscribe();
   }, [user]);
 
-  // Notification handler for foreground
   useEffect(() => {
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log('Foreground notification:', remoteMessage);
-
-      // Check if remoteMessage.notification is defined
-      if (remoteMessage.notification) {
-        Alert.alert(
-          remoteMessage.notification.title,
-          remoteMessage.notification.body,
-        );
-      } else {
-        console.log('Notification data is missing in the message');
+    const initializeSendbird = async () => {
+      try {
+        const params = {
+          appId: SENDBIRD_APP_ID,
+          modules: [new GroupChannelModule()],
+        };
+        const sendbird = SendbirdChat.init(params);
+        setSendbirdInstance(sendbird);
+        console.log('Sendbird initialized:', sendbird);
+      } catch (err) {
+        console.error('Error initializing Sendbird:', err);
       }
-    });
+    };
 
-    return unsubscribe;
+    initializeSendbird();
   }, []);
+
+  const requestUserPermission = async () => {
+    try {
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (enabled) {
+        console.log('Authorization status:', authStatus);
+      }
+    } catch (err) {
+      console.log('Error requesting permission:', err);
+    }
+  };
+
+  const getToken = async () => {
+    try {
+      const token = await messaging().getToken();
+      console.log('Token:', token);
+
+      if (user) {
+        // Save the FCM token to Firestore
+        await firestore().collection('profiles').doc(user.uid).update({
+          fcmToken: token,
+        });
+      }
+      setFcmToken(token);
+      return token;
+    } catch (err) {
+      console.log('Error getting token:', err);
+    }
+  };
+
+  const resetLoadingStates = () => {
+    setLoading(true);
+    setLoadingUserAds(true);
+    setLoadingAllAds(true);
+    setLoadingFavorites(true);
+  };
+
+  const handleUserSignIn = async (currentUser, navigation) => {
+    try {
+      setUser(currentUser);
+      setEmail(currentUser.email);
+      requestUserPermission();
+      const token = await getToken();
+
+      const userProfile = await fetchUserProfile(currentUser.uid);
+      const nickname = `${userProfile.firstName} ${userProfile.lastName}`;
+
+      await fetchUserAds();
+      await fetchAllAds();
+      await fetchUserFavorites();
+      console.log(
+        'Connecting to Sendbird with UID:',
+        currentUser.uid,
+        'Token:',
+        token,
+        'Nickname:',
+        nickname,
+      );
+      await connect(
+        currentUser.uid,
+        {accessToken: token},
+        {nickname: nickname},
+        {profileUrl: userProfile.profilePicture || ''},
+      );
+
+      const sendbirdUser = await currentUser;
+      console.log('Sendbird Connected User:', sendbirdUser);
+
+      setLoading(false);
+      if (navigation) {
+        navigation.navigate('Home');
+      }
+    } catch (err) {
+      setLoading(false);
+      console.error('User sign-in error:', err);
+    }
+  };
 
   async function onGoogleButtonPress(navigation) {
     setLoading(true);
     try {
       await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
-      const {idToken, user} = await GoogleSignin.signIn();
-      console.log(user);
+      const {idToken} = await GoogleSignin.signIn();
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      await auth().signInWithCredential(googleCredential);
-      await fetchUserAds();
-      await fetchAllAds();
-      await fetchUserFavorites();
-      setLoading(false);
-      setLoadingUserAds(false);
-      setLoadingAllAds(false);
-      setLoadingFavorites(false);
-      navigation.navigate('Home');
+      const userCredential = await auth().signInWithCredential(
+        googleCredential,
+      );
+      const user = userCredential.user;
+
+      if (!user) {
+        throw new Error('User is not properly signed in');
+      }
+
+      console.log('Google SignIn:', user);
+      await handleUserSignIn(user, navigation);
     } catch (err) {
       setLoading(false);
-      console.error(err);
+      console.error('Google Sign-In error:', err);
     }
   }
 
@@ -212,15 +211,14 @@ export const UserProvider = ({children}) => {
     auth()
       .signInWithEmailAndPassword(email, password)
       .then(async res => {
-        console.log(res);
-        await fetchUserAds();
-        await fetchAllAds();
-        await fetchUserFavorites();
-        setLoading(false);
-        setLoadingUserAds(false);
-        setLoadingAllAds(false);
-        setLoadingFavorites(false);
-        navigation.navigate('Home');
+        const user = res.user;
+
+        if (!user) {
+          throw new Error('User is not properly signed in');
+        }
+
+        console.log('Email SignIn:', user);
+        await handleUserSignIn(user, navigation);
       })
       .catch(err => {
         setLoading(false);
@@ -241,6 +239,60 @@ export const UserProvider = ({children}) => {
       setUser(userCredential.user);
       return userCredential.user;
     } catch (error) {
+      throw error;
+    }
+  };
+
+  const createOrUpdateUserInSendbird = async (userId, nickname, profileUrl) => {
+    try {
+      // First, try to update the user
+      let response = await fetch(
+        `https://api-${SENDBIRD_APP_ID}.sendbird.com/v3/users/${userId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json; charset=utf8',
+            'Api-Token': SENDBIRD_API_TOKEN,
+          },
+          body: JSON.stringify({
+            nickname: nickname,
+            profile_url: profileUrl,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.code === 400201) {
+          // User does not exist, create the user
+          response = await fetch(
+            `https://api-${SENDBIRD_APP_ID}.sendbird.com/v3/users`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json; charset=utf8',
+                'Api-Token': SENDBIRD_API_TOKEN,
+              },
+              body: JSON.stringify({
+                user_id: userId,
+                nickname: nickname,
+                profile_url: profileUrl,
+                issue_access_token: true,
+              }),
+            },
+          );
+        } else {
+          throw new Error(errorData.message);
+        }
+      }
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+      console.log('Sendbird user created or updated:', data);
+    } catch (error) {
+      console.error('Error creating or updating Sendbird user:', error);
       throw error;
     }
   };
@@ -267,6 +319,11 @@ export const UserProvider = ({children}) => {
         });
         console.log('Profile created successfully');
       }
+
+      // Call Sendbird function
+      const nickname = `${profileData.firstName} ${profileData.lastName}`;
+      const profileUrl = profileData.profilePicture || '';
+      await createOrUpdateUserInSendbird(user.uid, nickname, profileUrl);
     } catch (err) {
       console.error('Error creating/updating profile:', err);
       Alert.alert('Profile Error', 'Failed to create/update profile');
@@ -284,6 +341,27 @@ export const UserProvider = ({children}) => {
     } else {
       // Return null or a default profile object when the user profile is not found
       return null; // or { name: '', bio: '', profilePicture: '', pets: [], otherInfo: {} }
+    }
+  };
+
+  const fetchChatUserProfile = async userId => {
+    if (!userId) throw new Error('User ID is missing');
+
+    const userProfileRef = firestore().collection('profiles').doc(userId);
+    const userProfileDoc = await userProfileRef.get();
+
+    if (userProfileDoc.exists) {
+      const user = userProfileDoc.data();
+      console.log('Fetched user profile:', user); // Debug log
+      return {
+        userId: user.uid || userId,
+        firstName: user.firstName || 'Unknown',
+        lastName: user.lastName || 'User',
+        profileUrl: user.profilePicture || '',
+        key: user.uid || userId,
+      };
+    } else {
+      return null;
     }
   };
 
@@ -372,40 +450,6 @@ export const UserProvider = ({children}) => {
     } catch (err) {
       console.error('Error creating/updating ad:', err);
       Alert.alert('Ad Error', 'Failed to create/update ad');
-    }
-  };
-
-  const createChat = async (currentUserId, adUserId) => {
-    try {
-      // First, check if a chat between the current user and the ad user already exists
-      const chatQuery = await firestore()
-        .collection('chats')
-        .where('participants', 'array-contains', currentUserId)
-        .get();
-
-      let chatId = null;
-      chatQuery.forEach(doc => {
-        const participants = doc.data().participants;
-        if (participants.includes(adUserId)) {
-          chatId = doc.id;
-        }
-      });
-
-      // If no existing chat is found, create a new one
-      if (!chatId) {
-        const newChatRef = await firestore()
-          .collection('chats')
-          .add({
-            participants: [currentUserId, adUserId],
-            createdAt: firestore.FieldValue.serverTimestamp(),
-          });
-        chatId = newChatRef.id;
-      }
-
-      return chatId;
-    } catch (err) {
-      console.error('Error creating chat: ', err);
-      return null;
     }
   };
 
@@ -504,182 +548,11 @@ export const UserProvider = ({children}) => {
       setLoadingAllAds(true);
       setLoadingFavorites(true);
       console.log('User signed out');
+      await disconnect();
       navigation.navigate('SplashScreen');
     } catch (err) {
       console.error('Sign-out error:', err);
       Alert.alert('Sign-Out Error', 'Failed to sign out. Please try again.');
-    }
-  };
-
-  const sendMessage = async (chatId, text) => {
-    try {
-      const messageData = {
-        text,
-        createdAt: firestore.FieldValue.serverTimestamp(),
-        userId: user.uid,
-        user: {
-          _id: user.uid,
-          name: user.displayName,
-          avatar: user.photoURL,
-        },
-      };
-      console.log('Sending message:', messageData);
-      await firestore()
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .add(messageData);
-
-      // Fetch the recipient's FCM token from their profile
-      const chatDoc = await firestore().collection('chats').doc(chatId).get();
-      const participants = chatDoc.data().participants;
-      const recipientId = participants.find(id => id !== user.uid);
-      const recipientProfile = await firestore()
-        .collection('profiles')
-        .doc(recipientId)
-        .get();
-      const recipientFcmToken = recipientProfile.data().fcmToken;
-
-      // Send a push notification
-      if (recipientFcmToken) {
-        await messaging().sendMessage({
-          token: recipientFcmToken,
-          notification: {
-            title: 'New Message',
-            body: text,
-          },
-        });
-        console.log('Notification sent successfully');
-      } else {
-        console.log('No FCM token found for recipient');
-      }
-
-      console.log('Message sent successfully');
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
-  };
-
-  const sendMultimediaMessage = async (chatId, imageUri) => {
-    const url = await uploadImage(imageUri);
-    if (url) {
-      await firestore()
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .add({
-          image: url,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-          userId: user.uid,
-        });
-
-      // Fetch the recipient's FCM token from their profile
-      const chatDoc = await firestore().collection('chats').doc(chatId).get();
-      const participants = chatDoc.data().participants;
-      const recipientId = participants.find(id => id !== user.uid);
-      const recipientProfile = await firestore()
-        .collection('profiles')
-        .doc(recipientId)
-        .get();
-      const recipientFcmToken = recipientProfile.data().fcmToken;
-
-      // Send a push notification
-      if (recipientFcmToken) {
-        await messaging().sendMessage({
-          token: recipientFcmToken,
-          notification: {
-            title: 'New Image Message',
-            body: 'You have received a new image',
-          },
-        });
-        console.log('Notification sent successfully');
-      } else {
-        console.log('No FCM token found for recipient');
-      }
-    }
-  };
-
-  const subscribeToMessages = (chatId, callback) => {
-    return firestore()
-      .collection('chats')
-      .doc(chatId)
-      .collection('messages')
-      .orderBy('createdAt', 'desc')
-      .onSnapshot(
-        querySnapshot => {
-          if (querySnapshot && !querySnapshot.empty) {
-            const messages = querySnapshot.docs.map(doc => {
-              const data = doc.data();
-              return {
-                _id: doc.id,
-                text: data.text,
-                createdAt: data.createdAt
-                  ? data.createdAt.toDate()
-                  : new Date(),
-                user: data.user,
-              };
-            });
-            callback(messages);
-          } else {
-            callback([]);
-          }
-        },
-        error => {
-          console.error('Error fetching messages:', error);
-          callback([]);
-        },
-      );
-  };
-
-  const fetchUserChats = async userId => {
-    try {
-      const userChatsSnapshot = await firestore()
-        .collection('chats')
-        .where('participants', 'array-contains', userId)
-        .get();
-      const userChats = [];
-
-      for (const doc of userChatsSnapshot.docs) {
-        const chatData = doc.data();
-        const otherUserId = chatData.participants.find(
-          participant => participant !== userId,
-        );
-
-        const otherUserProfileSnapshot = await firestore()
-          .collection('profiles')
-          .doc(otherUserId)
-          .get();
-
-        const otherUserProfile = otherUserProfileSnapshot.data();
-
-        const lastMessageSnapshot = await firestore()
-          .collection('chats')
-          .doc(doc.id)
-          .collection('messages')
-          .orderBy('createdAt', 'desc')
-          .limit(1)
-          .get();
-
-        const lastMessage =
-          lastMessageSnapshot.docs.length > 0
-            ? lastMessageSnapshot.docs[0].data().text
-            : 'No messages yet.';
-
-        console.log('Other User Profile:', otherUserProfile);
-        console.log('Last Message:', lastMessage);
-
-        userChats.push({
-          id: doc.id,
-          otherUserName: `${otherUserProfile.firstName} ${otherUserProfile.lastName}`,
-          otherUserAvatar: otherUserProfile.profilePicture,
-          lastMessageReceived: lastMessage,
-        });
-      }
-
-      return userChats;
-    } catch (err) {
-      console.error('Error fetching user chats:', err);
-      return [];
     }
   };
 
@@ -853,10 +726,39 @@ export const UserProvider = ({children}) => {
     }
   };
 
+  const createChat = async (currentUserId, otherUserId) => {
+    try {
+      console.log('Creating chat channel');
+      if (!sendbirdInstance) {
+        throw new Error('Sendbird SDK is not initialized');
+      }
+
+      const params = {
+        invitedUserIds: [otherUserId],
+        operatorUserIds: [currentUserId],
+        isDistinct: true,
+      };
+
+      console.log('Creating chat with params:', {
+        currentUserId,
+        otherUserId,
+        params,
+      });
+
+      const channel = await sendbirdInstance.groupChannel.createChannel(params);
+      console.log('Chat channel created:', channel);
+      return channel.url;
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      return null;
+    }
+  };
+
   return (
     <UserContext.Provider
       value={{
         user,
+        setUser,
         loading,
         loadingUserAds,
         loadingAllAds,
@@ -874,15 +776,11 @@ export const UserProvider = ({children}) => {
         onGoogleButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
+        fetchChatUserProfile,
         isProfileComplete,
         uploadImage,
         createOrUpdateAd,
         signOut,
-        sendMessage,
-        subscribeToMessages,
-        sendMultimediaMessage,
-        fetchUserChats,
-        createChat,
         currentAd,
         setCurrentAd,
         handlePayment,
@@ -893,7 +791,8 @@ export const UserProvider = ({children}) => {
         setPreferredMethod,
         editPaymentDetails,
         deletePaymentMethod,
-        xmppClient,
+        createChat,
+        sendbirdInstance,
       }}>
       {children}
     </UserContext.Provider>

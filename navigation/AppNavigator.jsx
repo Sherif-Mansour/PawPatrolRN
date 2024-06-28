@@ -18,6 +18,8 @@ import BottomTabNavigator from './BottomTabNavigator';
 import LocationScreen from './../src/screens/_18LocationScreen';
 import AdDetailsScreen from '../src/screens/_19AdDetailScreen';
 import InquirySubmissionScreen from '../src/screens/_21InquirySubmissionScreen';
+import Chat from '../src/screens/_06Chat';
+import CreateChat from '../src/screens/_27CreateChat';
 import IndividualChat from '../src/screens/_20IndividualChat';
 import BookRequestScreen from '../src/screens/_23BookRequest';
 import AccountSettings from './../src/screens/_22AccountSettings';
@@ -98,6 +100,16 @@ const AppNavigator = () => {
         <Stack.Screen
           name="InquirySubmission"
           component={InquirySubmissionScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="Chat"
+          component={Chat}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="CreateChat"
+          component={CreateChat}
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen

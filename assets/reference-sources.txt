@@ -11,3 +11,8 @@ The Ultimate Guide to Google Map Integration in React Native https://youtu.be/Rv
 https://github.com/react-native-maps/react-native-maps
 https://callstack.github.io/react-native-paper/docs/components/Appbar/
 https://www.youtube.com/
+https://github.com/facebook/react-native
+https://callstack.github.io/react-native-paper/docs/guides/theming
+https://youtu.be/Cr5eXyr6CJ4?list=LL "Introduction to React Native and React Native Paper" 36:03
+https://callstack.github.io/react-native-paper/docs/components/BottomNavigation/ "React Native Paper - Bottom Navigation"
+// https://callstack.github.io/react-native-paper/docs/guides/theming
