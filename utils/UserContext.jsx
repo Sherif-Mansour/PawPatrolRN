@@ -35,45 +35,6 @@ export const UserProvider = ({children}) => {
   const {sdk, currentUser} = useSendbirdChat();
   const [sendbirdInstance, setSendbirdInstance] = useState(null);
 
-  const requestUserPermission = async () => {
-    try {
-      const authStatus = await messaging().requestPermission();
-      const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-      if (enabled) {
-        console.log('Authorization status:', authStatus);
-      }
-    } catch (err) {
-      console.log('Error requesting permission:', err);
-    }
-  };
-
-  const getToken = async () => {
-    try {
-      const token = await messaging().getToken();
-      console.log('Token:', token);
-
-      if (user) {
-        // Save the FCM token to Firestore
-        await firestore().collection('profiles').doc(user.uid).update({
-          fcmToken: token,
-        });
-      }
-    } catch (err) {
-      console.log('Error getting token:', err);
-    }
-  };
-
-  const resetLoadingStates = () => {
-    setLoading(true);
-    setLoadingUserAds(true);
-    setLoadingAllAds(true);
-    setLoadingFavorites(true);
-  }; 
-
-
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async currentUser => {
       resetLoadingStates();
