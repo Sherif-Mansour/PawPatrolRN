@@ -1,11 +1,3 @@
-/* eslint-disable prettier/prettier */
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {
@@ -20,15 +12,10 @@ import Chat from '../src/screens/_06Chat';
 import customScheme from '../assets/themes/customScheme.json';
 import {useUser} from '../utils/UserContext';
 
-// https://callstack.github.io/react-native-paper/docs/guides/theming
-
 const theme = {
   ...DefaultTheme,
   colors: {...customScheme.colors},
 };
-
-// https://youtu.be/Cr5eXyr6CJ4?list=LL "Introduction to React Native and React Native Paper" 36:03
-// https://callstack.github.io/react-native-paper/docs/components/BottomNavigation/ "React Native Paper - Bottom Navigation"
 
 const BottomTabNavigator = () => {
   const navigation = useNavigation();
