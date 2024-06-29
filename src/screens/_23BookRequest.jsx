@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, Button, Alert } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {View, Text, TextInput, StyleSheet, Button, Alert} from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import {useSendbirdChat} from '@sendbird/uikit-react-native';
 
 const BookRequestScreen = () => {
   const [date, setDate] = useState('');
@@ -12,18 +13,18 @@ const BookRequestScreen = () => {
   const [otherParticipantId, setOtherParticipantId] = useState(null);
   const navigation = useNavigation();
   const route = useRoute();
-  const { chatId } = route.params;
+  const {channelUrl} = route.params;
   const user = auth().currentUser;
+  const {sdk} = useSendbirdChat();
 
   useEffect(() => {
     const fetchParticipants = async () => {
       try {
-        const chatDoc = await firestore().collection('chats').doc(chatId).get();
-        if (chatDoc.exists) {
-          const { participants } = chatDoc.data();
-          const otherParticipant = participants.find(participant => participant !== user.uid);
-          setOtherParticipantId(otherParticipant);
-        }
+        const channel = await sdk.groupChannel.getChannel(channelUrl);
+        const otherParticipant = channel.members.find(
+          member => member.userId !== user.uid,
+        );
+        setOtherParticipantId(otherParticipant.userId);
       } catch (error) {
         console.error('Error fetching chat participants:', error);
         Alert.alert('Error', 'There was an error fetching chat participants.');
@@ -31,7 +32,7 @@ const BookRequestScreen = () => {
     };
 
     fetchParticipants();
-  }, [chatId, user.uid]);
+  }, [channelUrl, user.uid, sdk]);
 
   const handleSubmit = async () => {
     if (!date || !time || !location || !price) {
@@ -41,8 +42,8 @@ const BookRequestScreen = () => {
 
     try {
       const requestData = {
-        chatId,
-        requesterId: otherParticipantId,
+        channelUrl,
+        requesterId: user.uid,
         date,
         time,
         location,
@@ -51,7 +52,7 @@ const BookRequestScreen = () => {
         participants: [user.uid, otherParticipantId],
       };
 
-      await firestore().collection('appointments').add(requestData); // Assuming your collection is named 'appointments'
+      await firestore().collection('appointments').add(requestData);
       Alert.alert('Request Sent', 'Your request has been sent.');
       navigation.goBack();
     } catch (error) {

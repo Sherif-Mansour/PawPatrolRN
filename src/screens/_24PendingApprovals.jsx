@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Alert, Image } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Text, StyleSheet, FlatList, Alert, Image} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
-import { useUser } from '../../utils/UserContext';
-import { Button, Card } from 'react-native-paper';
+import {useUser} from '../../utils/UserContext';
+import {Button, Card} from 'react-native-paper';
 
 const PendingRequestsScreen = () => {
   const [requests, setRequests] = useState([]);
-  const { user } = useUser();
+  const {user} = useUser();
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -21,7 +21,7 @@ const PendingRequestsScreen = () => {
           requestsSnapshot.docs.map(async doc => {
             const requestData = doc.data();
             const otherUserId = requestData.participants.find(
-              participant => participant !== user.uid
+              participant => participant !== user.uid,
             );
             const otherUserProfile = await fetchUserProfile(otherUserId);
             return {
@@ -29,7 +29,7 @@ const PendingRequestsScreen = () => {
               ...requestData,
               otherUserProfile,
             };
-          })
+          }),
         );
 
         setRequests(fetchedRequests);
@@ -77,12 +77,12 @@ const PendingRequestsScreen = () => {
     }
   };
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({item}) => (
     <Card style={styles.card}>
       <View style={styles.cardContent}>
         {item.otherUserProfile?.profilePicture ? (
           <Image
-            source={{ uri: item.otherUserProfile.profilePicture }}
+            source={{uri: item.otherUserProfile.profilePicture}}
             style={styles.profilePicture}
           />
         ) : (
@@ -93,9 +93,12 @@ const PendingRequestsScreen = () => {
         )}
         <View style={styles.infoContainer}>
           <Text style={styles.nameText}>
-            Request with {item.otherUserProfile?.firstName} {item.otherUserProfile?.lastName}
+            Request with {item.otherUserProfile?.firstName}{' '}
+            {item.otherUserProfile?.lastName}
           </Text>
-          <Text style={styles.dateText}>Date: {item.date} - Time: {item.time}</Text>
+          <Text style={styles.dateText}>
+            Date: {item.date} - Time: {item.time}
+          </Text>
           <Text style={styles.locationText}>Location: {item.location}</Text>
           <Text style={styles.priceText}>Price: {item.price}</Text>
         </View>

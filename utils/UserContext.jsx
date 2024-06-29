@@ -541,6 +541,9 @@ export const UserProvider = ({children}) => {
   const signOut = async navigation => {
     try {
       await auth().signOut();
+      console.log('Attempting to disconnect from SendBird');
+      await disconnect();
+      console.log('User disconnected from SendBird');
       setUser(null);
       setFavorites([]);
       setAds([]);
@@ -548,7 +551,6 @@ export const UserProvider = ({children}) => {
       setLoadingAllAds(true);
       setLoadingFavorites(true);
       console.log('User signed out');
-      await disconnect();
       navigation.navigate('SplashScreen');
     } catch (err) {
       console.error('Sign-out error:', err);
