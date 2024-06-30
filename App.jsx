@@ -38,8 +38,6 @@ const localCacheStorage = {
 };
 
 const App = () => {
-  console.log('defaultLocale:', defaultLocale);
-
   return (
     <SafeAreaProvider>
       <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>

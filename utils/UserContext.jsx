@@ -93,7 +93,7 @@ export const UserProvider = ({children}) => {
         };
         const sendbird = SendbirdChat.init(params);
         setSendbirdInstance(sendbird);
-        console.log('Sendbird initialized:', sendbird);
+        console.log('Sendbird initialized!');
       } catch (err) {
         console.error('Error initializing Sendbird:', err);
       }
