@@ -64,6 +64,7 @@
     "react-native-splash-screen": "^3.3.0",
     "react-native-vector-icons": "^10.1.0",
     "react-native-video": "^6.3.0"
+    "react-native-stripe-sdk": "^0.0.0",
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
