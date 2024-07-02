@@ -65,22 +65,13 @@ export const UserProvider = ({children}) => {
     setLoadingFavorites(true);
   };
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> b4c89a09f2f7d751d75755662f1a73cb782b2af9
   const connectXMPP = async user => {
     try {
       const token = await messaging().getToken();
       console.log('XMPP Token:', token);
 
       const xmpp = client({
-<<<<<<< HEAD
-        service: 'ws://10.243.75.216:5222', // XMPP server address
-=======
-        service: 'ws://10.0.0.242:5222', // XMPP server address
->>>>>>> b4c89a09f2f7d751d75755662f1a73cb782b2af9
+        service: 'ws://10.243.99.233:5222', // XMPP server address
         domain: 'localhost',
         resource: 'example',
       });
@@ -125,10 +116,6 @@ export const UserProvider = ({children}) => {
     }
   };
 
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> b4c89a09f2f7d751d75755662f1a73cb782b2af9
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async currentUser => {
       resetLoadingStates();
