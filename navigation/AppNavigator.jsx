@@ -18,11 +18,16 @@ import BottomTabNavigator from './BottomTabNavigator';
 import LocationScreen from './../src/screens/_18LocationScreen';
 import AdDetailsScreen from '../src/screens/_19AdDetailScreen';
 import InquirySubmissionScreen from '../src/screens/_21InquirySubmissionScreen';
+import Chat from '../src/screens/_06Chat';
+import CreateChat from '../src/screens/_27CreateChat';
 import IndividualChat from '../src/screens/_20IndividualChat';
 import BookRequestScreen from '../src/screens/_23BookRequest';
 import AccountSettings from './../src/screens/_22AccountSettings';
 import Ad from '../src/screens/_15Ad';
-import PendingAppointmentsScreen from '../src/screens/_24PendingApprovals';
+import PendingApprovals from '../src/screens/_24PendingApprovals';
+import CalendarScreen from '../src/screens/_25CalendarScreen'; // Import the CalendarScreen
+import BookingDetailsScreen from '../src/screens/_26BookingDetailsScreen'; // Import the BookingDetailsScreen
+import ChatSettings from '../src/screens/_28ChatSettings';
 
 const Stack = createStackNavigator();
 
@@ -101,9 +106,19 @@ const AppNavigator = () => {
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen
+          name="Chat"
+          component={Chat}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="CreateChat"
+          component={CreateChat}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
           name="IndividualChat"
           component={IndividualChat}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{header: () => <AppHeader showBackButton={false} />}}
         />
         <Stack.Screen
           name="Account"
@@ -121,8 +136,23 @@ const AppNavigator = () => {
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
         <Stack.Screen
-          name="PendingAppointments"
-          component={PendingAppointmentsScreen}
+          name="PendingApprovals"
+          component={PendingApprovals}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="CalendarScreen"
+          component={CalendarScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="BookingDetailsScreen"
+          component={BookingDetailsScreen}
+          options={{header: () => <AppHeader showBackButton={true} />}}
+        />
+        <Stack.Screen
+          name="ChatSettings"
+          component={ChatSettings}
           options={{header: () => <AppHeader showBackButton={true} />}}
         />
       </Stack.Navigator>
