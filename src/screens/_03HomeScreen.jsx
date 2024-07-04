@@ -195,12 +195,14 @@ const HomeScreen = ({ navigation }) => {
       width: '90%',
       height: '66%',
       borderRadius: 10,
+      zIndex: 1071
     },
     modalContent: {
       width: '100%',
       height: '100%',
       alignItems: 'center',
       justifyContent: 'center',
+      zIndex: 1051
     },
   });
 
