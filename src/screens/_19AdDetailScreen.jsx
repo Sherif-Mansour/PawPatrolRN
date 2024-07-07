@@ -1,20 +1,15 @@
-import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, Image, ScrollView, Alert} from 'react-native';
-import {useTheme, Card, Button} from 'react-native-paper';
-import {useUser} from '../../utils/UserContext';
-import {useSendbirdChat} from '@sendbird/uikit-react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { useTheme, Card, Button } from 'react-native-paper';
+import { useUser } from '../../utils/UserContext';
+import { useSendbirdChat } from '@sendbird/uikit-react-native';
 
-const AdDetails = ({navigation, route}) => {
+const AdDetails = ({ navigation, route }) => {
   const theme = useTheme();
-  const {
-    user,
-    fetchUserProfile,
-    isProfileComplete,
-    fetchChatUserProfile,
-    createChat,
-  } = useUser();
-  const {ad} = route.params;
-  const {sdk, currentUser} = useSendbirdChat();
+  const { user, fetchUserProfile, isProfileComplete, fetchChatUserProfile, createChat } = useUser();
+  const { ad } = route.params;
+  const { sdk, currentUser } = useSendbirdChat();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const checkProfileCompletion = async () => {
@@ -30,7 +25,7 @@ const AdDetails = ({navigation, route}) => {
                 onPress: () => navigation.navigate('Profile'),
               },
             ],
-            {cancelable: false},
+            { cancelable: false },
           );
         }
       }
@@ -40,7 +35,7 @@ const AdDetails = ({navigation, route}) => {
 
   const handleContactPress = async () => {
     if (!user || !ad.userId) {
-      console.error('User or ad userId is missing.', {user, ad});
+      console.error('User or ad userId is missing.', { user, ad });
       return;
     }
     try {
@@ -55,7 +50,7 @@ const AdDetails = ({navigation, route}) => {
               onPress: () => navigation.navigate('Profile'),
             },
           ],
-          {cancelable: false},
+          { cancelable: false },
         );
         return;
       }
@@ -65,8 +60,8 @@ const AdDetails = ({navigation, route}) => {
         Alert.alert(
           'Error',
           'Could not fetch the ad user profile. Please try again later.',
-          [{text: 'OK'}],
-          {cancelable: false},
+          [{ text: 'OK' }],
+          { cancelable: false },
         );
         return;
       }
@@ -77,13 +72,13 @@ const AdDetails = ({navigation, route}) => {
       });
       const channelUrl = await createChat(user.uid, ad.userId);
       if (channelUrl) {
-        navigation.navigate('IndividualChat', {channelUrl});
+        navigation.navigate('IndividualChat', { channelUrl });
       } else {
         Alert.alert(
           'Error',
           'Could not create the chat. Please try again later.',
-          [{text: 'OK'}],
-          {cancelable: false},
+          [{ text: 'OK' }],
+          { cancelable: false },
         );
       }
     } catch (err) {
@@ -91,16 +86,31 @@ const AdDetails = ({navigation, route}) => {
     }
   };
 
+  const handleNextImage = () => {
+    if (currentImageIndex < ad.pictures.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
+
+  const handlePreviousImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Card style={styles.adContainer}>
-        {ad.picture ? (
-          <Card.Cover source={{uri: ad.picture}} style={styles.adImage} />
-        ) : (
-          <Image
-            source={require('../../assets/images/OIP.jpeg')}
-            style={styles.adImage}
-          />
+        {ad.pictures && ad.pictures.length > 0 && (
+          <View style={styles.imageContainer}>
+            <TouchableOpacity onPress={handlePreviousImage} disabled={currentImageIndex === 0} style={styles.navigationButton}>
+              <Text style={styles.navigationButtonText}>{'<'}</Text>
+            </TouchableOpacity>
+            <Image source={{ uri: ad.pictures[currentImageIndex] }} style={styles.adImage} />
+            <TouchableOpacity onPress={handleNextImage} disabled={currentImageIndex === ad.pictures.length - 1} style={styles.navigationButton}>
+              <Text style={styles.navigationButtonText}>{'>'}</Text>
+            </TouchableOpacity>
+          </View>
         )}
         <Card.Title
           titleStyle={styles.adTitle}
@@ -139,10 +149,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     position: 'relative',
   },
+  imageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
   adImage: {
-    height: 200,
-    width: '90%',
-    alignSelf: 'center',
+    height: 300,
+    width: 300,
+    borderRadius: 10,
+  },
+  navigationButton: {
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  navigationButtonText: {
+    fontSize: 24,
+    color: 'black',
   },
   adTitle: {
     fontWeight: 'bold',
