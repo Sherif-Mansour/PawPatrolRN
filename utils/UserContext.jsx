@@ -150,7 +150,10 @@ export const UserProvider = ({children}) => {
       const token = await getToken();
 
       const userProfile = await fetchUserProfile(currentUser.uid);
-      const nickname = `${userProfile.firstName} ${userProfile.lastName}`;
+      const firstName = userProfile?.firstName || 'Unknown';
+      const lastName = userProfile?.lastName || 'User';
+      const nickname = `${firstName} ${lastName}`;
+      const profilePicture = userProfile?.profilePicture || '';
 
       await fetchUserAds();
       await fetchAllAds();
@@ -340,7 +343,11 @@ export const UserProvider = ({children}) => {
       return userProfileDoc.data();
     } else {
       // Return null or a default profile object when the user profile is not found
-      return null; // or { name: '', bio: '', profilePicture: '', pets: [], otherInfo: {} }
+      return {
+        firstName: 'Unknown',
+        lastName: 'User',
+        profilePicture: '',
+      };
     }
   };
 
