@@ -36,7 +36,6 @@ const Ad = ({navigation}) => {
     setCurrentAd,
     fetchUserProfile,
     isProfileComplete,
-    fetchAllAds,
   } = useUser();
 
   const [title, setTitle] = useState('');
@@ -268,7 +267,7 @@ const Ad = ({navigation}) => {
             <TextInput label="Address" style={styles.input} editable={false} />
             <View style={styles.addressContainer}>
               <GooglePlacesAutocomplete
-                placeholder="Enter Address"
+                placeholder="Enter Address here..."
                 onPress={(data, details = null) => {
                   const fullAddress = details
                     ? details.formatted_address
@@ -386,5 +385,4 @@ const Ad = ({navigation}) => {
     />
   );
 };
-
 export default Ad;

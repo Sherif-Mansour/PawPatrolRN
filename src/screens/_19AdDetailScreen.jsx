@@ -2,11 +2,19 @@ import React, {useEffect} from 'react';
 import {View, Text, StyleSheet, Image, ScrollView, Alert} from 'react-native';
 import {useTheme, Card, Button} from 'react-native-paper';
 import {useUser} from '../../utils/UserContext';
+import {useSendbirdChat} from '@sendbird/uikit-react-native';
 
 const AdDetails = ({navigation, route}) => {
   const theme = useTheme();
-  const {user, createChat, fetchUserProfile, isProfileComplete} = useUser();
+  const {
+    user,
+    fetchUserProfile,
+    isProfileComplete,
+    fetchChatUserProfile,
+    createChat,
+  } = useUser();
   const {ad} = route.params;
+  const {sdk, currentUser} = useSendbirdChat();
 
   useEffect(() => {
     const checkProfileCompletion = async () => {
@@ -52,27 +60,31 @@ const AdDetails = ({navigation, route}) => {
         return;
       }
 
-      const adUserProfile = await fetchUserProfile(ad.userId);
-      if (!isProfileComplete(adUserProfile)) {
+      const adUserProfile = await fetchChatUserProfile(ad.userId);
+      if (!adUserProfile) {
         Alert.alert(
-          'Seller Profile Incomplete',
-          'The seller has an incomplete profile. Contacting them is not allowed at the moment.',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.navigate('Home'),
-            },
-          ],
+          'Error',
+          'Could not fetch the ad user profile. Please try again later.',
+          [{text: 'OK'}],
           {cancelable: false},
         );
         return;
       }
 
-      const chatId = await createChat(user.uid, ad.userId);
-      if (chatId) {
-        navigation.navigate('IndividualChat', {chatId});
+      console.log('Attempting to create chat with', {
+        currentUserId: user.uid,
+        otherUserId: ad.userId,
+      });
+      const channelUrl = await createChat(user.uid, ad.userId);
+      if (channelUrl) {
+        navigation.navigate('IndividualChat', {channelUrl});
       } else {
-        console.error('Error creating or fetching chat.');
+        Alert.alert(
+          'Error',
+          'Could not create the chat. Please try again later.',
+          [{text: 'OK'}],
+          {cancelable: false},
+        );
       }
     } catch (err) {
       console.error('Error handling contact press: ', err);

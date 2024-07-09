@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, Button, Alert } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {View, Text, TextInput, StyleSheet, Button, Alert} from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import {useSendbirdChat} from '@sendbird/uikit-react-native';
 
-const BookAppointmentScreen = () => {
+const BookRequestScreen = () => {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
@@ -12,18 +13,18 @@ const BookAppointmentScreen = () => {
   const [otherParticipantId, setOtherParticipantId] = useState(null);
   const navigation = useNavigation();
   const route = useRoute();
-  const { chatId } = route.params;
+  const {channelUrl} = route.params;
   const user = auth().currentUser;
+  const {sdk} = useSendbirdChat();
 
   useEffect(() => {
     const fetchParticipants = async () => {
       try {
-        const chatDoc = await firestore().collection('chats').doc(chatId).get();
-        if (chatDoc.exists) {
-          const { participants } = chatDoc.data();
-          const otherParticipant = participants.find(participant => participant !== user.uid);
-          setOtherParticipantId(otherParticipant);
-        }
+        const channel = await sdk.groupChannel.getChannel(channelUrl);
+        const otherParticipant = channel.members.find(
+          member => member.userId !== user.uid,
+        );
+        setOtherParticipantId(otherParticipant.userId);
       } catch (error) {
         console.error('Error fetching chat participants:', error);
         Alert.alert('Error', 'There was an error fetching chat participants.');
@@ -31,7 +32,7 @@ const BookAppointmentScreen = () => {
     };
 
     fetchParticipants();
-  }, [chatId, user.uid]);
+  }, [channelUrl, user.uid, sdk]);
 
   const handleSubmit = async () => {
     if (!date || !time || !location || !price) {
@@ -40,9 +41,9 @@ const BookAppointmentScreen = () => {
     }
 
     try {
-      const appointmentData = {
-        chatId,
-        requesterId: otherParticipantId,
+      const requestData = {
+        channelUrl,
+        requesterId: user.uid,
         date,
         time,
         location,
@@ -51,18 +52,18 @@ const BookAppointmentScreen = () => {
         participants: [user.uid, otherParticipantId],
       };
 
-      await firestore().collection('appointments').add(appointmentData);
-      Alert.alert('Appointment Request Sent', 'Your appointment request has been sent.');
+      await firestore().collection('appointments').add(requestData);
+      Alert.alert('Request Sent', 'Your request has been sent.');
       navigation.goBack();
     } catch (error) {
-      console.error('Error submitting appointment:', error);
-      Alert.alert('Error', 'There was an error submitting your appointment request.');
+      console.error('Error submitting request:', error);
+      Alert.alert('Error', 'There was an error submitting your request.');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Book Appointment</Text>
+      <Text style={styles.title}>Book Request</Text>
       <TextInput
         style={styles.input}
         value={date}
@@ -110,4 +111,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BookAppointmentScreen;
+export default BookRequestScreen;
