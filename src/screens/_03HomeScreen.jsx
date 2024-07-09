@@ -121,10 +121,11 @@ const HomeScreen = ({ navigation }) => {
   const renderItem = ({ item }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate('AdDetails', { ad: item })}
+      style={styles.adTouchableContainer}
     >
       <Card style={styles.adContainer}>
-        {item.picture ? (
-          <Card.Cover source={{ uri: item.picture }} style={styles.adImage} />
+        {item.mainPicture ? (
+          <Card.Cover source={{ uri: item.mainPicture }} style={styles.adImage} />
         ) : (
           <Image
             source={require('../../assets/images/OIP.jpeg')}
@@ -134,7 +135,7 @@ const HomeScreen = ({ navigation }) => {
         <Card.Title
           titleStyle={styles.adTitle}
           title={item.title}
-          subtitle={`Rating: ${item.rating || 'N/A'}`}
+          subtitle={`Price: ${item.price}`}
           subtitleStyle={styles.adTitle}
         />
         <TouchableOpacity
@@ -154,8 +155,7 @@ const HomeScreen = ({ navigation }) => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      padding: 20,
-      paddingTop: 5,
+      padding: 10,
       backgroundColor: '#FFF3D6',
     },
     categoryChip: {
@@ -164,6 +164,11 @@ const HomeScreen = ({ navigation }) => {
     categoriesScrollContainer: {
       flexDirection: 'row',
       marginVertical: 10,
+    },
+    adTouchableContainer: {
+      flex: 1,
+      maxWidth: '50%',
+      padding: 5,
     },
     adContainer: {
       borderWidth: 1,
@@ -174,13 +179,14 @@ const HomeScreen = ({ navigation }) => {
       backgroundColor: theme.colors.secondaryContainer,
     },
     adImage: {
-      height: 200,
-      width: '90%',
+      height: 150,
+      width: '100%',
       alignSelf: 'center',
     },
     adTitle: {
       fontWeight: 'bold',
       color: theme.colors.onPrimaryContainer,
+      fontSize: 14,
     },
     favoriteButton: {
       position: 'absolute',
@@ -195,14 +201,14 @@ const HomeScreen = ({ navigation }) => {
       width: '90%',
       height: '66%',
       borderRadius: 10,
-      zIndex: 1071
+      zIndex: 1071,
     },
     modalContent: {
       width: '100%',
       height: '100%',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 1051
+      zIndex: 1051,
     },
   });
 
@@ -270,6 +276,8 @@ const HomeScreen = ({ navigation }) => {
           data={filteredAds}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
+          numColumns={2}
+          key={selectedCategory} // Force re-render when category changes
           ListEmptyComponent={<Text>No ads found.</Text>}
           refreshControl={
             <RefreshControl
