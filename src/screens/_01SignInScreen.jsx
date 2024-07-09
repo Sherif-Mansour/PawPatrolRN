@@ -1,15 +1,31 @@
 import React, {useState} from 'react';
-import {Image, ImageBackground, StyleSheet, View, Text} from 'react-native';
+import {
+  Image,
+  ImageBackground,
+  StyleSheet,
+  View,
+  Text,
+  Alert,
+} from 'react-native';
 import MyTextInput from '../../components/MyTextInput';
 import SocialMedia from '../../components/SocialMedia';
 import {Button, useTheme} from 'react-native-paper';
 import {useUser} from '../../utils/UserContext';
 
 const SignInScreen = ({navigation}) => {
-  const {signInWithEmailAndPass, onGoogleButtonPress} = useUser();
+  const {signInWithEmailAndPass, onGoogleButtonPress, resetPassword} =
+    useUser();
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const handlePasswordReset = () => {
+    if (email) {
+      resetPassword(email);
+    } else {
+      Alert.alert('Error', 'Please enter your email address to reset password');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -37,6 +53,10 @@ const SignInScreen = ({navigation}) => {
             secureTextEntry={true}
             style={styles.input}
           />
+
+          <Text style={styles.textForgotPassword} onPress={handlePasswordReset}>
+            Forgot Password?
+          </Text>
 
           <Text
             style={styles.textDontHave}
@@ -93,5 +113,11 @@ const styles = StyleSheet.create({
   },
   textDontHave: {
     color: 'white',
+  },
+  textForgotPassword: {
+    color: 'white',
+    textDecorationLine: 'underline',
+    textAlign: 'right',
+    marginVertical: 10,
   },
 });

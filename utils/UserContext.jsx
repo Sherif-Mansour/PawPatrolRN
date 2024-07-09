@@ -246,6 +246,22 @@ export const UserProvider = ({children}) => {
     }
   };
 
+  const resetPassword = async email => {
+    try {
+      await auth().sendPasswordResetEmail(email);
+      Alert.alert(
+        'Password Reset Email Sent',
+        'Check your email to reset your password.',
+      );
+    } catch (err) {
+      console.error('Password reset error:', err);
+      Alert.alert(
+        'Error',
+        'Failed to send password reset email. Please try again.',
+      );
+    }
+  };
+
   const createOrUpdateUserInSendbird = async (userId, nickname, profileUrl) => {
     try {
       // First, try to update the user
@@ -802,6 +818,7 @@ export const UserProvider = ({children}) => {
         deletePaymentMethod,
         createChat,
         sendbirdInstance,
+        resetPassword,
       }}>
       {children}
     </UserContext.Provider>

@@ -7,7 +7,7 @@ import MyCustomButton from '../../components/MyCustomButton';
 import {useUser} from '../../utils/UserContext';
 
 const AccountSettings = ({navigation}) => {
-  const {user, signOut, fetchUserProfile} = useUser();
+  const {user, signOut, fetchUserProfile, resetPassword} = useUser();
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
@@ -29,6 +29,14 @@ const AccountSettings = ({navigation}) => {
 
   const handleSignOut = () => {
     signOut(navigation);
+  };
+
+  const handlePasswordReset = () => {
+    if (user && user.email) {
+      resetPassword(user.email);
+    } else {
+      Alert.alert('Error', 'No email associated with this account.');
+    }
   };
 
   return (
@@ -109,6 +117,18 @@ const AccountSettings = ({navigation}) => {
               <MyCustomButton
                 onPress={() => navigation.navigate('AppPreferences')}
                 label="App Preferences"
+              />
+              <Divider style={styles.divider} />
+            </View>
+          </View>
+          <View style={styles.settingsContainer}>
+            <View style={styles.optionContainer}>
+              <View style={{margin: 12}}>
+                <Text variant="labelLarge">Security Settings</Text>
+              </View>
+              <MyCustomButton
+                onPress={handlePasswordReset}
+                label="Reset Password"
               />
               <Divider style={styles.divider} />
             </View>
