@@ -1,20 +1,11 @@
-import React, {useState} from 'react';
-import {
-  Image,
-  ImageBackground,
-  StyleSheet,
-  Platform,
-  View,
-  Text,
-  Alert,
-} from 'react-native';
+import React, { useState } from 'react';
+import { Image, ImageBackground, StyleSheet, View, Text, Alert, KeyboardAvoidingView, ScrollView } from 'react-native';
 import MyTextInput from '../../components/MyTextInput';
-import SocialMedia from '../../components/SocialMedia';
-import {Button, useTheme} from 'react-native-paper';
-import {useUser} from '../../utils/UserContext';
+import { Button, useTheme } from 'react-native-paper';
+import { useUser } from '../../utils/UserContext';
 
-const SignUpScreen = ({navigation}) => {
-  const {user, createUserWithEmailAndPassword} = useUser();
+const SignUpScreen = ({ navigation }) => {
+  const { user, createUserWithEmailAndPassword } = useUser();
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,10 +28,13 @@ const SignUpScreen = ({navigation}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView behavior="padding" style={styles.container}>
+
       <ImageBackground
         source={require('../../assets/images/background.jpg')}
-        style={styles.imageBackground}>
+        style={styles.imageBackground}
+      >
+
         <View style={styles.logoContainer}>
           <Image
             source={require('../../assets/images/PetPalLogo.png')}
@@ -48,7 +42,7 @@ const SignUpScreen = ({navigation}) => {
           />
         </View>
 
-        <View style={[styles.inputsContainer]}>
+        <View style={styles.inputsContainer}>
           <MyTextInput
             value={email}
             onChangeText={text => setEmail(text)}
@@ -70,16 +64,19 @@ const SignUpScreen = ({navigation}) => {
             style={styles.input}
           />
 
-          <Button mode="contained" buttonColor="#009B7D" onPress={handleSignUp}>
+          <Button
+            mode="contained"
+            buttonColor="#009B7D"
+            onPress={handleSignUp}
+            style={styles.button}
+          >
             Sign Up
           </Button>
-
-          <Text style={styles.orText}>OR</Text>
-
-          <SocialMedia />
         </View>
+
       </ImageBackground>
-    </View>
+
+    </KeyboardAvoidingView>
   );
 };
 
@@ -109,12 +106,9 @@ const styles = StyleSheet.create({
     padding: 20,
     margin: 20,
     marginTop: 350,
-
     borderRadius: 10,
   },
-  orText: {
-    textAlign: 'center',
-    marginVertical: 10,
-    color: 'white',
+  button: {
+    marginTop: 10,
   },
 });
