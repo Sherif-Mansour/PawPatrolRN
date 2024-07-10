@@ -13,8 +13,12 @@ import {Button, useTheme} from 'react-native-paper';
 import {useUser} from '../../utils/UserContext';
 
 const SignInScreen = ({navigation}) => {
-  const {signInWithEmailAndPass, onGoogleButtonPress, resetPassword} =
-    useUser();
+  const {
+    signInWithEmailAndPass,
+    onGoogleButtonPress,
+    resetPassword,
+    onFacebookButtonPress,
+  } = useUser();
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -71,7 +75,10 @@ const SignInScreen = ({navigation}) => {
             Sign In
           </Button>
           <Text style={styles.orText}>OR</Text>
-          <SocialMedia onGooglePress={() => onGoogleButtonPress(navigation)} />
+          <SocialMedia
+            onGooglePress={() => onGoogleButtonPress(navigation)}
+            onFacebookPress={() => onFacebookButtonPress(navigation)}
+          />
         </View>
       </ImageBackground>
     </View>

@@ -2,6 +2,7 @@ import React, {useContext, createContext, useState, useEffect} from 'react';
 import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import {LoginManager, AccessToken} from 'react-native-fbsdk-next';
 import {Alert, Platform} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
@@ -206,6 +207,41 @@ export const UserProvider = ({children}) => {
     } catch (err) {
       setLoading(false);
       console.error('Google Sign-In error:', err);
+    }
+  }
+
+  async function onFacebookButtonPress(navigation) {
+    setLoading(true);
+    try {
+      const result = await LoginManager.logInWithPermissions([
+        'public_profile',
+        'email',
+      ]);
+      if (result.isCancelled) {
+        console.log('Login cancelled');
+        setLoading(false);
+      } else {
+        const data = await AccessToken.getCurrentAccessToken();
+        if (data) {
+          const facebookCredential = auth.FacebookAuthProvider.credential(
+            data.accessToken,
+          );
+          const userCredential = await auth().signInWithCredential(
+            facebookCredential,
+          );
+          const user = userCredential.user;
+
+          if (!user) {
+            throw new Error('User is not properly signed in');
+          }
+
+          console.log('Facebook SignIn:', user);
+          await handleUserSignIn(user, navigation);
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      console.error('Facebook Sign-In error:', err);
     }
   }
 
@@ -799,6 +835,7 @@ export const UserProvider = ({children}) => {
         signInWithEmailAndPass,
         createUserWithEmailAndPassword,
         onGoogleButtonPress,
+        onFacebookButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
         fetchChatUserProfile,

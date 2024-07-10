@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PawPatrolRN</string>
+    <string name="facebook_app_id">1186604696006946</string>
+    <string name="facebook_client_token">fcd07ca8bc62a99a6b6bafa9fd35556f</string>
 </resources>
