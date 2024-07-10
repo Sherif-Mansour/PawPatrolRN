@@ -217,31 +217,36 @@ export const UserProvider = ({children}) => {
         'public_profile',
         'email',
       ]);
+
       if (result.isCancelled) {
-        console.log('Login cancelled');
-        setLoading(false);
-      } else {
-        const data = await AccessToken.getCurrentAccessToken();
-        if (data) {
-          const facebookCredential = auth.FacebookAuthProvider.credential(
-            data.accessToken,
-          );
-          const userCredential = await auth().signInWithCredential(
-            facebookCredential,
-          );
-          const user = userCredential.user;
-
-          if (!user) {
-            throw new Error('User is not properly signed in');
-          }
-
-          console.log('Facebook SignIn:', user);
-          await handleUserSignIn(user, navigation);
-        }
+        throw 'User cancelled the login process';
       }
+
+      const data = await AccessToken.getCurrentAccessToken();
+
+      if (!data) {
+        throw 'Something went wrong obtaining access token';
+      }
+
+      const facebookCredential = auth.FacebookAuthProvider.credential(
+        data.accessToken,
+      );
+
+      const userCredential = await auth().signInWithCredential(
+        facebookCredential,
+      );
+      const user = userCredential.user;
+
+      if (!user) {
+        throw new Error('User is not properly signed in');
+      }
+
+      console.log('Facebook SignIn:', user);
+      await handleUserSignIn(user, navigation);
     } catch (err) {
       setLoading(false);
       console.error('Facebook Sign-In error:', err);
+      Alert.alert('Facebook Sign-In error', err.message);
     }
   }
 
