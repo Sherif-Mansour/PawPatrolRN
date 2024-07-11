@@ -1,7 +1,7 @@
 import {Image, StyleSheet, TouchableOpacity, View} from 'react-native';
 import React from 'react';
 
-const SocialMedia = ({onGooglePress, onFacebookPress}) => {
+const SocialMedia = ({onGooglePress, onFacebookPress, onTwitterPress}) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={onGooglePress}>
@@ -16,10 +16,12 @@ const SocialMedia = ({onGooglePress, onFacebookPress}) => {
           style={styles.image}
         />
       </TouchableOpacity>
-      <Image
-        source={require('../assets/icons/twitter.png')}
-        style={styles.image}
-      />
+      <TouchableOpacity onPress={onTwitterPress}>
+        <Image
+          source={require('../assets/icons/twitter.png')}
+          style={styles.image}
+        />
+      </TouchableOpacity>
     </View>
   );
 };

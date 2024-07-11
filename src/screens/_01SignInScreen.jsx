@@ -18,6 +18,7 @@ const SignInScreen = ({navigation}) => {
     onGoogleButtonPress,
     resetPassword,
     onFacebookButtonPress,
+    onTwitterButtonPress,
   } = useUser();
   const theme = useTheme();
   const [email, setEmail] = useState('');
@@ -78,6 +79,7 @@ const SignInScreen = ({navigation}) => {
           <SocialMedia
             onGooglePress={() => onGoogleButtonPress(navigation)}
             onFacebookPress={() => onFacebookButtonPress(navigation)}
+            onTwitterPress={() => onTwitterButtonPress(navigation)}
           />
         </View>
       </ImageBackground>

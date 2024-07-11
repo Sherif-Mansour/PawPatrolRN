@@ -3,7 +3,7 @@ import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {LoginManager, AccessToken} from 'react-native-fbsdk-next';
-import {Alert, Platform} from 'react-native';
+import {Alert, Platform, NativeModules} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import {useConfirmPayment} from '@stripe/stripe-react-native';
@@ -14,6 +14,13 @@ import {
   GroupChannelCreateParams,
 } from '@sendbird/chat/groupChannel';
 import SendbirdChat from '@sendbird/chat';
+
+const {RNTwitterSignIn} = NativeModules;
+
+const twitterKeys = {
+  TWITTER_CONSUMER_KEY: 'EZoSnZFV2RBBxCVYVY4xjyphN',
+  TWITTER_CONSUMER_SECRET: '0KH8GOPSzUgYEwTPJUDdUD22NkSP9R5EHaqTq0cgpzFzY6nJuX',
+};
 
 const UserContext = createContext();
 
@@ -68,6 +75,17 @@ export const UserProvider = ({children}) => {
       webClientId:
         '525365467776-38jgkirtmtklit7e8srik0nheq8fagvs.apps.googleusercontent.com',
     });
+
+    RNTwitterSignIn.init(
+      twitterKeys.TWITTER_CONSUMER_KEY,
+      twitterKeys.TWITTER_CONSUMER_SECRET,
+    )
+      .then(() => {
+        console.log('Twitter SDK initialized');
+      })
+      .catch(error => {
+        console.error('Error initializing Twitter SDK', error);
+      });
   }, []);
 
   useEffect(() => {
@@ -247,6 +265,41 @@ export const UserProvider = ({children}) => {
       setLoading(false);
       console.error('Facebook Sign-In error:', err);
       Alert.alert('Facebook Sign-In error', err.message);
+    }
+  }
+
+  async function onTwitterButtonPress(navigation) {
+    setLoading(true);
+    try {
+      console.log('Initializing Twitter SDK...');
+      await RNTwitterSignIn.init(
+        twitterKeys.TWITTER_CONSUMER_KEY,
+        twitterKeys.TWITTER_CONSUMER_SECRET,
+      );
+
+      console.log('Twitter SDK initialized, logging in...');
+      const {authToken, authTokenSecret} = await RNTwitterSignIn.logIn();
+      console.log('Logged in to Twitter, tokens:', authToken, authTokenSecret);
+
+      const twitterCredential = auth.TwitterAuthProvider.credential(
+        authToken,
+        authTokenSecret,
+      );
+      const userCredential = await auth().signInWithCredential(
+        twitterCredential,
+      );
+      const user = userCredential.user;
+
+      if (!user) {
+        throw new Error('User is not properly signed in');
+      }
+
+      console.log('Twitter SignIn:', user);
+      await handleUserSignIn(user, navigation);
+    } catch (err) {
+      setLoading(false);
+      console.error('Twitter Sign-In error:', err);
+      Alert.alert('Twitter Sign-In error', err.message);
     }
   }
 
@@ -841,6 +894,7 @@ export const UserProvider = ({children}) => {
         createUserWithEmailAndPassword,
         onGoogleButtonPress,
         onFacebookButtonPress,
+        onTwitterButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
         fetchChatUserProfile,
