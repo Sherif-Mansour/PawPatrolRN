@@ -9,8 +9,10 @@ import Ad from '../src/screens/_15Ad';
 import BookingScreen from '../src/screens/_05BookingScreen';
 import Chat from '../src/screens/_06Chat';
 import {useUser} from '../utils/UserContext';
+import { useTheme } from 'react-native-paper';
 
 const BottomTabNavigator = () => {
+  const theme = useTheme();
   const navigation = useNavigation();
   const {setCurrentAd} = useUser();
   const [index, setIndex] = useState(0);
@@ -74,9 +76,9 @@ const BottomTabNavigator = () => {
       navigationState={{index, routes}}
       onIndexChange={setIndex}
       renderScene={renderScene}
-      // barStyle={{backgroundColor: theme.colors.primary}}
-      // activeColor={theme.colors.onPrimary}
-      // inactiveColor={theme.colors.onPrimary}
+      barStyle={{backgroundColor: theme.colors.primary}}
+      activeColor={theme.colors.onPrimary}
+      inactiveColor={theme.colors.onPrimary}
     />
   );
 };

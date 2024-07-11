@@ -12,7 +12,7 @@ const AppHeader = ({showBackButton}) => {
   const navigation = useNavigation();
 
   return (
-    <Appbar.Header>
+    <Appbar.Header style={{backgroundColor: theme.colors.primary }}>
       {showBackButton && (
         <Appbar.BackAction
           color={theme.colors.onPrimary}
