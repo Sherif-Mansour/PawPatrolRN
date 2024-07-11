@@ -3,9 +3,14 @@
 import React, { useState } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 
-const AppSettingsScreen = () => {
+const AppSettingsScreen = ({ setIsDarkTheme }) => {
   const [darkMode, setDarkMode] = useState(false);
   const [language, setLanguage] = useState('English');
+
+  const toggleDarkMode = (value) => {
+    setDarkMode(value);
+    setIsDarkTheme(value);
+  };
 
   return (
     <View style={styles.container}>
@@ -14,7 +19,7 @@ const AppSettingsScreen = () => {
         <Text>Dark Mode</Text>
         <Switch
           value={darkMode}
-          onValueChange={setDarkMode}
+          onValueChange={toggleDarkMode}
         />
       </View>
       <View style={styles.setting}>

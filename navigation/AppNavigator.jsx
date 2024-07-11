@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 
 import SplashScreen from './../src/screens/_00SplashScreen';
 import SignInScreen from '../src/screens/_01SignInScreen';
@@ -31,129 +31,130 @@ import ChatSettings from '../src/screens/_28ChatSettings';
 
 const Stack = createStackNavigator();
 
-const AppNavigator = () => {
+const AppNavigator = ({ setIsDarkTheme }) => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="SplashScreen">
         <Stack.Screen
           name="SplashScreen"
           component={SplashScreen}
-          options={{headerShown: false}}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="SignIn"
           component={SignInScreen}
-          options={{headerShown: false}}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="SignUp"
           component={SignUpScreen}
-          options={{headerShown: false}}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Home"
           component={BottomTabNavigator}
-          options={{header: () => <AppHeader showBackButton={false} />}}
+          options={{ header: () => <AppHeader showBackButton={false} /> }}
         />
         <Stack.Screen
           name="Profile"
           component={Profile}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="NotificationSettings"
           component={NotificationSettingsScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="PrivacySettings"
           component={PrivacySettingsScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="PaymentSettings"
           component={PaymentSettingsScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="AppPreferences"
-          component={AppPreferencesScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
-        />
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
+        >
+          {props => <AppPreferencesScreen {...props} setIsDarkTheme={setIsDarkTheme} />}
+        </Stack.Screen>
         <Stack.Screen
           name="BookingSettings"
           component={BookingSettingsScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="UserAds"
           component={UserAdsScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="Location"
           component={LocationScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="AdDetails"
           component={AdDetailsScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="InquirySubmission"
           component={InquirySubmissionScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="Chat"
           component={Chat}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="CreateChat"
           component={CreateChat}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="IndividualChat"
           component={IndividualChat}
-          options={{header: () => <AppHeader showBackButton={false} />}}
+          options={{ header: () => <AppHeader showBackButton={false} /> }}
         />
         <Stack.Screen
           name="Account"
           component={AccountSettings}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="Ad"
           component={Ad}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="BookRequest"
           component={BookRequestScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="PendingApprovals"
           component={PendingApprovals}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="CalendarScreen"
           component={CalendarScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="BookingDetailsScreen"
           component={BookingDetailsScreen}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="ChatSettings"
           component={ChatSettings}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
       </Stack.Navigator>
     </NavigationContainer>
