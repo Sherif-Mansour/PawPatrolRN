@@ -1,7 +1,8 @@
 import React from 'react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {PaperProvider, MD3LightTheme as DefaultTheme} from 'react-native-paper';
-import customScheme from './assets/themes/customScheme.json';
+import {PaperProvider, MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
+import lightColors from './assets/themes/lightColors.json';
+import darkColors from './assets/themes/darkColors.json';
 import AppNavigator from './navigation/AppNavigator';
 import {UserProvider} from './utils/UserContext';
 import {StripeProvider} from '@stripe/stripe-react-native';
@@ -13,11 +14,17 @@ import {
 import {MMKV} from 'react-native-mmkv';
 import {platformServices} from './utils/PlatformServices';
 import defaultLocale from './utils/defaultLocale';
+import { useState } from 'react';
 
-const theme = {
-  ...DefaultTheme,
-  colors: {...customScheme.colors},
+const lightTheme = {
+  ...MD3LightTheme,
+  colors: { ...MD3LightTheme.colors, ...lightColors.colors },
 };
+
+const darkTheme = {
+  ...MD3DarkTheme,
+  colors: { ...MD3DarkTheme.colors, ...darkColors.colors }
+}
 
 // Initialize MMKV
 const mmkvStorage = new MMKV();
@@ -38,20 +45,20 @@ const localCacheStorage = {
 };
 
 const App = () => {
-  console.log('defaultLocale:', defaultLocale);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   return (
     <SafeAreaProvider>
       <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
-        <PaperProvider theme={theme}>
+        <PaperProvider theme={isDarkTheme ? darkTheme : lightTheme}>
           <SendbirdUIKitContainer
             appId={SENDBIRD_APP_ID}
-            chatOptions={{localCacheStorage}}
+            chatOptions={{ localCacheStorage }}
             platformServices={platformServices}
-            localization={{stringSet: defaultLocale}}
-            userProfile={{onCreateChannel: () => {}}}>
+            localization={{ stringSet: defaultLocale }}
+            userProfile={{ onCreateChannel: () => {} }}>
             <UserProvider>
-              <AppNavigator />
+              <AppNavigator setIsDarkTheme={setIsDarkTheme} />
             </UserProvider>
           </SendbirdUIKitContainer>
         </PaperProvider>

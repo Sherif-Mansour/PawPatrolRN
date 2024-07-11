@@ -1,5 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.pawpatrolrn">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.CAMERA" />
@@ -18,6 +20,8 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
       android:theme="@style/AppTheme">
+      <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+   	  <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
@@ -33,6 +37,21 @@
     <meta-data
       android:name="com.google.android.geo.API_KEY"
       android:value="AIzaSyBMmlNExl86zceWTM0vfYKEkY1HJ-neIWk"/>
+    
+    <activity android:name="com.facebook.FacebookActivity"
+        android:configChanges=
+                "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+        android:label="@string/app_name" />
+    <activity
+        android:name="com.facebook.CustomTabActivity"
+        android:exported="true">
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="@string/fb_login_protocol_scheme" />
+        </intent-filter>
+    </activity>
+
     </application>
-     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 </manifest>
