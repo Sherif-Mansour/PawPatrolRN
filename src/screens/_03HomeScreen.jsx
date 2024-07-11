@@ -23,6 +23,8 @@ import {
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MapContainer from '../../components/MapContainer';
+// Import the SaveToFavoritesModal from the components folder
+import SaveToFavoritesModal from '../../components/SaveToFavoritesModal';
 
 const categories = [
   'All',
@@ -52,10 +54,23 @@ const HomeScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
   const [adsFetched, setAdsFetched] = useState(false);
-  const [visible, setVisible] = useState(false);
 
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
+  // Add state homepage component to manage the visibility of the modal.
+  // Using Chatgpt to generate the state's name
+  const [isFavoritesModalVisible, setIsFavoritesModalVisible] = useState(false);
+
+  // Track which ad's favorite button was clicked
+  const [selectedAdId, setSelectedAdId] = useState(null);
+
+  // Change Map modal state to have better readability
+  const [isMapModalVisible, setIsMapModalVisible] = useState(false);
+
+  // Add 
+  const showFavoritesModal = () => setIsFavoritesModalVisible(true);
+  const hideFavoritesModal = () => setIsFavoritesModalVisible(false);
+
+  const showMapModal = () => setIsMapModalVisible(true);
+  const hideMapModal = () => setIsMapModalVisible(false);
 
   useEffect(() => {
     if (user) {
@@ -140,7 +155,11 @@ const HomeScreen = ({ navigation }) => {
         />
         <TouchableOpacity
           style={styles.favoriteButton}
-          onPress={() => handleAddToFavorites(item.id)}
+          //before change: onPress={() => handleAddToFavorites(item.id)}
+          onPress={() => {
+            setSelectedAdId(item.id); // Set the ad id to the state
+            showFavoritesModal(); // Show the modal
+          }}
         >
           <Icon
             name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
@@ -224,8 +243,8 @@ const HomeScreen = ({ navigation }) => {
     <SafeAreaProvider>
       <Portal>
         <Modal
-          visible={visible}
-          onDismiss={hideModal}
+          visible={isMapModalVisible}
+          onDismiss={hideMapModal}
           contentContainerStyle={styles.modalStyle}
         >
           <View style={styles.modalContent}>
@@ -237,7 +256,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Button
             style={{ backgroundColor: 'transparent' }}
-            onPress={showModal}
+            onPress={showMapModal}
             icon="map-marker"
           >
             Location
@@ -287,7 +306,13 @@ const HomeScreen = ({ navigation }) => {
             />
           }
         />
+
       </View>
+      {/* add SaveToFavoritesModal with the visible and onClose props.  */}
+      <SaveToFavoritesModal
+        visible={isFavoritesModalVisible}
+        onClose={hideFavoritesModal}
+      />
     </SafeAreaProvider>
   );
 };
