@@ -79,6 +79,12 @@ const SignInScreen = ({navigation}) => {
             onGooglePress={() => onGoogleButtonPress(navigation)}
             onFacebookPress={() => onFacebookButtonPress(navigation)}
           />
+          <Button
+            mode="outlined"
+            buttonColor="#FFBF5D"
+            onPress={() => navigation.navigate('AdminSignIn')}>
+            Login as Admin
+          </Button>
         </View>
       </ImageBackground>
     </View>
