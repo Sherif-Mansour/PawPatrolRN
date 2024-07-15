@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Alert
+  View, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Alert, RefreshControl
 } from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
 import { FlatList } from 'react-native-gesture-handler';
@@ -14,45 +14,57 @@ const AdminDashboard = ({ navigation }) => {
   const [users, setUsers] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [currentSection, setCurrentSection] = useState('ads');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      // Fetch ads
+      const adsSnapshot = await firestore().collectionGroup('userAds').get();
+      const adsList = adsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        userId: doc.ref.parent.parent.id,
+        ...doc.data(),
+      }));
+
+      // Fetch users
+      const usersSnapshot = await firestore().collection('profiles').get();
+      const usersList = usersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      // Fetch inquiries and user info for each inquiry
+      const inquiriesSnapshot = await firestore().collection('inquiries').get();
+      const inquiriesList = await Promise.all(inquiriesSnapshot.docs.map(async (doc) => {
+        const inquiry = { id: doc.id, ...doc.data() };
+        const userDoc = await firestore().collection('profiles').doc(inquiry.userId).get();
+        return { ...inquiry, user: userDoc.exists ? userDoc.data() : null };
+      }));
+
+      setAds(adsList);
+      setUsers(usersList);
+      setInquiries(inquiriesList);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch ads
-        const adsSnapshot = await firestore().collectionGroup('userAds').get();
-        const adsList = adsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          userId: doc.ref.parent.parent.id,
-          ...doc.data(),
-        }));
-
-        // Fetch users
-        const usersSnapshot = await firestore().collection('profiles').get();
-        const usersList = usersSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        // Fetch inquiries and user info for each inquiry
-        const inquiriesSnapshot = await firestore().collection('inquiries').get();
-        const inquiriesList = await Promise.all(inquiriesSnapshot.docs.map(async (doc) => {
-          const inquiry = { id: doc.id, ...doc.data() };
-          const userDoc = await firestore().collection('profiles').doc(inquiry.userId).get();
-          return { ...inquiry, user: userDoc.exists ? userDoc.data() : null };
-        }));
-
-        setAds(adsList);
-        setUsers(usersList);
-        setInquiries(inquiriesList);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchData();
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -83,6 +95,17 @@ const AdminDashboard = ({ navigation }) => {
     } catch (error) {
       console.error('Error deleting user:', error);
       Alert.alert('Error', 'There was an error deleting the user.');
+    }
+  };
+
+  const handleDeleteInquiry = async inquiryId => {
+    try {
+      await firestore().collection('inquiries').doc(inquiryId).delete();
+      setInquiries(inquiries.filter(inquiry => inquiry.id !== inquiryId));
+      Alert.alert('Success', 'Inquiry deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting inquiry:', error);
+      Alert.alert('Error', 'There was an error deleting the inquiry.');
     }
   };
 
@@ -121,10 +144,19 @@ const AdminDashboard = ({ navigation }) => {
       style={styles.userContainer}
       onPress={() => navigation.navigate('UserProfileScreen', { userId: item.id })}
     >
-      <Image source={{ uri: item.profilePicture }} style={styles.userImage} />
-      <View style={styles.userInfo}>
-        <Text style={styles.userText}>{item.firstName} {item.lastName}</Text>
-        <Text style={styles.userEmail}>{item.email}</Text>
+      <View style={styles.userInfoContainer}>
+        {item.profilePicture ? (
+          <Image source={{ uri: item.profilePicture }} style={styles.userImage} />
+        ) : (
+          <Image
+            source={require('../../assets/images/default-profile.jpg')} // Provide a default profile picture
+            style={styles.userImage}
+          />
+        )}
+        <View style={styles.userInfo}>
+          <Text style={styles.userText}>{`${item.firstName} ${item.lastName}`}</Text>
+          <Text style={styles.userEmail}>{item.email}</Text>
+        </View>
       </View>
       <TouchableOpacity
         style={styles.favoriteButton}
@@ -137,30 +169,72 @@ const AdminDashboard = ({ navigation }) => {
 
   const renderInquiryItem = ({ item }) => (
     <TouchableOpacity
+      style={styles.userContainer}
       onPress={() => navigation.navigate('ReplyInquiryScreen', { inquiry: item })}
-      style={styles.inquiryContainer}
     >
-      <Text style={styles.inquiryText}>Subject: {item.subject}</Text>
-      <Text style={styles.inquiryText}>Details: {item.details}</Text>
-      <Text style={styles.inquiryText}>Contact Info: {item.contactInfo}</Text>
-      {item.user && (
-        <>
-          <Text style={styles.inquiryText}>User: {item.user.firstName} {item.user.lastName}</Text>
-          <Text style={styles.inquiryText}>Email: {item.user.email}</Text>
-          <Text style={styles.inquiryText}>Phone: {item.user.phoneNo}</Text>
-        </>
-      )}
-    </TouchableOpacity>
+    <Card style={styles.inquiryContainer}>
+      <Card.Content>
+        <Text style={styles.inquiryText}>Subject: {item.subject}</Text>
+        <Text style={styles.inquiryText}>Details: {item.details}</Text>
+        <Text style={styles.inquiryText}>Contact Info: {item.contactInfo}</Text>
+        {item.user && (
+          <>
+            <Text style={styles.inquiryText}>User: {item.user.firstName} {item.user.lastName}</Text>
+            <Text style={styles.inquiryText}>Email: {item.user.email}</Text>
+            <Text style={styles.inquiryText}>Phone: {item.user.phoneNo}</Text>
+          </>
+        )}
+      </Card.Content>
+      <Card.Actions>
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => handleDeleteInquiry(item.id)}
+        >
+          <Icon name="trash" size={24} color="#ff0000" />
+        </TouchableOpacity>
+      </Card.Actions>
+    </Card>
+  </TouchableOpacity>
   );
 
   const renderSection = () => {
     switch (currentSection) {
       case 'ads':
-        return <FlatList data={ads} renderItem={renderAdItem} keyExtractor={item => item.id} style={styles.list} />;
+        return (
+          <FlatList
+            key={`ads-${currentSection}`} // Provide a unique key when numColumns changes
+            data={ads}
+            renderItem={renderAdItem}
+            keyExtractor={item => item.id}
+            style={styles.list}
+            numColumns={2}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          />
+        );
       case 'users':
-        return <FlatList data={users} renderItem={renderUserItem} keyExtractor={item => item.id} style={styles.list} />;
+        return (
+          <FlatList
+            key={`users-${currentSection}`} // Provide a unique key when numColumns changes
+            data={users}
+            renderItem={renderUserItem}
+            keyExtractor={item => item.id}
+            style={styles.list}
+            numColumns={1} // Display one profile container in one line
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          />
+        );
       case 'inquiries':
-        return <FlatList data={inquiries} renderItem={renderInquiryItem} keyExtractor={item => item.id} style={styles.list} />;
+        return (
+          <FlatList
+            key={`inquiries-${currentSection}`} // Provide a unique key when numColumns changes
+            data={inquiries}
+            renderItem={renderInquiryItem}
+            keyExtractor={item => item.id}
+            style={styles.list}
+            numColumns={1} // Display one inquiry container in one line
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          />
+        );
       default:
         return null;
     }
@@ -220,25 +294,25 @@ const styles = StyleSheet.create({
   adTouchableContainer: {
     flex: 1,
     maxWidth: '50%',
-    padding: 5,
+    padding: 8, // increased padding
   },
   adContainer: {
     borderWidth: 1,
-    borderColor: 'black',
-    paddingTop: 5,
-    marginBottom: 10,
+    borderColor: '#FFDDB1',
+    paddingTop: 8, // increased padding
+    marginBottom: 12, // increased margin
     position: 'relative',
-    backgroundColor: 'white',
+    backgroundColor: '#FFDDB1',
   },
   adImage: {
-    height: 150,
+    height: 160, // increased height
     width: '100%',
     alignSelf: 'center',
   },
   adTitle: {
     fontWeight: 'bold',
-    color: 'black',
-    fontSize: 14,
+    color: '#003641',
+    fontSize: 16, // increased font size
   },
   favoriteButton: {
     position: 'absolute',
@@ -246,33 +320,43 @@ const styles = StyleSheet.create({
     right: 10,
   },
   userContainer: {
+    flex: 1,
+    padding: 8, // increased padding
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  userInfoContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
   },
   userImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    height: 80, // increased height to match adImage
+    width: 80, // adjust width to keep it square
+    borderRadius: 40, // make it circular
+    marginRight: 10,
   },
   userInfo: {
     flex: 1,
-    marginLeft: 10,
   },
   userText: {
-    fontSize: 16,
+    fontSize: 16, // increased font size
+    fontWeight: 'bold',
   },
   userEmail: {
     fontSize: 14,
     color: '#555',
   },
   inquiryContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    flex: 1,
+    padding: 8, // increased padding
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    marginBottom: 12,
   },
   inquiryText: {
     fontSize: 16,

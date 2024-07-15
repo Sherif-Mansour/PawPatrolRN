@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   Image,
   ImageBackground,
@@ -9,10 +9,10 @@ import {
 } from 'react-native';
 import MyTextInput from '../../components/MyTextInput';
 import SocialMedia from '../../components/SocialMedia';
-import {Button, useTheme} from 'react-native-paper';
-import {useUser} from '../../utils/UserContext';
+import { Button, useTheme } from 'react-native-paper';
+import { useUser } from '../../utils/UserContext';
 
-const SignInScreen = ({navigation}) => {
+const SignInScreen = ({ navigation }) => {
   const {
     signInWithEmailAndPass,
     onGoogleButtonPress,
@@ -58,15 +58,20 @@ const SignInScreen = ({navigation}) => {
             style={styles.input}
           />
 
-          <Text style={styles.textForgotPassword} onPress={handlePasswordReset}>
-            Forgot Password?
-          </Text>
+          <View style={styles.textLinkContainer}>
+            <Text style={styles.textLink} onPress={handlePasswordReset}>
+              Forgot Password?
+            </Text>
+            <Text style={styles.textLink} onPress={() => navigation.navigate('AdminSignIn')}>
+              Login as Admin
+            </Text>
+          </View>
 
           <Text
             style={styles.textDontHave}
             onPress={() => navigation.navigate('SignUp')}>
             Don't have an account?{' '}
-            <Text style={{textDecorationLine: 'underline'}}>Sign Up</Text>
+            <Text style={{ textDecorationLine: 'underline' }}>Sign Up</Text>
           </Text>
           <Button
             mode="contained"
@@ -79,12 +84,6 @@ const SignInScreen = ({navigation}) => {
             onGooglePress={() => onGoogleButtonPress(navigation)}
             onFacebookPress={() => onFacebookButtonPress(navigation)}
           />
-          <Button
-            mode="outlined"
-            buttonColor="#FFBF5D"
-            onPress={() => navigation.navigate('AdminSignIn')}>
-            Login as Admin
-          </Button>
         </View>
       </ImageBackground>
     </View>
@@ -126,6 +125,15 @@ const styles = StyleSheet.create({
   },
   textDontHave: {
     color: 'white',
+  },
+  textLinkContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  textLink: {
+    color: 'white',
+    textDecorationLine: 'underline',
+    marginVertical: 10,
   },
   textForgotPassword: {
     color: 'white',
