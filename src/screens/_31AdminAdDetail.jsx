@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { useTheme, Card } from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const AdminAdDetails = ({ route }) => {
   const theme = useTheme();
@@ -52,6 +53,22 @@ const AdminAdDetails = ({ route }) => {
     }
   };
 
+  const handleDeleteReview = async reviewId => {
+    try {
+      await firestore()
+        .collection('RatingReviews')
+        .doc(ad.id)
+        .collection('ratingsReviews')
+        .doc(reviewId)
+        .delete();
+      setReviews(reviews.filter(review => review.id !== reviewId));
+      Alert.alert('Success', 'Review deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      Alert.alert('Error', 'There was an error deleting the review.');
+    }
+  };
+
   const renderReview = ({ item }) => (
     <Card style={styles.reviewCard}>
       <Card.Content>
@@ -61,6 +78,12 @@ const AdminAdDetails = ({ route }) => {
         </View>
         <Text style={styles.reviewText}>Rating: {item.rating}</Text>
         <Text style={styles.reviewText}>{item.review}</Text>
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => handleDeleteReview(item.id)}
+        >
+          <Icon name="trash" size={24} color="#ff0000" />
+        </TouchableOpacity>
       </Card.Content>
     </Card>
   );
@@ -167,6 +190,11 @@ const styles = StyleSheet.create({
   },
   reviewText: {
     fontSize: 16,
+  },
+  favoriteButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
   },
   noReviewsText: {
     textAlign: 'center',
