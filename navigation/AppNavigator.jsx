@@ -28,6 +28,12 @@ import PendingApprovals from '../src/screens/_24PendingApprovals';
 import CalendarScreen from '../src/screens/_25CalendarScreen'; // Import the CalendarScreen
 import BookingDetailsScreen from '../src/screens/_26BookingDetailsScreen'; // Import the BookingDetailsScreen
 import ChatSettings from '../src/screens/_28ChatSettings';
+import AdminSignInScreen from '../src/screens/_29AdminSignScreen';
+import AdminDashboard from '../src/screens/_30AdminDashboard';
+import AdminAdDetails from '../src/screens/_31AdminAdDetail';
+import UserProfileScreen from '../src/screens/_32AdminUserProfileScreen';
+import ReplyInquiryScreen from '../src/screens/_33ReplyInquiryScreen';
+
 
 const Stack = createStackNavigator();
 
@@ -154,6 +160,31 @@ const AppNavigator = ({ setIsDarkTheme }) => {
         <Stack.Screen
           name="ChatSettings"
           component={ChatSettings}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
+        />
+        <Stack.Screen
+          name="AdminSignIn"
+          component={AdminSignInScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AdminDashboard"
+          component={AdminDashboard}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
+        />
+        <Stack.Screen
+          name="AdminAdDetails"
+          component={AdminAdDetails}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
+        />
+        <Stack.Screen
+          name="UserProfileScreen"
+          component={UserProfileScreen}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
+        />
+        <Stack.Screen
+          name="ReplyInquiryScreen"
+          component={ReplyInquiryScreen}
           options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
       </Stack.Navigator>
