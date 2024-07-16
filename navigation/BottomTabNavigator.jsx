@@ -2,22 +2,17 @@ import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {
   BottomNavigation,
-  MD3LightTheme as DefaultTheme,
 } from 'react-native-paper';
 import HomeScreen from '../src/screens/_03HomeScreen';
 import Favorites from '../src/screens/_04FavoritesScreen';
 import Ad from '../src/screens/_15Ad';
 import BookingScreen from '../src/screens/_05BookingScreen';
 import Chat from '../src/screens/_06Chat';
-import customScheme from '../assets/themes/customScheme.json';
 import {useUser} from '../utils/UserContext';
-
-const theme = {
-  ...DefaultTheme,
-  colors: {...customScheme.colors},
-};
+import { useTheme } from 'react-native-paper';
 
 const BottomTabNavigator = () => {
+  const theme = useTheme();
   const navigation = useNavigation();
   const {setCurrentAd} = useUser();
   const [index, setIndex] = useState(0);
