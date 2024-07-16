@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   Image,
   ImageBackground,
@@ -9,10 +9,10 @@ import {
 } from 'react-native';
 import MyTextInput from '../../components/MyTextInput';
 import SocialMedia from '../../components/SocialMedia';
-import { Button, useTheme } from 'react-native-paper';
-import { useUser } from '../../utils/UserContext';
+import {Button, useTheme} from 'react-native-paper';
+import {useUser} from '../../utils/UserContext';
 
-const SignInScreen = ({ navigation }) => {
+const SignInScreen = ({navigation}) => {
   const {
     signInWithEmailAndPass,
     onGoogleButtonPress,
@@ -62,7 +62,9 @@ const SignInScreen = ({ navigation }) => {
             <Text style={styles.textLink} onPress={handlePasswordReset}>
               Forgot Password?
             </Text>
-            <Text style={styles.textLink} onPress={() => navigation.navigate('AdminSignIn')}>
+            <Text
+              style={styles.textLink}
+              onPress={() => navigation.navigate('AdminSignIn')}>
               Login as Admin
             </Text>
           </View>
@@ -71,7 +73,7 @@ const SignInScreen = ({ navigation }) => {
             style={styles.textDontHave}
             onPress={() => navigation.navigate('SignUp')}>
             Don't have an account?{' '}
-            <Text style={{ textDecorationLine: 'underline' }}>Sign Up</Text>
+            <Text style={{textDecorationLine: 'underline'}}>Sign Up</Text>
           </Text>
           <Button
             mode="contained"

@@ -117,6 +117,9 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    implementation "com.twitter.sdk.android:twitter-core:3.3.0"
+    implementation "com.twitter.sdk.android:twitter:3.3.0"
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
