@@ -8,6 +8,7 @@ https://firebase.google.com/docs
 https://www.npmjs.com/package/react-native-google-places-autocomplete
 https://www.npmjs.com/package/@react-native-community/datetimepicker
 The Ultimate Guide to Google Map Integration in React Native https://youtu.be/RvEU-5peOrM
+React Native Maps Tutorial || Step-by-Step || Maps with React Native https://youtu.be/PsGhW-OKKzw
 https://github.com/react-native-maps/react-native-maps
 https://callstack.github.io/react-native-paper/docs/components/Appbar/
 https://www.youtube.com/
@@ -16,11 +17,5 @@ https://callstack.github.io/react-native-paper/docs/guides/theming
 https://youtu.be/Cr5eXyr6CJ4?list=LL "Introduction to React Native and React Native Paper" 36:03
 https://callstack.github.io/react-native-paper/docs/components/BottomNavigation/ "React Native Paper - Bottom Navigation"
 // https://callstack.github.io/react-native-paper/docs/guides/theming
-
-
-
-
-
-
-
 share button:https://www.youtube.com/watch?v=vXzpEJeVmi8(3:40)
+https://callstack.github.io/react-native-paper/docs/guides/theming

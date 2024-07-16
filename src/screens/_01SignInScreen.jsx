@@ -58,9 +58,16 @@ const SignInScreen = ({navigation}) => {
             style={styles.input}
           />
 
-          <Text style={styles.textForgotPassword} onPress={handlePasswordReset}>
-            Forgot Password?
-          </Text>
+          <View style={styles.textLinkContainer}>
+            <Text style={styles.textLink} onPress={handlePasswordReset}>
+              Forgot Password?
+            </Text>
+            <Text
+              style={styles.textLink}
+              onPress={() => navigation.navigate('AdminSignIn')}>
+              Login as Admin
+            </Text>
+          </View>
 
           <Text
             style={styles.textDontHave}
@@ -120,6 +127,15 @@ const styles = StyleSheet.create({
   },
   textDontHave: {
     color: 'white',
+  },
+  textLinkContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  textLink: {
+    color: 'white',
+    textDecorationLine: 'underline',
+    marginVertical: 10,
   },
   textForgotPassword: {
     color: 'white',

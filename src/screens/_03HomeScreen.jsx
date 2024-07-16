@@ -24,7 +24,7 @@ import {
 } from 'react-native-paper';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import MapContainer from '../../components/MapContainer';
+import Map from '../../components/Map';
 
 const categories = [
   'All',
@@ -269,7 +269,7 @@ const HomeScreen = ({ navigation }) => {
           contentContainerStyle={styles.modalStyle}
         >
           <View style={styles.modalContent}>
-            <MapContainer />
+            <Map />
           </View>
         </Modal>
       </Portal>
