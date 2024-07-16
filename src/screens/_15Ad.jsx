@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
+  Share,
 } from 'react-native';
 import {Button, TextInput, useTheme, Text} from 'react-native-paper';
 import {useUser} from '../../utils/UserContext';

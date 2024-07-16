@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
+  Share
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -19,6 +20,7 @@ import {
   Text,
   Modal,
   Portal,
+  IconButton
 } from 'react-native-paper';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -118,26 +120,50 @@ const HomeScreen = ({ navigation }) => {
     </Chip>
   );
 
+  const shareAd = async (ad) => {
+    try {
+      const result = await Share.share({
+        message: `Check out this ad: ${ad.title} - ${ad.description}\n\nPrice: ${ad.price}\n\nServices: ${ad.services.join(', ')}\n\nAddress: ${ad.address}\n\nMain Picture: ${ad.mainPicture}`,
+        url: ad.mainPicture,
+        title: 'Ad from PawPatrol',
+      });
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log(`Shared with activity type: ${result.activityType}`);
+        } else {
+          console.log('Ad shared successfully');
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share dismissed');
+      }
+    } catch (error) {
+      console.error('Error sharing ad:', error);
+    }
+  };
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate('AdDetails', { ad: item })}
-      style={styles.adTouchableContainer}
-    >
-      <Card style={styles.adContainer}>
-        {item.mainPicture ? (
-          <Card.Cover source={{ uri: item.mainPicture }} style={styles.adImage} />
-        ) : (
-          <Image
-            source={require('../../assets/images/OIP.jpeg')}
-            style={styles.adImage}
+    <View style={styles.adTouchableContainer}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('AdDetails', { ad: item })}
+      >
+        <Card style={styles.adContainer}>
+          {item.mainPicture ? (
+            <Card.Cover source={{ uri: item.mainPicture }} style={styles.adImage} />
+          ) : (
+            <Image
+              source={require('../../assets/images/OIP.jpeg')}
+              style={styles.adImage}
+            />
+          )}
+          <Card.Title
+            titleStyle={styles.adTitle}
+            title={item.title}
+            subtitle={`Price: ${item.price}`}
+            subtitleStyle={styles.adTitle}
           />
-        )}
-        <Card.Title
-          titleStyle={styles.adTitle}
-          title={item.title}
-          subtitle={`Price: ${item.price}`}
-          subtitleStyle={styles.adTitle}
-        />
+        </Card>
+      </TouchableOpacity>
+      <View style={styles.actionContainer}>
         <TouchableOpacity
           style={styles.favoriteButton}
           onPress={() => handleAddToFavorites(item.id)}
@@ -148,8 +174,15 @@ const HomeScreen = ({ navigation }) => {
             color="#ff0000"
           />
         </TouchableOpacity>
-      </Card>
-    </TouchableOpacity>
+        <IconButton
+          icon="share"
+          color={theme.colors.primary}
+          size={24}
+          onPress={() => shareAd(item)}
+          style={styles.shareButton}
+        />
+      </View>
+    </View>
   );
 
   const styles = StyleSheet.create({
@@ -189,9 +222,16 @@ const HomeScreen = ({ navigation }) => {
       fontSize: 14,
     },
     favoriteButton: {
-      position: 'absolute',
-      bottom: 10,
-      right: 10,
+      marginRight: 10,
+    },
+    actionContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 5,
+    },
+    shareButton: {
+      marginRight: 0,
     },
     modalStyle: {
       backgroundColor: 'white',
@@ -242,12 +282,7 @@ const HomeScreen = ({ navigation }) => {
           >
             Location
           </Button>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('CalendarScreen')}
-            style={{ marginRight: 15 }}
-          >
-            <Icon name="calendar" size={24} color={theme.colors.primary} />
-          </TouchableOpacity>
+
         </View>
         <Searchbar
           style={{

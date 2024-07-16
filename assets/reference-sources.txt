@@ -16,3 +16,11 @@ https://callstack.github.io/react-native-paper/docs/guides/theming
 https://youtu.be/Cr5eXyr6CJ4?list=LL "Introduction to React Native and React Native Paper" 36:03
 https://callstack.github.io/react-native-paper/docs/components/BottomNavigation/ "React Native Paper - Bottom Navigation"
 // https://callstack.github.io/react-native-paper/docs/guides/theming
+
+
+
+
+
+
+
+share button:https://www.youtube.com/watch?v=vXzpEJeVmi8(3:40)
