@@ -1,8 +1,9 @@
 import React, { useContext, createContext, useState, useEffect } from 'react';
 import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { Alert, Platform } from 'react-native';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import {LoginManager, AccessToken} from 'react-native-fbsdk-next';
+import {Alert, Platform} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import { useConfirmPayment } from '@stripe/stripe-react-native';
@@ -211,6 +212,46 @@ export const UserProvider = ({ children }) => {
     }
   }
 
+  async function onFacebookButtonPress(navigation) {
+    setLoading(true);
+    try {
+      const result = await LoginManager.logInWithPermissions([
+        'public_profile',
+        'email',
+      ]);
+
+      if (result.isCancelled) {
+        throw 'User cancelled the login process';
+      }
+
+      const data = await AccessToken.getCurrentAccessToken();
+
+      if (!data) {
+        throw 'Something went wrong obtaining access token';
+      }
+
+      const facebookCredential = auth.FacebookAuthProvider.credential(
+        data.accessToken,
+      );
+
+      const userCredential = await auth().signInWithCredential(
+        facebookCredential,
+      );
+      const user = userCredential.user;
+
+      if (!user) {
+        throw new Error('User is not properly signed in');
+      }
+
+      console.log('Facebook SignIn:', user);
+      await handleUserSignIn(user, navigation);
+    } catch (err) {
+      setLoading(false);
+      console.error('Facebook Sign-In error:', err);
+      Alert.alert('Facebook Sign-In error', err.message);
+    }
+  }
+
   const signInWithEmailAndPass = (email, password, navigation) => {
     setLoading(true);
     auth()
@@ -245,6 +286,22 @@ export const UserProvider = ({ children }) => {
       return userCredential.user;
     } catch (error) {
       throw error;
+    }
+  };
+
+  const resetPassword = async email => {
+    try {
+      await auth().sendPasswordResetEmail(email);
+      Alert.alert(
+        'Password Reset Email Sent',
+        'Check your email to reset your password.',
+      );
+    } catch (err) {
+      console.error('Password reset error:', err);
+      Alert.alert(
+        'Error',
+        'Failed to send password reset email. Please try again.',
+      );
     }
   };
 
@@ -831,6 +888,7 @@ export const UserProvider = ({ children }) => {
         signInWithEmailAndPass,
         createUserWithEmailAndPassword,
         onGoogleButtonPress,
+        onFacebookButtonPress,
         createOrUpdateProfile,
         fetchUserProfile,
         fetchChatUserProfile,
@@ -850,6 +908,7 @@ export const UserProvider = ({ children }) => {
         deletePaymentMethod,
         createChat,
         sendbirdInstance,
+        resetPassword,
       }}>
       {children}
     </UserContext.Provider>

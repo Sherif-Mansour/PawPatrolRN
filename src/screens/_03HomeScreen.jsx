@@ -22,6 +22,7 @@ import {
 } from 'react-native-paper';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import Map from '../../components/Map';
 import MapContainer from '../../components/MapContainer';
 // Import the SaveToFavoritesModal from the components folder
 import SaveToFavoritesModal from '../../components/SaveToFavoritesModal';
@@ -258,7 +259,7 @@ const HomeScreen = ({ navigation }) => {
           contentContainerStyle={styles.modalStyle}
         >
           <View style={styles.modalContent}>
-            <MapContainer />
+            <Map />
           </View>
         </Modal>
       </Portal>
