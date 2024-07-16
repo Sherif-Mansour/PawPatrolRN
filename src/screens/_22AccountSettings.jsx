@@ -39,7 +39,7 @@ const AccountSettings = ({navigation}) => {
       Alert.alert('Error', 'No email associated with this account.');
     }
   };
-  
+
   const styles = StyleSheet.create({
     settingsContainer: {
       width: '100%',
@@ -152,7 +152,7 @@ const AccountSettings = ({navigation}) => {
               <Divider style={styles.divider} />
             </View>
           </View>
-          <View style={{margin: 10}}>
+          <View style={{margin: 10, backgroundColor: theme.colors.surface}}>
             <Button mode="contained" onPress={handleSignOut}>
               Sign Out
             </Button>
