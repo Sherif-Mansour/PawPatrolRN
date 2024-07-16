@@ -174,8 +174,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     position: 'relative',
     backgroundColor: '#fff',
-    width: '46%', // Adjust width as needed for your layout
-    margin: '2%', // Adjust margin as needed for your layout
+    width: '46%',
+    margin: '2%',
   },
   adImage: {
     height: 150,
