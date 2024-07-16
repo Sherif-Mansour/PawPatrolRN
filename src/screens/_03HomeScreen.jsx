@@ -23,6 +23,9 @@ import {
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../../components/Map';
+import MapContainer from '../../components/MapContainer';
+// Import the SaveToFavoritesModal from the components folder
+import SaveToFavoritesModal from '../../components/SaveToFavoritesModal';
 
 const categories = [
   'All',
@@ -52,10 +55,34 @@ const HomeScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
   const [adsFetched, setAdsFetched] = useState(false);
-  const [visible, setVisible] = useState(false);
+  
+  // State to control the visibility of the SaveToFavoritesModal
+  const [isFavoritesModalVisible, setIsFavoritesModalVisible] = useState(false);
 
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
+  // State to keep track of the selected ad ID when the favorite button is clicked
+  const [selectedAdId, setSelectedAdId] = useState(null);
+
+  // Change Map modal state for better readability
+  const [isMapModalVisible, setIsMapModalVisible] = useState(false);
+
+  // Function to show the SaveToFavoritesModal
+  // Takes the ad ID as an argument and sets it as the selected ad ID
+  // Also sets the modal visibility state to true
+  const showFavoritesModal = (adId) => {
+    setSelectedAdId(adId);
+    setIsFavoritesModalVisible(true);
+  };
+
+  // Function to hide the SaveToFavoritesModal
+  // Resets the modal visibility state to false and clears the selected ad ID
+  const hideFavoritesModal = () => {
+    setIsFavoritesModalVisible(false);
+    setSelectedAdId(null);
+  };
+
+  const showMapModal = () => setIsMapModalVisible(true);
+  const hideMapModal = () => setIsMapModalVisible(false);
+
 
   useEffect(() => {
     if (user) {
@@ -119,28 +146,23 @@ const HomeScreen = ({ navigation }) => {
   );
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity
+    <Card style={styles.adContainer}
       onPress={() => navigation.navigate('AdDetails', { ad: item })}
-      style={styles.adTouchableContainer}
     >
-      <Card style={styles.adContainer}>
-        {item.mainPicture ? (
-          <Card.Cover source={{ uri: item.mainPicture }} style={styles.adImage} />
-        ) : (
-          <Image
-            source={require('../../assets/images/OIP.jpeg')}
-            style={styles.adImage}
-          />
-        )}
-        <Card.Title
-          titleStyle={styles.adTitle}
-          title={item.title}
-          subtitle={`Price: ${item.price}`}
-          subtitleStyle={styles.adTitle}
-        />
+      <Card.Cover source={{ uri: item.mainPicture || 'https://picsum.photos/id/237/200/' }} style={styles.adImage} />
+      <Card.Title
+        title={item.title}
+        subtitle={`Price: ${item.price}`}
+        subtitleStyle={styles.adSubtitle}
+        titleStyle={styles.adTitle}
+      />
         <TouchableOpacity
           style={styles.favoriteButton}
-          onPress={() => handleAddToFavorites(item.id)}
+          // press to show the modal
+          onPress={() => {
+            // Set the ad id to the state
+            showFavoritesModal(item.id);
+          }}
         >
           <Icon
             name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
@@ -149,17 +171,16 @@ const HomeScreen = ({ navigation }) => {
           />
         </TouchableOpacity>
       </Card>
-    </TouchableOpacity>
   );
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       padding: 10,
-      backgroundColor: '#FFF3D6',
     },
     categoryChip: {
       marginRight: 10,
+      borderColor: '#ddd',
     },
     categoriesScrollContainer: {
       flexDirection: 'row',
@@ -172,11 +193,11 @@ const HomeScreen = ({ navigation }) => {
     },
     adContainer: {
       borderWidth: 1,
-      borderColor: theme.colors.primary,
-      paddingTop: 5,
+      borderColor: '#ddd',
       marginBottom: 10,
       position: 'relative',
-      backgroundColor: theme.colors.secondaryContainer,
+      width: '46%',
+      margin: '2%',
     },
     adImage: {
       height: 150,
@@ -224,8 +245,8 @@ const HomeScreen = ({ navigation }) => {
     <SafeAreaProvider>
       <Portal>
         <Modal
-          visible={visible}
-          onDismiss={hideModal}
+          visible={isMapModalVisible}
+          onDismiss={hideMapModal}
           contentContainerStyle={styles.modalStyle}
         >
           <View style={styles.modalContent}>
@@ -237,7 +258,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Button
             style={{ backgroundColor: 'transparent' }}
-            onPress={showModal}
+            onPress={showMapModal}
             icon="map-marker"
           >
             Location
@@ -287,7 +308,19 @@ const HomeScreen = ({ navigation }) => {
             />
           }
         />
+
       </View>
+
+      {/* add SaveToFavoritesModal with the visible and onClose props.  */}
+      <SaveToFavoritesModal
+        visible={isFavoritesModalVisible}
+        onClose={hideFavoritesModal}
+        // Pass the selected ad ID
+        adId={selectedAdId}
+        onSave={() => {
+          console.log('Ad added to list');
+        }}
+      />
     </SafeAreaProvider>
   );
 };
