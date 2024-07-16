@@ -22,7 +22,6 @@ import {
 } from 'react-native-paper';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import MapContainer from '../../components/MapContainer';
 import Map from '../../components/Map';
 
 const categories = [

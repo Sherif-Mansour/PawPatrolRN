@@ -15,7 +15,7 @@ import BookingSettingsScreen from '../src/screens/_13BookingSettingsScreen';
 import UserAdsScreen from '../src/screens/_16EditDeleteAd';
 import AppHeader from '../components/Header';
 import BottomTabNavigator from './BottomTabNavigator';
-import LocationScreen from './../src/screens/_18LocationScreen';
+import ViewProfileScreen from '../src/screens/_18ViewProfileScreen';
 import AdDetailsScreen from '../src/screens/_19AdDetailScreen';
 import InquirySubmissionScreen from '../src/screens/_21InquirySubmissionScreen';
 import Chat from '../src/screens/_06Chat';
@@ -98,8 +98,8 @@ const AppNavigator = ({ setIsDarkTheme }) => {
           options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
-          name="Location"
-          component={LocationScreen}
+          name="View Profile"
+          component={ViewProfileScreen}
           options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, TextInput, Alert, FlatList } from 'react-native';
-import { useTheme, Card, Button } from 'react-native-paper';
+import { useTheme, Card, Button, Divider, Avatar } from 'react-native-paper';
 import { useUser } from '../../utils/UserContext';
 import { useSendbirdChat } from '@sendbird/uikit-react-native';
 import firestore from '@react-native-firebase/firestore';
@@ -15,6 +15,7 @@ const AdDetails = ({ navigation, route }) => {
   const [review, setReview] = useState('');
   const [rating, setRating] = useState('');
   const [reviews, setReviews] = useState([]);
+  const [adUserProfile, setAdUserProfile] = useState(null);
 
   useEffect(() => {
     const checkProfileCompletion = async () => {
@@ -39,6 +40,15 @@ const AdDetails = ({ navigation, route }) => {
   }, [user, fetchUserProfile, isProfileComplete, navigation]);
 
   useEffect(() => {
+    const fetchAdUserProfile = async () => {
+      try {
+        const userProfile = await fetchUserProfile(ad.userId);
+        setAdUserProfile(userProfile);
+      } catch (error) {
+        console.error('Error fetching ad user profile:', error);
+      }
+    };
+
     const fetchReviews = async () => {
       try {
         const reviewsSnapshot = await firestore()
@@ -59,6 +69,7 @@ const AdDetails = ({ navigation, route }) => {
           })
         );
 
+        fetchAdUserProfile();
         setReviews(fetchedReviews);
       } catch (error) {
         console.error('Error fetching reviews:', error);
@@ -66,7 +77,7 @@ const AdDetails = ({ navigation, route }) => {
     };
 
     fetchReviews();
-  }, [ad.id]);
+  }, [ad.id, ad.userId, fetchUserProfile]);
 
   const handleContactPress = async () => {
     if (!user || !ad.userId) {
@@ -231,16 +242,39 @@ const AdDetails = ({ navigation, route }) => {
               <Text style={styles.adContent}>
                 Services: {ad.services.join(', ')}
               </Text>
+              {/* ChatGPT: How do I retrieve the information of the user that posted the ad to be displayed in the ad detail screen? */}
+              {adUserProfile && (
+                <View style={styles.userInfo}>
+                  {adUserProfile.profilePicture ? (
+                    <Image source={{ uri: adUserProfile.profilePicture }} style={styles.profilePicture} />
+                  ) : (
+                    <Avatar.Icon size={60} icon="account" style={styles.profilePicture} />
+                  )}
+                  <Text style={styles.username}>{adUserProfile.firstName} {adUserProfile.lastName}</Text>
+                  <View style={styles.viewProfButtonContainer}>
+                    <Button
+                      mode='outlined'
+                      compact={true}
+                      onPress={() => navigation.navigate('View Profile', { profile: adUserProfile })}
+                      contentStyle={{}}
+                    >
+                      View Profile
+                    </Button>
+                  </View>
+                </View>
+              )}
             </Card.Content>
-            <Card.Actions>
+          </Card>
+          <View style={styles.buttonContainer}>
+            <View style={styles.buttonGroup}>
               <Button mode="contained" onPress={handleContactPress}>
                 Contact
               </Button>
-              <Button mode="contained" onPress={() => setModalVisible(true)} style={{ marginLeft: 10 }}>
+              <Button mode="contained" onPress={() => setModalVisible(true)} style={{ marginLeft: 10 }} buttonColor='#FFBF5D'>
                 Add Review
               </Button>
-            </Card.Actions>
-          </Card>
+            </View>
+          </View>
           <Modal
             animationType="slide"
             transparent={true}
@@ -364,6 +398,36 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     color: 'gray',
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  profilePicture: {
+    width: 60,
+    height: 60,
+    borderRadius: 40,
+    marginRight: 8,
+  },
+  username: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  buttonContainer: {
+    width: '100%',
+    paddingLeft: 50,
+    paddingRight: 50,
+    marginTop: 8
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  viewProfButtonContainer: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
 });
 
