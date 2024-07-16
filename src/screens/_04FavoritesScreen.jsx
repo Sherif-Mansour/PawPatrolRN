@@ -38,23 +38,16 @@ const FavoritesScreen = ({navigation}) => {
   }, [favorites, ads]);
 
   const renderAd = ({item}) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate('AdDetails', {ad: item})}>
-      <Card style={styles.adContainer}>
-        {item.picture ? (
-          <Card.Cover source={{uri: item.picture}} style={styles.adImage} />
-        ) : (
-          <Image
-            source={require('../../assets/images/OIP.jpeg')}
-            style={styles.adImage}
-          />
-        )}
-        <Card.Title
-          titleStyle={styles.adTitle}
-          title={item.title}
-          subtitle={`Rating: ${item.rating || 'N/A'}`}
-          subtitleStyle={styles.adTitle}
-        />
+    <Card style={styles.adContainer}
+      onPress={() => navigation.navigate('AdDetails', { ad: item })}
+    >
+      <Card.Cover source={{ uri: item.mainPicture || 'https://picsum.photos/id/237/200/' }} style={styles.adImage} />
+      <Card.Title
+        title={item.title}
+        subtitle={`Price: ${item.price}`}
+        subtitleStyle={styles.adSubtitle}
+        titleStyle={styles.adTitle}
+      />
         <TouchableOpacity
           style={styles.favoriteButton}
           onPress={() => handleAddToFavorites(item.id)}>
@@ -65,7 +58,6 @@ const FavoritesScreen = ({navigation}) => {
           />
         </TouchableOpacity>
       </Card>
-    </TouchableOpacity>
   );
 
   const styles = StyleSheet.create({
@@ -73,7 +65,6 @@ const FavoritesScreen = ({navigation}) => {
       flex: 1,
       padding: 20,
       paddingTop: 5,
-      backgroundColor: '#FFF3D6',
     },
     headerText: {
       fontSize: 32,
@@ -81,16 +72,15 @@ const FavoritesScreen = ({navigation}) => {
     },
     adContainer: {
       borderWidth: 1,
-      borderColor: theme.colors.primary,
-      paddingTop: 5,
+      borderColor: '#ddd',
       marginBottom: 10,
       position: 'relative',
-      backgroundColor: theme.colors.secondaryContainer,
+      width: '46%',
+      margin: '2%',
     },
     adImage: {
-      height: 200,
-      width: '90%',
-      alignSelf: 'center',
+      height: 150,
+      width: '100%',
     },
     adTitle: {
       fontWeight: 'bold',
@@ -130,6 +120,7 @@ const FavoritesScreen = ({navigation}) => {
           data={favoriteAds}
           renderItem={renderAd}
           keyExtractor={item => item.id}
+          numColumns={2}
         />
       ) : (
         <Text style={styles.noFavoritesText}>No favorites added yet.</Text>

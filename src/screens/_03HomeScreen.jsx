@@ -55,7 +55,7 @@ const HomeScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
   const [adsFetched, setAdsFetched] = useState(false);
-
+  
   // State to control the visibility of the SaveToFavoritesModal
   const [isFavoritesModalVisible, setIsFavoritesModalVisible] = useState(false);
 
@@ -82,6 +82,7 @@ const HomeScreen = ({ navigation }) => {
 
   const showMapModal = () => setIsMapModalVisible(true);
   const hideMapModal = () => setIsMapModalVisible(false);
+
 
   useEffect(() => {
     if (user) {
@@ -145,25 +146,16 @@ const HomeScreen = ({ navigation }) => {
   );
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity
+    <Card style={styles.adContainer}
       onPress={() => navigation.navigate('AdDetails', { ad: item })}
-      style={styles.adTouchableContainer}
     >
-      <Card style={styles.adContainer}>
-        {item.mainPicture ? (
-          <Card.Cover source={{ uri: item.mainPicture }} style={styles.adImage} />
-        ) : (
-          <Image
-            source={require('../../assets/images/OIP.jpeg')}
-            style={styles.adImage}
-          />
-        )}
-        <Card.Title
-          titleStyle={styles.adTitle}
-          title={item.title}
-          subtitle={`Price: ${item.price}`}
-          subtitleStyle={styles.adTitle}
-        />
+      <Card.Cover source={{ uri: item.mainPicture || 'https://picsum.photos/id/237/200/' }} style={styles.adImage} />
+      <Card.Title
+        title={item.title}
+        subtitle={`Price: ${item.price}`}
+        subtitleStyle={styles.adSubtitle}
+        titleStyle={styles.adTitle}
+      />
         <TouchableOpacity
           style={styles.favoriteButton}
           // press to show the modal
@@ -179,17 +171,16 @@ const HomeScreen = ({ navigation }) => {
           />
         </TouchableOpacity>
       </Card>
-    </TouchableOpacity>
   );
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       padding: 10,
-      backgroundColor: '#FFF3D6',
     },
     categoryChip: {
       marginRight: 10,
+      borderColor: '#ddd',
     },
     categoriesScrollContainer: {
       flexDirection: 'row',
@@ -202,11 +193,11 @@ const HomeScreen = ({ navigation }) => {
     },
     adContainer: {
       borderWidth: 1,
-      borderColor: theme.colors.primary,
-      paddingTop: 5,
+      borderColor: '#ddd',
       marginBottom: 10,
       position: 'relative',
-      backgroundColor: theme.colors.secondaryContainer,
+      width: '46%',
+      margin: '2%',
     },
     adImage: {
       height: 150,
