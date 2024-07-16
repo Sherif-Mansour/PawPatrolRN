@@ -1,13 +1,13 @@
-import React, {useContext, createContext, useState, useEffect} from 'react';
+import React, { useContext, createContext, useState, useEffect } from 'react';
 import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import {Alert, Platform} from 'react-native';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { Alert, Platform } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
-import {useConfirmPayment} from '@stripe/stripe-react-native';
-import {useConnection, useSendbirdChat} from '@sendbird/uikit-react-native';
-import {SENDBIRD_APP_ID, SENDBIRD_API_TOKEN} from '@env';
+import { useConfirmPayment } from '@stripe/stripe-react-native';
+import { useConnection, useSendbirdChat } from '@sendbird/uikit-react-native';
+import { SENDBIRD_APP_ID, SENDBIRD_API_TOKEN } from '@env';
 import {
   GroupChannelModule,
   GroupChannelCreateParams,
@@ -16,7 +16,7 @@ import SendbirdChat from '@sendbird/chat';
 
 const UserContext = createContext();
 
-export const UserProvider = ({children}) => {
+export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingUserAds, setLoadingUserAds] = useState(true);
@@ -26,14 +26,16 @@ export const UserProvider = ({children}) => {
   const [ads, setAds] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [currentAd, setCurrentAd] = useState(null);
-  const {confirmPayment} = useConfirmPayment();
+  const { confirmPayment } = useConfirmPayment();
   const [transactionDetails, setTransactionDetails] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [fcmToken, setFcmToken] = useState(null);
-  const {connect, disconnect} = useConnection();
-  const {sdk, currentUser} = useSendbirdChat();
+  const { connect, disconnect } = useConnection();
+  const { sdk, currentUser } = useSendbirdChat();
   const [sendbirdInstance, setSendbirdInstance] = useState(null);
+  //list use to show in favorite page
+  const [lists, setLists] = useState([]);
 
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async currentUser => {
@@ -168,9 +170,9 @@ export const UserProvider = ({children}) => {
       );
       await connect(
         currentUser.uid,
-        {accessToken: token},
-        {nickname: nickname},
-        {profileUrl: userProfile.profilePicture || ''},
+        { accessToken: token },
+        { nickname: nickname },
+        { profileUrl: userProfile.profilePicture || '' },
       );
 
       const sendbirdUser = await currentUser;
@@ -189,8 +191,8 @@ export const UserProvider = ({children}) => {
   async function onGoogleButtonPress(navigation) {
     setLoading(true);
     try {
-      await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
-      const {idToken} = await GoogleSignin.signIn();
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      const { idToken } = await GoogleSignin.signIn();
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
       const userCredential = await auth().signInWithCredential(
         googleCredential,
@@ -417,7 +419,7 @@ export const UserProvider = ({children}) => {
               onPress: () => navigation.navigate('Profile'),
             },
           ],
-          {cancelable: false},
+          { cancelable: false },
         );
         return;
       }
@@ -518,24 +520,42 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const handleAddToFavorites = async adId => {
-    const userFavoritesRef = firestore().collection('favorites').doc(user.uid);
 
-    setFavorites(prevFavorites => {
-      const updatedFavorites = prevFavorites.includes(adId)
-        ? prevFavorites.filter(favId => favId !== adId)
-        : [...prevFavorites, adId];
 
-      userFavoritesRef.set({favorites: updatedFavorites}, {merge: true});
+  const handleAddToFavorites = async (adId, listName = 'My Favorites') => {
+    if (!user) return;
+    // Reference to the specific user's favorites list in Firebase
+    const userFavoritesRef = firestore()
+      .collection('favorites')
+      .doc(user.uid)
+      .collection('lists')
+      .doc(listName);
 
-      return updatedFavorites;
-    });
+    try {
+      const listDoc = await userFavoritesRef.get();
+      const currentFavorites = listDoc.exists ? listDoc.data().favorites : [];
+      // Check if the ad is already in the favorites. If it is, remove it; otherwise, add it.
+      const updatedFavorites = currentFavorites.includes(adId)
+        ? currentFavorites.filter(favId => favId !== adId)
+        : [...currentFavorites, adId];
+
+      await userFavoritesRef.set({ favorites: updatedFavorites }, { merge: true });
+      setFavorites(updatedFavorites);
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+    }
   };
+
+
 
   const fetchUserFavorites = async () => {
     if (!user) return;
 
-    const userFavoritesRef = firestore().collection('favorites').doc(user.uid);
+    const userFavoritesRef = firestore()
+      .collection('favorites')
+      .doc(user.uid)
+      .collection('lists')
+      .doc('My Favorites');
     const userFavoritesDoc = await userFavoritesRef.get();
 
     if (userFavoritesDoc.exists) {
@@ -544,6 +564,32 @@ export const UserProvider = ({children}) => {
       setFavorites([]);
     }
   };
+
+
+  const fetchUserLists = async () => {
+    if (!user) return;
+
+    const userListsRef = firestore().collection('favorites').doc(user.uid).collection('lists');
+    const userListsSnapshot = await userListsRef.get();
+
+    if (!userListsSnapshot.empty) {
+      const listsData = userListsSnapshot.docs.map(doc => ({ name: doc.id, favorites: doc.data().favorites || [] }));
+      setLists(listsData);
+    } else {
+      setLists([{ name: 'My Favorites', favorites: [] }]);
+    }
+  };
+
+
+  useEffect(() => {
+    if (user) {
+      fetchUserFavorites();
+      fetchUserLists();
+    }
+  }, [user]);
+
+
+
 
   const signOut = async navigation => {
     try {
@@ -574,7 +620,7 @@ export const UserProvider = ({children}) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({amount, currency, description}),
+          body: JSON.stringify({ amount, currency, description }),
         },
       );
 
@@ -593,9 +639,9 @@ export const UserProvider = ({children}) => {
         transaction.currency,
         transaction.description,
       );
-      const {paymentIntent, error} = await confirmPayment(clientSecret, {
+      const { paymentIntent, error } = await confirmPayment(clientSecret, {
         type: 'Card',
-        billingDetails: {email: user.email},
+        billingDetails: { email: user.email },
       });
 
       if (error) {
@@ -650,7 +696,7 @@ export const UserProvider = ({children}) => {
 
       paymentMethods.push(paymentDetails);
 
-      await userPaymentRef.set({paymentMethods});
+      await userPaymentRef.set({ paymentMethods });
       setPaymentMethods(paymentMethods); // Update local state
       console.log('Payment details saved successfully:', paymentMethods);
     } catch (err) {
@@ -688,7 +734,7 @@ export const UserProvider = ({children}) => {
       const userPaymentRef = firestore()
         .collection('paymentMethods')
         .doc(user.uid);
-      await userPaymentRef.update({selectedPaymentMethod: methodIndex});
+      await userPaymentRef.update({ selectedPaymentMethod: methodIndex });
 
       console.log('Preferred payment method set:', methodIndex);
     } catch (err) {
@@ -707,7 +753,7 @@ export const UserProvider = ({children}) => {
         .doc(user.uid);
       paymentMethods[index] = paymentDetails;
 
-      await paymentMethodsRef.update({paymentMethods});
+      await paymentMethodsRef.update({ paymentMethods });
       await fetchPaymentMethods(); // Refresh the payment methods list
       console.log('Payment method edited successfully:', paymentDetails);
     } catch (err) {
@@ -726,7 +772,7 @@ export const UserProvider = ({children}) => {
       const updatedPaymentMethods = [...paymentMethods];
       updatedPaymentMethods.splice(index, 1);
 
-      await paymentMethodsRef.update({paymentMethods: updatedPaymentMethods});
+      await paymentMethodsRef.update({ paymentMethods: updatedPaymentMethods });
       setPaymentMethods(updatedPaymentMethods); // Update local state
       console.log('Payment method deleted successfully');
     } catch (err) {
@@ -778,8 +824,10 @@ export const UserProvider = ({children}) => {
         fetchAllAds,
         deleteAd,
         favorites,
+        lists,
         handleAddToFavorites,
         fetchUserFavorites,
+        fetchUserLists,
         signInWithEmailAndPass,
         createUserWithEmailAndPassword,
         onGoogleButtonPress,

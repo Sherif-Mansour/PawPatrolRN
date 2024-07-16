@@ -55,19 +55,29 @@ const HomeScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [adsFetched, setAdsFetched] = useState(false);
 
-  // Add state homepage component to manage the visibility of the modal.
-  // Using Chatgpt to generate the state's name
+  // State to control the visibility of the SaveToFavoritesModal
   const [isFavoritesModalVisible, setIsFavoritesModalVisible] = useState(false);
 
-  // Track which ad's favorite button was clicked
+  // State to keep track of the selected ad ID when the favorite button is clicked
   const [selectedAdId, setSelectedAdId] = useState(null);
 
-  // Change Map modal state to have better readability
+  // Change Map modal state for better readability
   const [isMapModalVisible, setIsMapModalVisible] = useState(false);
 
-  // Add 
-  const showFavoritesModal = () => setIsFavoritesModalVisible(true);
-  const hideFavoritesModal = () => setIsFavoritesModalVisible(false);
+  // Function to show the SaveToFavoritesModal
+  // Takes the ad ID as an argument and sets it as the selected ad ID
+  // Also sets the modal visibility state to true
+  const showFavoritesModal = (adId) => {
+    setSelectedAdId(adId);
+    setIsFavoritesModalVisible(true);
+  };
+
+  // Function to hide the SaveToFavoritesModal
+  // Resets the modal visibility state to false and clears the selected ad ID
+  const hideFavoritesModal = () => {
+    setIsFavoritesModalVisible(false);
+    setSelectedAdId(null);
+  };
 
   const showMapModal = () => setIsMapModalVisible(true);
   const hideMapModal = () => setIsMapModalVisible(false);
@@ -155,10 +165,10 @@ const HomeScreen = ({ navigation }) => {
         />
         <TouchableOpacity
           style={styles.favoriteButton}
-          //before change: onPress={() => handleAddToFavorites(item.id)}
+          // press to show the modal
           onPress={() => {
-            setSelectedAdId(item.id); // Set the ad id to the state
-            showFavoritesModal(); // Show the modal
+            // Set the ad id to the state
+            showFavoritesModal(item.id);
           }}
         >
           <Icon
@@ -308,10 +318,16 @@ const HomeScreen = ({ navigation }) => {
         />
 
       </View>
+
       {/* add SaveToFavoritesModal with the visible and onClose props.  */}
       <SaveToFavoritesModal
         visible={isFavoritesModalVisible}
         onClose={hideFavoritesModal}
+        // Pass the selected ad ID
+        adId={selectedAdId}
+        onSave={() => {
+          console.log('Ad added to list');
+        }}
       />
     </SafeAreaProvider>
   );

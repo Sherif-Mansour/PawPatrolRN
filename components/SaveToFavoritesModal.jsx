@@ -1,95 +1,121 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
-import { Button, Card, Checkbox, Modal, Portal, TextInput, PaperProvider } from 'react-native-paper';
+import { Button, Card, Checkbox, Modal, Portal, TextInput } from 'react-native-paper';
+import firestore from '@react-native-firebase/firestore';
+import { useUser } from '../utils/UserContext';
 
-const SaveToFavoritesModal = ({ visible, onClose }) => {
-  // use chatgpt to generate the state name
-  // for the button to create a new list 
+// SaveToFavoritesModal component definition
+const SaveToFavoritesModal = ({ visible, onClose, adId, onSave }) => {
+  const { user, lists, fetchUserLists, handleAddToFavorites } = useUser();
+
+  // State to control the visibility of the "Create New List" modal
   const [createListModalVisible, setCreateListModalVisible] = useState(false);
-  // for textinput in create a list name
   const [listName, setListName] = useState('');
-  // for description in create a list page
   const [listDescription, setListDescription] = useState('');
-  // for the select a list checkbox button
-  const [selectedList, setSelectedList] = useState(null);
+  const [selectedList, setSelectedList] = useState('My Favorites');
 
-  // 
-  const [checked, setChecked] = useState(false);
+  // Fetch user lists when the user is available
+  useEffect(() => {
+    if (user) {
+      fetchUserLists();
+    }
+  }, [user]);
 
-  // use chatgpt to generate 
+  // Function to show the "Create New List" modal
   const handleCreateNewList = () => {
     setCreateListModalVisible(true);
   };
 
-  // use chatgpt to generate
-  const handleSaveList = () => {
-    console.log('Saving list: ', listName, listDescription);
+  // Function to handle saving a new list to Firestore
+  const handleSaveList = async () => {
+    if (listName) {
+      await firestore()
+        .collection('favorites')
+        .doc(user.uid)
+        .collection('lists')
+        .doc(listName)
+        .set({ description: listDescription, favorites: [] });
+      fetchUserLists(); // Fetch updated lists
+    }
     setCreateListModalVisible(false);
-    onClose();
   };
 
-  // use chatgpt to generate
+  // Function to select a list
   const handleSelectList = (list) => {
-    setSelectedList(selectedList === list ? null : list);
+    setSelectedList(list);
   };
+
+  // Function to handle saving an ad to the selected list
+  const handleSave = async () => {
+    if (!adId) {
+      console.error('Ad ID is not defined.');
+      return;
+    }
+
+    if (!selectedList) {
+      console.error('No list selected.');
+      return;
+    }
+
+    console.log(`Saving adId: ${adId} to list: ${selectedList}`);
+
+    try {
+      await handleAddToFavorites(adId, selectedList);
+      onSave(selectedList);
+      // Close the modal after successful save
+      onClose();
+    } catch (error) {
+      // Handle the error as needed (e.g., show an error message to the user)
+      console.error('Error in handleSave:', error);
+    }
+  };
+
 
   return (
     <Portal>
       {/* Reference: https://callstack.github.io/react-native-paper/docs/components/Modal */}
       <Modal visible={visible} onDismiss={onClose} contentContainerStyle={styles.modalContainer}>
         <View style={styles.modalContent}>
-          {/* modal title */}
-          <Text style={styles.modalTitle}>
-            Save to Favorites
-          </Text>
-          {/* add icon and onpress function to create new list
-            Reference:https://pictogrammers.com/library/mdi/icon/plus/
-          */}
+          <Text style={styles.modalTitle}>Save to Favorites</Text>
           <Button icon="plus" mode="contained" onPress={handleCreateNewList}>
             Create New List
           </Button>
-          <Text style={styles.sectionTitle}>
-            My Favorites
-          </Text>
-          {/* Default List (My Favorites) */}
-          <Card>
-            {/* Reference: https://callstack.github.io/react-native-paper/docs/components/Card/CardTitle */}
-            <Card.Title
-              title="My Favorites"
-              right={() => (
-                // reference https://callstack.github.io/react-native-paper/docs/components/Checkbox/
-                <Checkbox
-                  status={selectedList === 'My Favorites' ? 'checked' : 'unchecked'}
-                  onPress={() => {
-                    handleSelectList('My Favorites');
-                    setChecked(!checked);
-                  }}
-                />
-              )}
-            />
-          </Card>
-          {/* Create List Modal */}
+          <Text style={styles.sectionTitle}>My Lists</Text>
+          {lists.map((list) => (
+            <Card key={list.name} style={styles.card}>
+              {/* Reference: https://callstack.github.io/react-native-paper/docs/components/Card/CardTitle */}
+              <Card.Title
+                title={list.name}
+                right={() => (
+                  // Reference: https://callstack.github.io/react-native-paper/docs/components/Checkbox/
+                  <Checkbox
+                    status={selectedList === list.name ? 'checked' : 'unchecked'}
+                    onPress={() => handleSelectList(list.name)}
+                  />
+                )}
+              />
+            </Card>
+          ))}
           {createListModalVisible && (
             <Portal>
-              <Modal visible={createListModalVisible} onDismiss={() => setCreateListModalVisible(false)} contentContainerStyle={styles.modalContainer}>
+              <Modal
+                visible={createListModalVisible}
+                onDismiss={() => setCreateListModalVisible(false)}
+                contentContainerStyle={styles.modalContainer}
+              >
                 <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>
-                    Create a list
-                  </Text>
-                  <Text style={styles.label}>
-                    List Name
-                  </Text>
+                  <Text style={styles.modalTitle}>Create a list</Text>
+                  <Text style={styles.label}>List Name</Text>
+                  {/* Reference: https://callstack.github.io/react-native-paper/docs/components/TextInput/ */}
                   <TextInput
-                    placeholder='List Name'
+                    placeholder="List Name"
                     value={listName}
                     onChangeText={setListName}
                     style={styles.input}
                   />
-                  <Text style={styles.label}>
-                    Description
-                  </Text>
+                  <Text style={styles.label}>Description</Text>
                   <TextInput
-                    placeholder='Add list description'
+                    placeholder="Add list description"
                     value={listDescription}
                     onChangeText={setListDescription}
                     multiline
@@ -106,14 +132,12 @@ const SaveToFavoritesModal = ({ visible, onClose }) => {
               </Modal>
             </Portal>
           )}
-          {/* Save button */}
-          <Button mode="contained" onPress={() => console.log('Save button pressed')} style={styles.saveButton}>
+          <Button mode="contained" onPress={handleSave} style={styles.saveButton}>
             Save
           </Button>
         </View>
       </Modal>
     </Portal>
-
   );
 };
 
@@ -159,6 +183,9 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginTop: 20,
+  },
+  card: {
+    marginBottom: 8, // Add margin bottom to create space between cards
   },
 });
 
