@@ -1,12 +1,13 @@
 import React, {useState, useEffect} from 'react';
 import {View, StyleSheet} from 'react-native';
-import {Text, Card, Avatar, Button, Divider} from 'react-native-paper';
+import { Text, Card, Avatar, Button, Divider, useTheme } from 'react-native-paper';
 import {ScrollView} from 'react-native-gesture-handler';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import MyCustomButton from '../../components/MyCustomButton';
 import {useUser} from '../../utils/UserContext';
 
 const AccountSettings = ({navigation}) => {
+  const theme = useTheme()
   const {user, signOut, fetchUserProfile, resetPassword} = useUser();
   const [profile, setProfile] = useState(null);
 
@@ -38,7 +39,25 @@ const AccountSettings = ({navigation}) => {
       Alert.alert('Error', 'No email associated with this account.');
     }
   };
-
+  
+  const styles = StyleSheet.create({
+    settingsContainer: {
+      width: '100%',
+      padding: 16,
+      alignItems: 'flex-start',
+      backgroundColor: theme.colors.surface
+    },
+    optionContainer: {
+      width: '100%',
+      alignItems: 'flex-start',
+      marginBottom: 16,
+    },
+    divider: {
+      width: '100%',
+      marginVertical: 8,
+    },
+  });
+  
   return (
     <SafeAreaProvider>
       <ScrollView>
@@ -144,21 +163,5 @@ const AccountSettings = ({navigation}) => {
   );
 };
 
-const styles = StyleSheet.create({
-  settingsContainer: {
-    width: '100%',
-    padding: 16,
-    alignItems: 'flex-start',
-  },
-  optionContainer: {
-    width: '100%',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  divider: {
-    width: '100%',
-    marginVertical: 8,
-  },
-});
 
 export default AccountSettings;
