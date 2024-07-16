@@ -16,10 +16,6 @@ const SocialMedia = ({onGooglePress, onFacebookPress}) => {
           style={styles.image}
         />
       </TouchableOpacity>
-      <Image
-        source={require('../assets/icons/twitter.png')}
-        style={styles.image}
-      />
     </View>
   );
 };
