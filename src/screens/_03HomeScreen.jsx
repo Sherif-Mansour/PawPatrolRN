@@ -253,7 +253,7 @@ const HomeScreen = ({navigation}) => {
         </Modal>
       </Portal>
       <View style={styles.container}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
           <Button
             style={{backgroundColor: 'transparent'}}
             onPress={showMapModal}
