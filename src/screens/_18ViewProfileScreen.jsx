@@ -173,17 +173,15 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     marginBottom: 10,
     position: 'relative',
-    backgroundColor: '#fff',
     width: '46%',
     margin: '2%',
   },
   adImage: {
-    height: 150,
+    height: 200,
+    width: '100%',
   },
   adTitle: {
-    fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
   },
   adSubtitle: {
     fontSize: 14,

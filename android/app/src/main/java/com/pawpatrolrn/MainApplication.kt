@@ -12,6 +12,7 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
 import com.facebook.FacebookSdk
 import com.facebook.appevents.AppEventsLogger
+import com.google.firebase.FirebaseApp
 
 class MainApplication : Application(), ReactApplication {
 
@@ -39,6 +40,7 @@ class MainApplication : Application(), ReactApplication {
     SoLoader.init(this, false)
     FacebookSdk.sdkInitialize(applicationContext)
     AppEventsLogger.activateApp(this)
+    FirebaseApp.initializeApp(this) // Initialize Firebase
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
       load()
