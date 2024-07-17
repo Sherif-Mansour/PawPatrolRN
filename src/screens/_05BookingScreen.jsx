@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
 import { Card } from 'react-native-paper';
+import { Agenda } from 'react-native-calendars';
 
-const BookingScreen = () => {
-  const [upcomingRequests, setUpcomingRequests] = useState([]);
-  const [pastRequests, setPastRequests] = useState([]);
+const BookingScreen = ({ navigation }) => {
+  const [requests, setRequests] = useState({});
+  const [selectedDate, setSelectedDate] = useState('');
+  const [loading, setLoading] = useState(false); // State to manage loading indicator
   const { user } = useUser();
 
   useEffect(() => {
     const fetchRequests = async () => {
+      setLoading(true); // Set loading state to true when fetching starts
       try {
         const requestsSnapshot = await firestore()
           .collection('appointments')
@@ -18,66 +21,42 @@ const BookingScreen = () => {
           .where('participants', 'array-contains', user.uid)
           .get();
 
-        const fetchedRequests = await Promise.all(
-          requestsSnapshot.docs.map(async doc => {
-            const requestData = doc.data();
-            const otherUserId = requestData.participants.find(
-              participant => participant !== user.uid
-            );
-            const otherUserProfile = await fetchUserProfile(otherUserId);
-            return {
-              id: doc.id,
-              ...requestData,
-              otherUserProfile,
-            };
-          })
-        );
+        const fetchedRequests = {};
 
-        const now = new Date();
-        const upcoming = fetchedRequests.filter(request => new Date(request.date) >= now);
-        const past = fetchedRequests.filter(request => new Date(request.date) < now);
+        requestsSnapshot.docs.forEach(doc => {
+          const requestData = doc.data();
+          const date = requestData.date; // Assuming requestData.date is in YYYY-MM-DD format
 
-        setUpcomingRequests(upcoming);
-        setPastRequests(past);
+          if (!fetchedRequests[date]) {
+            fetchedRequests[date] = [];
+          }
+
+          fetchedRequests[date].push({
+            id: doc.id,
+            ...requestData,
+          });
+        });
+
+        setRequests(fetchedRequests);
       } catch (error) {
         console.error('Error fetching approved requests:', error);
         Alert.alert('Error', 'There was an error fetching approved requests.');
+      } finally {
+        setLoading(false); // Set loading state to false when fetching ends
       }
     };
 
     fetchRequests();
   }, [user.uid]);
 
-  const fetchUserProfile = async userId => {
-    const userProfileRef = firestore().collection('profiles').doc(userId);
-    const userProfileDoc = await userProfileRef.get();
-    if (userProfileDoc.exists) {
-      return userProfileDoc.data();
-    }
-    return null;
-  };
-
-  const renderRequest = ({ item }) => (
-    <Card style={styles.card}>
+  const renderRequest = (request) => (
+    <Card style={styles.card} onPress={() => navigation.navigate('BookingDetailsScreen', { request })}>
       <View style={styles.cardContent}>
-        {item.otherUserProfile?.profilePicture ? (
-          <Image
-            source={{ uri: item.otherUserProfile.profilePicture }}
-            style={styles.profilePicture}
-          />
-        ) : (
-          <Image
-            source={require('../../assets/images/default-profile.jpg')}
-            style={styles.profilePicture}
-          />
-        )}
         <View style={styles.infoContainer}>
-          <Text style={styles.nameText}>
-            Request with {item.otherUserProfile?.firstName} {item.otherUserProfile?.lastName}
-          </Text>
-          <Text style={styles.dateText}>Date: {item.date} - Time: {item.time}</Text>
-          <Text style={styles.locationText}>Location: {item.location}</Text>
-          <Text style={styles.priceText}>Price: {item.price}</Text>
+          <Text style={styles.dateText}>Date: {request.date}</Text>
+          <Text style={styles.timeText}>Time: {request.time}</Text>
+          <Text style={styles.locationText}>Location: {request.location}</Text>
+          <Text style={styles.priceText}>Price: {request.price}</Text>
         </View>
       </View>
     </Card>
@@ -85,25 +64,34 @@ const BookingScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Upcoming Requests</Text>
-      {upcomingRequests.length === 0 ? (
-        <Text>No upcoming requests available.</Text>
+      {loading ? (
+        <Text>Loading...</Text> // Display loading indicator while fetching data
+      ) : Object.keys(requests).length === 0 ? (
+        <Text>No bookings found for this date.</Text> // Display message if no bookings found
       ) : (
-        <FlatList
-          data={upcomingRequests}
-          renderItem={renderRequest}
-          keyExtractor={item => item.id}
-        />
-      )}
-
-      <Text style={styles.sectionTitle}>Past Requests</Text>
-      {pastRequests.length === 0 ? (
-        <Text>No past requests available.</Text>
-      ) : (
-        <FlatList
-          data={pastRequests}
-          renderItem={renderRequest}
-          keyExtractor={item => item.id}
+        <Agenda
+          items={requests}
+          selected={selectedDate}
+          renderItem={(item) => renderRequest(item)}
+          renderEmptyDate={() => (
+            <View style={styles.emptyDate}>
+              <Text>No bookings on this date.</Text>
+            </View>
+          )}
+          rowHasChanged={(r1, r2) => r1.id !== r2.id}
+          onDayPress={(day) => setSelectedDate(day.dateString)}
+          markingType={'multi-dot'}
+          markedDates={{
+            ...Object.keys(requests).reduce((acc, date) => {
+              acc[date] = { marked: true, dots: [{ color: 'blue' }] };
+              return acc;
+            }, {}),
+          }}
+          theme={{
+            selectedDayBackgroundColor: '#00adf5',
+            todayTextColor: '#00adf5',
+            agendaKnobColor: '#00adf5',
+          }}
         />
       )}
     </View>
@@ -114,11 +102,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    marginVertical: 10,
-    fontWeight: 'bold',
+
   },
   card: {
     marginBottom: 10,
@@ -128,20 +112,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
   },
-  profilePicture: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-  },
   infoContainer: {
     flex: 1,
   },
-  nameText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
   dateText: {
+    fontSize: 16,
+  },
+  timeText: {
     fontSize: 16,
   },
   locationText: {
@@ -149,6 +126,12 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 16,
+  },
+  emptyDate: {
+    height: 15,
+    flex: 1,
+    paddingTop: 30,
+    paddingLeft: 20,
   },
 });
 
