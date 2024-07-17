@@ -110,33 +110,27 @@ const AdminDashboard = ({ navigation }) => {
   };
 
   const renderAdItem = ({ item }) => (
-    <TouchableOpacity
+    <Card
+      style={styles.adContainer}
       onPress={() => navigation.navigate('AdminAdDetails', { ad: item })}
-      style={styles.adTouchableContainer}
     >
-      <Card style={styles.adContainer}>
-        {item.mainPicture ? (
-          <Card.Cover source={{ uri: item.mainPicture }} style={styles.adImage} />
-        ) : (
-          <Image
-            source={require('../../assets/images/OIP.jpeg')}
-            style={styles.adImage}
-          />
-        )}
-        <Card.Title
-          titleStyle={styles.adTitle}
-          title={item.title}
-          subtitle={`Price: ${item.price}`}
-          subtitleStyle={styles.adTitle}
-        />
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={() => handleDeleteAd(item.id, item.userId)}
-        >
-          <Icon name="trash" size={24} color="#ff0000" />
-        </TouchableOpacity>
-      </Card>
-    </TouchableOpacity>
+      <Card.Cover
+        source={{ uri: item.mainPicture || 'https://picsum.photos/id/237/200/' }}
+        style={styles.adImage}
+      />
+      <Card.Title
+        title={item.title}
+        subtitle={`Price: ${item.price}`}
+        subtitleStyle={styles.adSubtitle}
+        titleStyle={styles.adTitle}
+      />
+      <TouchableOpacity
+        style={styles.favoriteButton}
+        onPress={() => handleDeleteAd(item.id, item.userId)}
+      >
+        <Icon name="trash" size={24} color="#ff0000" />
+      </TouchableOpacity>
+    </Card>
   );
 
   const renderUserItem = ({ item }) => (
@@ -172,29 +166,29 @@ const AdminDashboard = ({ navigation }) => {
       style={styles.userContainer}
       onPress={() => navigation.navigate('ReplyInquiryScreen', { inquiry: item })}
     >
-    <Card style={styles.inquiryContainer}>
-      <Card.Content>
-        <Text style={styles.inquiryText}>Subject: {item.subject}</Text>
-        <Text style={styles.inquiryText}>Details: {item.details}</Text>
-        <Text style={styles.inquiryText}>Contact Info: {item.contactInfo}</Text>
-        {item.user && (
-          <>
-            <Text style={styles.inquiryText}>User: {item.user.firstName} {item.user.lastName}</Text>
-            <Text style={styles.inquiryText}>Email: {item.user.email}</Text>
-            <Text style={styles.inquiryText}>Phone: {item.user.phoneNo}</Text>
-          </>
-        )}
-      </Card.Content>
-      <Card.Actions>
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={() => handleDeleteInquiry(item.id)}
-        >
-          <Icon name="trash" size={24} color="#ff0000" />
-        </TouchableOpacity>
-      </Card.Actions>
-    </Card>
-  </TouchableOpacity>
+      <Card style={styles.inquiryContainer}>
+        <Card.Content>
+          <Text style={styles.inquiryText}>Subject: {item.subject}</Text>
+          <Text style={styles.inquiryText}>Details: {item.details}</Text>
+          <Text style={styles.inquiryText}>Contact Info: {item.contactInfo}</Text>
+          {item.user && (
+            <>
+              <Text style={styles.inquiryText}>User: {item.user.firstName} {item.user.lastName}</Text>
+              <Text style={styles.inquiryText}>Email: {item.user.email}</Text>
+              <Text style={styles.inquiryText}>Phone: {item.user.phoneNo}</Text>
+            </>
+          )}
+        </Card.Content>
+        <Card.Actions>
+          <TouchableOpacity
+            style={styles.favoriteButton}
+            onPress={() => handleDeleteInquiry(item.id)}
+          >
+            <Icon name="trash" size={24} color="#ff0000" />
+          </TouchableOpacity>
+        </Card.Actions>
+      </Card>
+    </TouchableOpacity>
   );
 
   const renderSection = () => {
@@ -294,25 +288,25 @@ const styles = StyleSheet.create({
   adTouchableContainer: {
     flex: 1,
     maxWidth: '50%',
-    padding: 8, // increased padding
+    padding: 5,
   },
   adContainer: {
     borderWidth: 1,
-    borderColor: '#FFDDB1',
-    paddingTop: 8, // increased padding
-    marginBottom: 12, // increased margin
+    borderColor: '#ddd',
+    marginBottom: 10,
     position: 'relative',
-    backgroundColor: '#FFDDB1',
+    width: '46%',
+    margin: '2%',
   },
   adImage: {
-    height: 160, // increased height
+    height: 150,
     width: '100%',
     alignSelf: 'center',
   },
   adTitle: {
     fontWeight: 'bold',
     color: '#003641',
-    fontSize: 16, // increased font size
+    fontSize: 14,
   },
   favoriteButton: {
     position: 'absolute',
@@ -321,7 +315,7 @@ const styles = StyleSheet.create({
   },
   userContainer: {
     flex: 1,
-    padding: 8, // increased padding
+    padding: 8,
     backgroundColor: '#f5f5f5',
     borderWidth: 1,
     borderColor: '#ccc',
@@ -333,16 +327,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   userImage: {
-    height: 80, // increased height to match adImage
-    width: 80, // adjust width to keep it square
-    borderRadius: 40, // make it circular
+    height: 80,
+    width: 80,
+    borderRadius: 40,
     marginRight: 10,
   },
   userInfo: {
     flex: 1,
   },
   userText: {
-    fontSize: 16, // increased font size
+    fontSize: 16,
     fontWeight: 'bold',
   },
   userEmail: {
@@ -351,7 +345,7 @@ const styles = StyleSheet.create({
   },
   inquiryContainer: {
     flex: 1,
-    padding: 8, // increased padding
+    padding: 8,
     backgroundColor: '#f5f5f5',
     borderWidth: 1,
     borderColor: '#ccc',
