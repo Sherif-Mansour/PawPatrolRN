@@ -23,7 +23,6 @@ import {
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../../components/Map';
-import MapContainer from '../../components/MapContainer';
 // Import the SaveToFavoritesModal from the components folder
 import SaveToFavoritesModal from '../../components/SaveToFavoritesModal';
 
