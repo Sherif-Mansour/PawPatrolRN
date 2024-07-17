@@ -19,9 +19,9 @@ import {
   Text,
   Modal,
   Portal,
-} from 'react-native-paper';
-import {FlatList, ScrollView} from 'react-native-gesture-handler';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
+} from 'react-native-paper'; 
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../../components/Map';
 // Import the SaveToFavoritesModal from the components folder
 import SaveToFavoritesModal from '../../components/SaveToFavoritesModal';
