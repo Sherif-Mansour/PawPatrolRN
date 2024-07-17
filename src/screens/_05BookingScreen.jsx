@@ -101,8 +101,7 @@ const BookingScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-
+    backgroundColor: '#FFF3D6',
   },
   card: {
     marginBottom: 10,
