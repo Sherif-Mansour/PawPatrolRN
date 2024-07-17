@@ -25,6 +25,7 @@ import {
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../../components/Map';
+import analytics from '@react-native-firebase/analytics';
 
 const categories = [
   'All',
@@ -133,6 +134,7 @@ const HomeScreen = ({ navigation }) => {
         } else {
           console.log('Ad shared successfully');
         }
+        await analytics().logEvent('ad_share', { ad_id: ad.id }); 
       } else if (result.action === Share.dismissedAction) {
         console.log('Share dismissed');
       }
@@ -141,10 +143,18 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const handleFavorite = async (adId) => {
+    await handleAddToFavorites(adId);
+    await analytics().logEvent('ad_favorite', { ad_id: adId }); 
+  };
+
   const renderItem = ({ item }) => (
     <View style={styles.adTouchableContainer}>
       <TouchableOpacity
-        onPress={() => navigation.navigate('AdDetails', { ad: item })}
+        onPress={() => {
+          analytics().logEvent('ad_tap', { ad_id: item.id }); 
+          navigation.navigate('AdDetails', { ad: item });
+        }}
       >
         <Card style={styles.adContainer}>
           {item.mainPicture ? (
@@ -166,7 +176,7 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.actionContainer}>
         <TouchableOpacity
           style={styles.favoriteButton}
-          onPress={() => handleAddToFavorites(item.id)}
+          onPress={() => handleFavorite(item.id)}
         >
           <Icon
             name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
@@ -282,7 +292,6 @@ const HomeScreen = ({ navigation }) => {
           >
             Location
           </Button>
-
         </View>
         <Searchbar
           style={{
@@ -312,7 +321,7 @@ const HomeScreen = ({ navigation }) => {
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           numColumns={2}
-          key={selectedCategory} // Force re-render when category changes
+          key={selectedCategory} 
           ListEmptyComponent={<Text>No ads found.</Text>}
           refreshControl={
             <RefreshControl
