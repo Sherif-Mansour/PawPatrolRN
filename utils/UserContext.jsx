@@ -35,6 +35,8 @@ export const UserProvider = ({children}) => {
   const {connect, disconnect} = useConnection();
   const {sdk, currentUser} = useSendbirdChat();
   const [sendbirdInstance, setSendbirdInstance] = useState(null);
+  //list use to show in favorite page
+  const [lists, setLists] = useState([]);
 
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async currentUser => {
@@ -80,6 +82,7 @@ export const UserProvider = ({children}) => {
           fcmToken: token,
         });
       }
+      setFcmToken(token);
     });
 
     return () => unsubscribe();
@@ -156,9 +159,25 @@ export const UserProvider = ({children}) => {
       const nickname = `${firstName} ${lastName}`;
       const profilePicture = userProfile?.profilePicture || '';
 
+      console.log('UserProfile fetched:', userProfile);
+
+      // Set the display name for email/password sign-in users
+      if (!currentUser.displayName) {
+        console.log('Updating displayName for user:', nickname);
+        await currentUser.updateProfile({
+          displayName: nickname,
+        });
+      } else {
+        console.log('displayName already set:', currentUser.displayName);
+      }
+
+      // Log the current user after the update
+      console.log('CurrentUser after displayName update:', currentUser);
+
       await fetchUserAds();
       await fetchAllAds();
       await fetchUserFavorites();
+
       console.log(
         'Connecting to Sendbird with UID:',
         currentUser.uid,
@@ -167,11 +186,12 @@ export const UserProvider = ({children}) => {
         'Nickname:',
         nickname,
       );
+
       await connect(
         currentUser.uid,
         {accessToken: token},
         {nickname: nickname},
-        {profileUrl: userProfile.profilePicture || ''},
+        {profileUrl: profilePicture},
       );
 
       const sendbirdUser = await currentUser;
@@ -380,8 +400,16 @@ export const UserProvider = ({children}) => {
         console.log('Profile created successfully');
       }
 
-      // Call Sendbird function
+      // Set the display name for email/password sign-in users
       const nickname = `${profileData.firstName} ${profileData.lastName}`;
+      if (!user.displayName || user.displayName !== nickname) {
+        console.log('Updating displayName in profile:', nickname);
+        await user.updateProfile({
+          displayName: nickname,
+        });
+      }
+
+      // Call Sendbird function
       const profileUrl = profileData.profilePicture || '';
       await createOrUpdateUserInSendbird(user.uid, nickname, profileUrl);
     } catch (err) {
@@ -397,8 +425,11 @@ export const UserProvider = ({children}) => {
     const userProfileDoc = await userProfileRef.get();
 
     if (userProfileDoc.exists) {
-      return userProfileDoc.data();
+      const data = userProfileDoc.data();
+      console.log('Fetched user profile data:', data);
+      return data;
     } else {
+      console.log('No user profile found, returning default profile');
       // Return null or a default profile object when the user profile is not found
       return {
         firstName: 'Unknown',
@@ -575,24 +606,38 @@ export const UserProvider = ({children}) => {
     }
   };
 
-  const handleAddToFavorites = async adId => {
-    const userFavoritesRef = firestore().collection('favorites').doc(user.uid);
+  const handleAddToFavorites = async (adId, listName = 'My Favorites') => {
+    if (!user) return;
+    // Reference to the specific user's favorites list in Firebase
+    const userFavoritesRef = firestore()
+      .collection('favorites')
+      .doc(user.uid)
+      .collection('lists')
+      .doc(listName);
 
-    setFavorites(prevFavorites => {
-      const updatedFavorites = prevFavorites.includes(adId)
-        ? prevFavorites.filter(favId => favId !== adId)
-        : [...prevFavorites, adId];
+    try {
+      const listDoc = await userFavoritesRef.get();
+      const currentFavorites = listDoc.exists ? listDoc.data().favorites : [];
+      // Check if the ad is already in the favorites. If it is, remove it; otherwise, add it.
+      const updatedFavorites = currentFavorites.includes(adId)
+        ? currentFavorites.filter(favId => favId !== adId)
+        : [...currentFavorites, adId];
 
-      userFavoritesRef.set({favorites: updatedFavorites}, {merge: true});
-
-      return updatedFavorites;
-    });
+      await userFavoritesRef.set({favorites: updatedFavorites}, {merge: true});
+      setFavorites(updatedFavorites);
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+    }
   };
 
   const fetchUserFavorites = async () => {
     if (!user) return;
 
-    const userFavoritesRef = firestore().collection('favorites').doc(user.uid);
+    const userFavoritesRef = firestore()
+      .collection('favorites')
+      .doc(user.uid)
+      .collection('lists')
+      .doc('My Favorites');
     const userFavoritesDoc = await userFavoritesRef.get();
 
     if (userFavoritesDoc.exists) {
@@ -601,6 +646,33 @@ export const UserProvider = ({children}) => {
       setFavorites([]);
     }
   };
+
+  const fetchUserLists = async () => {
+    if (!user) return;
+
+    const userListsRef = firestore()
+      .collection('favorites')
+      .doc(user.uid)
+      .collection('lists');
+    const userListsSnapshot = await userListsRef.get();
+
+    if (!userListsSnapshot.empty) {
+      const listsData = userListsSnapshot.docs.map(doc => ({
+        name: doc.id,
+        favorites: doc.data().favorites || [],
+      }));
+      setLists(listsData);
+    } else {
+      setLists([{name: 'My Favorites', favorites: []}]);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchUserFavorites();
+      fetchUserLists();
+    }
+  }, [user]);
 
   const signOut = async navigation => {
     try {
@@ -835,8 +907,10 @@ export const UserProvider = ({children}) => {
         fetchAllAds,
         deleteAd,
         favorites,
+        lists,
         handleAddToFavorites,
         fetchUserFavorites,
+        fetchUserLists,
         signInWithEmailAndPass,
         createUserWithEmailAndPassword,
         onGoogleButtonPress,
