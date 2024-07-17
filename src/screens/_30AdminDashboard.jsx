@@ -194,6 +194,7 @@ const AdminDashboard = ({ navigation }) => {
         return (
           <FlatList
             key={`ads-${currentSection}`}
+            data={ads}
             renderItem={renderAdItem}
             keyExtractor={item => item.id}
             style={styles.list}
