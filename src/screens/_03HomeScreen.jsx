@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
-  Share
 } from 'react-native';
 import {useUser} from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -20,10 +19,9 @@ import {
   Text,
   Modal,
   Portal,
-  IconButton
-} from 'react-native-paper';
-import {FlatList, ScrollView} from 'react-native-gesture-handler';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
+} from 'react-native-paper'; 
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../../components/Map';
 // Import the SaveToFavoritesModal from the components folder
 import SaveToFavoritesModal from '../../components/SaveToFavoritesModal';
@@ -211,16 +209,9 @@ const HomeScreen = ({navigation}) => {
       fontSize: 14,
     },
     favoriteButton: {
-      marginRight: 10,
-    },
-    actionContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: 5,
-    },
-    shareButton: {
-      marginRight: 0,
+      position: 'absolute',
+      bottom: 10,
+      right: 10,
     },
     modalStyle: {
       backgroundColor: 'white',
@@ -269,13 +260,11 @@ const HomeScreen = ({navigation}) => {
             icon="map-marker">
             Location
           </Button>
-
           <TouchableOpacity
             onPress={() => navigation.navigate('CalendarScreen')}
             style={{marginRight: 15}}>
             <Icon name="calendar" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
-
         </View>
         <Searchbar
           style={{

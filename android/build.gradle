@@ -16,10 +16,10 @@ buildscript {
 
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:7.4.1") // Already correct
+        classpath("com.android.tools.build:gradle:7.4.1") // Ensure to specify the gradle plugin version
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        classpath 'com.google.gms:google-services:4.4.0'  // Ensure this is included
+        classpath 'com.google.gms:google-services:4.4.0'
     }
 }
 
