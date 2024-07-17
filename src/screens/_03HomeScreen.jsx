@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
   RefreshControl,
   Image,
 } from 'react-native';
-import { useUser } from '../../utils/UserContext';
+import {useUser} from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
   Searchbar,
@@ -20,10 +20,9 @@ import {
   Modal,
   Portal,
 } from 'react-native-paper';
-import { FlatList, ScrollView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {FlatList, ScrollView} from 'react-native-gesture-handler';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import Map from '../../components/Map';
-import MapContainer from '../../components/MapContainer';
 // Import the SaveToFavoritesModal from the components folder
 import SaveToFavoritesModal from '../../components/SaveToFavoritesModal';
 
@@ -37,7 +36,7 @@ const categories = [
   'Sitting',
 ];
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({navigation}) => {
   const theme = useTheme();
   const {
     ads,
@@ -55,7 +54,7 @@ const HomeScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
   const [adsFetched, setAdsFetched] = useState(false);
-  
+
   // State to control the visibility of the SaveToFavoritesModal
   const [isFavoritesModalVisible, setIsFavoritesModalVisible] = useState(false);
 
@@ -68,7 +67,7 @@ const HomeScreen = ({ navigation }) => {
   // Function to show the SaveToFavoritesModal
   // Takes the ad ID as an argument and sets it as the selected ad ID
   // Also sets the modal visibility state to true
-  const showFavoritesModal = (adId) => {
+  const showFavoritesModal = adId => {
     setSelectedAdId(adId);
     setIsFavoritesModalVisible(true);
   };
@@ -82,7 +81,6 @@ const HomeScreen = ({ navigation }) => {
 
   const showMapModal = () => setIsMapModalVisible(true);
   const hideMapModal = () => setIsMapModalVisible(false);
-
 
   useEffect(() => {
     if (user) {
@@ -108,12 +106,12 @@ const HomeScreen = ({ navigation }) => {
     let filtered = ads;
 
     if (selectedCategory && selectedCategory !== 'All') {
-      filtered = filtered.filter((ad) => ad.category === selectedCategory);
+      filtered = filtered.filter(ad => ad.category === selectedCategory);
     }
 
     if (searchQuery.trim() !== '') {
-      filtered = filtered.filter((ad) =>
-        ad.title.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(ad =>
+        ad.title.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -134,43 +132,44 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const renderCategory = (category) => (
+  const renderCategory = category => (
     <Chip
       key={category}
       onPress={() => setSelectedCategory(category)}
       selected={selectedCategory === category}
-      style={[styles.categoryChip]}
-    >
+      style={[styles.categoryChip]}>
       {category}
     </Chip>
   );
 
-  const renderItem = ({ item }) => (
-    <Card style={styles.adContainer}
-      onPress={() => navigation.navigate('AdDetails', { ad: item })}
-    >
-      <Card.Cover source={{ uri: item.mainPicture || 'https://picsum.photos/id/237/200/' }} style={styles.adImage} />
+  const renderItem = ({item}) => (
+    <Card
+      style={styles.adContainer}
+      onPress={() => navigation.navigate('AdDetails', {ad: item})}>
+      <Card.Cover
+        source={{uri: item.mainPicture || 'https://picsum.photos/id/237/200/'}}
+        style={styles.adImage}
+      />
       <Card.Title
         title={item.title}
         subtitle={`Price: ${item.price}`}
         subtitleStyle={styles.adSubtitle}
         titleStyle={styles.adTitle}
       />
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          // press to show the modal
-          onPress={() => {
-            // Set the ad id to the state
-            showFavoritesModal(item.id);
-          }}
-        >
-          <Icon
-            name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
-            size={24}
-            color="#ff0000"
-          />
-        </TouchableOpacity>
-      </Card>
+      <TouchableOpacity
+        style={styles.favoriteButton}
+        // press to show the modal
+        onPress={() => {
+          // Set the ad id to the state
+          showFavoritesModal(item.id);
+        }}>
+        <Icon
+          name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
+          size={24}
+          color="#ff0000"
+        />
+      </TouchableOpacity>
+    </Card>
   );
 
   const styles = StyleSheet.create({
@@ -247,26 +246,23 @@ const HomeScreen = ({ navigation }) => {
         <Modal
           visible={isMapModalVisible}
           onDismiss={hideMapModal}
-          contentContainerStyle={styles.modalStyle}
-        >
+          contentContainerStyle={styles.modalStyle}>
           <View style={styles.modalContent}>
             <Map />
           </View>
         </Modal>
       </Portal>
       <View style={styles.container}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <Button
-            style={{ backgroundColor: 'transparent' }}
+            style={{backgroundColor: 'transparent'}}
             onPress={showMapModal}
-            icon="map-marker"
-          >
+            icon="map-marker">
             Location
           </Button>
           <TouchableOpacity
             onPress={() => navigation.navigate('CalendarScreen')}
-            style={{ marginRight: 15 }}
-          >
+            style={{marginRight: 15}}>
             <Icon name="calendar" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
@@ -285,8 +281,7 @@ const HomeScreen = ({ navigation }) => {
             flexDirection: 'row',
             justifyContent: 'center',
             alignItems: 'center',
-          }}
-        >
+          }}>
           <View style={styles.categoriesScrollContainer}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {categories.map(renderCategory)}
@@ -296,7 +291,7 @@ const HomeScreen = ({ navigation }) => {
         <FlatList
           data={filteredAds}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           numColumns={2}
           key={selectedCategory} // Force re-render when category changes
           ListEmptyComponent={<Text>No ads found.</Text>}
@@ -308,7 +303,6 @@ const HomeScreen = ({ navigation }) => {
             />
           }
         />
-
       </View>
 
       {/* add SaveToFavoritesModal with the visible and onClose props.  */}
