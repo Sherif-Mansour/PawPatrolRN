@@ -18,7 +18,6 @@ const AdminDashboard = ({ navigation }) => {
 
   const fetchData = async () => {
     try {
-      // Fetch ads
       const adsSnapshot = await firestore().collectionGroup('userAds').get();
       const adsList = adsSnapshot.docs.map(doc => ({
         id: doc.id,
@@ -26,14 +25,12 @@ const AdminDashboard = ({ navigation }) => {
         ...doc.data(),
       }));
 
-      // Fetch users
       const usersSnapshot = await firestore().collection('profiles').get();
       const usersList = usersSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
 
-      // Fetch inquiries and user info for each inquiry
       const inquiriesSnapshot = await firestore().collection('inquiries').get();
       const inquiriesList = await Promise.all(inquiriesSnapshot.docs.map(async (doc) => {
         const inquiry = { id: doc.id, ...doc.data() };
@@ -69,7 +66,7 @@ const AdminDashboard = ({ navigation }) => {
   const handleSignOut = async () => {
     try {
       await auth().signOut();
-      navigation.navigate('AdminSignIn');
+      navigation.navigate('SignIn'); 
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -143,7 +140,7 @@ const AdminDashboard = ({ navigation }) => {
           <Image source={{ uri: item.profilePicture }} style={styles.userImage} />
         ) : (
           <Image
-            source={require('../../assets/images/default-profile.jpg')} // Provide a default profile picture
+            source={require('../../assets/images/default-profile.jpg')} 
             style={styles.userImage}
           />
         )}
@@ -196,8 +193,7 @@ const AdminDashboard = ({ navigation }) => {
       case 'ads':
         return (
           <FlatList
-            key={`ads-${currentSection}`} // Provide a unique key when numColumns changes
-            data={ads}
+            key={`ads-${currentSection}`}
             renderItem={renderAdItem}
             keyExtractor={item => item.id}
             style={styles.list}
@@ -208,24 +204,24 @@ const AdminDashboard = ({ navigation }) => {
       case 'users':
         return (
           <FlatList
-            key={`users-${currentSection}`} // Provide a unique key when numColumns changes
+            key={`users-${currentSection}`} 
             data={users}
             renderItem={renderUserItem}
             keyExtractor={item => item.id}
             style={styles.list}
-            numColumns={1} // Display one profile container in one line
+            numColumns={1} 
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           />
         );
       case 'inquiries':
         return (
           <FlatList
-            key={`inquiries-${currentSection}`} // Provide a unique key when numColumns changes
+            key={`inquiries-${currentSection}`} 
             data={inquiries}
             renderItem={renderInquiryItem}
             keyExtractor={item => item.id}
             style={styles.list}
-            numColumns={1} // Display one inquiry container in one line
+            numColumns={1} 
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           />
         );
