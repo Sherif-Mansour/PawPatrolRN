@@ -270,9 +270,9 @@ export const UserProvider = ({children}) => {
     }
   }
 
-  const signInWithEmailAndPass = (email, password, navigation) => {
+  const signInWithEmailAndPass = (email, password) => {
     setLoading(true);
-    auth()
+    return auth()
       .signInWithEmailAndPassword(email, password)
       .then(async res => {
         const user = res.user;
@@ -283,22 +283,16 @@ export const UserProvider = ({children}) => {
 
         console.log('Email SignIn:', user);
 
-        await handleUserSignIn(user, navigation);
-
-        const adminDoc = await firestore().collection('admin').doc(user.uid).get();
-        if (adminDoc.exists && adminDoc.data().isadmin) {
-          navigation.navigate('AdminDashboard');
-        } else {
-          navigation.navigate('Home');
-        }
+        await handleUserSignIn(user);
+        return user;
       })
       .catch(err => {
         setLoading(false);
         console.error('Email/password sign-in error:', err);
         Alert.alert('Sign-In Error', 'Invalid email or password. Please try again.');
+        throw err;
       });
   };
-
 
 
   const createUserWithEmailAndPassword = async (email, password) => {
