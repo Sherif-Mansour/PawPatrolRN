@@ -1,14 +1,14 @@
-import React, {useState, useEffect} from 'react';
-import {View, StyleSheet} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Text, Card, Avatar, Button, Divider, useTheme } from 'react-native-paper';
-import {ScrollView} from 'react-native-gesture-handler';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
+import { ScrollView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MyCustomButton from '../../components/MyCustomButton';
-import {useUser} from '../../utils/UserContext';
+import { useUser } from '../../utils/UserContext';
 
-const AccountSettings = ({navigation}) => {
+const AccountSettings = ({ navigation }) => {
   const theme = useTheme()
-  const {user, signOut, fetchUserProfile, resetPassword} = useUser();
+  const { user, signOut, fetchUserProfile, resetPassword } = useUser();
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
@@ -26,7 +26,23 @@ const AccountSettings = ({navigation}) => {
     loadUserProfile();
   }, [user, fetchUserProfile]);
 
-  const LeftContent = props => <Avatar.Icon {...props} icon="account-circle" />;
+  const LeftContent = props => {
+    if (profile && profile.profilePicture) {
+      return (
+        <Avatar.Image
+          {...props}
+          source={{ uri: profile.profilePicture }}
+        />
+      );
+    } else {
+      return (
+        <Avatar.Icon
+          {...props}
+          icon="account-circle"
+        />
+      );
+    }
+  };
 
   const handleSignOut = () => {
     signOut(navigation);
@@ -57,13 +73,13 @@ const AccountSettings = ({navigation}) => {
       marginVertical: 8,
     },
   });
-  
+
   return (
     <SafeAreaProvider>
       <ScrollView>
-        <View style={{flex: 1, alignItems: 'center'}}>
+        <View style={{ flex: 1, alignItems: 'center', backgroundColor: theme.colors.background }}>
           <View style={styles.settingsContainer}>
-            <View style={{margin: 12}}>
+            <View style={{ margin: 12 }}>
               <Text variant="labelLarge">Profile Settings</Text>
             </View>
             {profile ? (
@@ -75,8 +91,8 @@ const AccountSettings = ({navigation}) => {
                 />
                 <Card.Actions>
                   <MyCustomButton
-                    onPress={() => navigation.navigate('Profile')}
-                    label="Edit Profile"
+                    onPress={() => navigation.navigate('View Profile', { profile: profile })}
+                    label="View Profile"
                   />
                 </Card.Actions>
               </Card>
@@ -90,7 +106,7 @@ const AccountSettings = ({navigation}) => {
           </View>
           <View style={styles.settingsContainer}>
             <View style={styles.optionContainer}>
-              <View style={{margin: 12}}>
+              <View style={{ margin: 12 }}>
                 <Text variant="labelLarge">Ad Settings</Text>
               </View>
               <MyCustomButton
@@ -116,7 +132,7 @@ const AccountSettings = ({navigation}) => {
           </View>
           <View style={styles.settingsContainer}>
             <View style={styles.optionContainer}>
-              <View style={{margin: 12}}>
+              <View style={{ margin: 12 }}>
                 <Text variant="labelLarge">App Settings</Text>
               </View>
               <MyCustomButton
@@ -142,7 +158,7 @@ const AccountSettings = ({navigation}) => {
           </View>
           <View style={styles.settingsContainer}>
             <View style={styles.optionContainer}>
-              <View style={{margin: 12}}>
+              <View style={{ margin: 12 }}>
                 <Text variant="labelLarge">Security Settings</Text>
               </View>
               <MyCustomButton
@@ -152,7 +168,7 @@ const AccountSettings = ({navigation}) => {
               <Divider style={styles.divider} />
             </View>
           </View>
-          <View style={{margin: 10, backgroundColor: theme.colors.surface}}>
+          <View style={{ margin: 10, backgroundColor: theme.colors.surface }}>
             <Button mode="contained" onPress={handleSignOut}>
               Sign Out
             </Button>

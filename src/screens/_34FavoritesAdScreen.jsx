@@ -71,7 +71,7 @@ const FavoriteAdsScreen = ({ route, navigation }) => {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
             <View style={styles.headerContainer}>
                 <Text style={styles.headerText}>{list.name}</Text>
             </View>
@@ -97,7 +97,6 @@ const styles = StyleSheet.create({
     },
     headerText: {
         fontSize: 32,
-        color: 'black',
     },
     adContainer: {
         borderWidth: 1,
@@ -113,7 +112,6 @@ const styles = StyleSheet.create({
     },
     adTitle: {
         fontWeight: 'bold',
-        // color: theme.colors.onPrimaryContainer,
     },
     favoriteButton: {
         position: 'absolute',

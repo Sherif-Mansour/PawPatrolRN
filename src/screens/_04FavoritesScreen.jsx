@@ -1,8 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Text } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
 import { useUser } from '../../utils/UserContext';
+import { Card, Text, Button, useTheme } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const FavoritesScreen = ({ navigation }) => {
+  const theme = useTheme();
   const { user, lists, fetchUserLists, loadingFavorites } = useUser();
   const [fetchedLists, setFetchedLists] = useState([]);
 
@@ -21,7 +31,7 @@ const FavoritesScreen = ({ navigation }) => {
 
   const renderList = ({ item }) => (
     <TouchableOpacity
-      style={styles.listContainer}
+      style={[styles.listContainer, { borderBottomColor: theme.colors.onBackground }]}
       onPress={() => navigation.navigate('FavoriteAdsScreen', { list: item })}
     >
       <Text style={styles.listText}>{item.name}</Text>
@@ -60,24 +70,20 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 32,
-    color: 'black',
   },
   FlatList: {},
   listContainer: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
     borderRadius: 10,
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
     marginBottom: 10,
   },
   listText: {
     fontSize: 18,
-    color: '#000',
   },
   listDescription: {
     fontSize: 14,
-    color: '#555',
   },
   loadingContainer: {
     flex: 1,

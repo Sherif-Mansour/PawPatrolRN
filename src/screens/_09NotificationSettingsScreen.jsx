@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Switch, StyleSheet, Alert, TextInput, Modal, Button } from 'react-native';
+import { View, Switch, StyleSheet, Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import { Text, useTheme } from 'react-native-paper';
 
 const NotificationSettingsScreen = () => {
+  const theme = useTheme();
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
@@ -96,7 +98,7 @@ const NotificationSettingsScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
       <Text style={styles.title}>Notification Settings</Text>
       <View style={styles.setting}>
         <Text>Push Notifications</Text>
