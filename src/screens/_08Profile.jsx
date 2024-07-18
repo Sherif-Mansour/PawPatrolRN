@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,15 +14,16 @@ import {
   Avatar,
   SegmentedButtons,
   useTheme,
+  Divider
 } from 'react-native-paper';
-import {launchImageLibrary, launchCamera} from 'react-native-image-picker';
-import {useUser} from '../../utils/UserContext';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
+import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
+import { useUser } from '../../utils/UserContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
-const Profile = ({navigation}) => {
+const Profile = ({ navigation }) => {
   const theme = useTheme();
-  const {user, createOrUpdateProfile, fetchUserProfile, uploadImage} =
+  const { user, createOrUpdateProfile, fetchUserProfile, uploadImage } =
     useUser();
   const [selectedSegment, setSelectedSegment] = useState('user');
   const [selectedPetIndex, setSelectedPetIndex] = useState(0);
@@ -32,7 +33,13 @@ const Profile = ({navigation}) => {
     lastName: '',
     age: '',
     phoneNo: '',
-    address: '',
+    address: {
+      street: '',
+      city: '',
+      province: '',
+      postalCode: '',
+      country: '',
+    },
     occupation: '',
     bio: '',
     profilePicture: '',
@@ -56,7 +63,59 @@ const Profile = ({navigation}) => {
       if (user) {
         try {
           const userProfile = await fetchUserProfile();
-          setProfileData(userProfile || profileData);
+          if (userProfile) {
+            if (!userProfile.pets) {
+              userProfile.pets = [
+                {
+                  name: '',
+                  species: '',
+                  breed: '',
+                  age: '',
+                  gender: '',
+                },
+              ];
+            }
+            if (!userProfile.otherInfo) {
+              userProfile.otherInfo = {
+                favoriteHobby: '',
+                favoriteFood: '',
+              };
+            }
+            console.log('Fetched user profile:', userProfile);
+            setProfileData(userProfile);
+          } else {
+            console.log('No user profile found, using default profile data');
+            setProfileData({
+              email: user.email,
+              firstName: '',
+              lastName: '',
+              age: '',
+              phoneNo: '',
+              address: {
+                street: '',
+                city: '',
+                province: '',
+                postalCode: '',
+                country: '',
+              },
+              occupation: '',
+              bio: '',
+              profilePicture: '',
+              pets: [
+                {
+                  name: '',
+                  species: '',
+                  breed: '',
+                  age: '',
+                  gender: '',
+                },
+              ],
+              otherInfo: {
+                favoriteHobby: '',
+                favoriteFood: '',
+              },
+            });
+          }
         } catch (err) {
           console.error('Error fetching user profile:', err);
         }
@@ -102,7 +161,7 @@ const Profile = ({navigation}) => {
   const handlePetChange = (index, field, value) => {
     const updatedPets = [...profileData.pets];
     updatedPets[index][field] = value;
-    setProfileData({...profileData, pets: updatedPets});
+    setProfileData({ ...profileData, pets: updatedPets });
   };
 
   const renderUserInfo = () => (
@@ -111,81 +170,154 @@ const Profile = ({navigation}) => {
         {profileData.profilePicture ? (
           <Avatar.Image
             size={100}
-            source={{uri: profileData.profilePicture}}
+            source={{ uri: profileData.profilePicture }}
             style={styles.profilePicture}
           />
         ) : (
-          <Avatar.Icon
-            size={100}
-            icon="account"
-            style={styles.profilePicture}
-          />
+          <Avatar.Icon size={100} icon="account" style={styles.profilePicture} />
         )}
       </View>
       <Button
         mode="contained"
         onPress={handleSelectImage}
-        style={styles.button}>
+        style={styles.button}
+      >
         Select Profile Picture
       </Button>
+
+      {/* Email and Phone Number stacked */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          label="Email"
+          value={profileData.email}
+          onChangeText={(text) =>
+            setProfileData({ ...profileData, email: text })
+          }
+          style={styles.input}
+        />
+      </View>
+      <View style={styles.inputContainer}>
+        <TextInput
+          label="Phone Number"
+          value={profileData.phoneNo}
+          onChangeText={(text) =>
+            setProfileData({ ...profileData, phoneNo: text })
+          }
+          style={styles.input}
+        />
+      </View>
+      <Divider style={styles.divider} />
+      {/* First Name and Last Name in a row */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          label="First Name"
+          value={profileData.firstName}
+          onChangeText={(text) =>
+            setProfileData({ ...profileData, firstName: text })
+          }
+          style={[styles.input, { flex: 1, marginRight: 8 }]}
+        />
+        <TextInput
+          label="Last Name"
+          value={profileData.lastName}
+          onChangeText={(text) =>
+            setProfileData({ ...profileData, lastName: text })
+          }
+          style={[styles.input, { flex: 1, marginLeft: 8 }]}
+        />
+      </View>
+      <Divider style={styles.divider} />
+      {/* Address Inputs */}
       <TextInput
-        label="Email"
-        value={user.email}
-        onChangeText={text => setProfileData({...profileData, email: text})}
+        label="Street"
+        value={profileData.address.street}
+        onChangeText={(text) =>
+          setProfileData({
+            ...profileData,
+            address: { ...profileData.address, street: text },
+          })
+        }
+        style={styles.input}
+      />
+      <View style={styles.inputContainer}>
+        <TextInput
+          label="City"
+          value={profileData.address.city}
+          onChangeText={(text) =>
+            setProfileData({
+              ...profileData,
+              address: { ...profileData.address, city: text },
+            })
+          }
+          style={[styles.input, { flex: 1, marginRight: 8 }]}
+        />
+        <TextInput
+          label="Province"
+          value={profileData.address.province}
+          onChangeText={(text) =>
+            setProfileData({
+              ...profileData,
+              address: { ...profileData.address, province: text },
+            })
+          }
+          style={[styles.input, { flex: 1, marginLeft: 8 }]}
+        />
+      </View>
+      <TextInput
+        label="Country"
+        value={profileData.address.country}
+        onChangeText={(text) =>
+          setProfileData({
+            ...profileData,
+            address: { ...profileData.address, country: text },
+          })
+        }
         style={styles.input}
       />
       <TextInput
-        label="First Name"
-        value={profileData.firstName}
-        onChangeText={text => setProfileData({...profileData, firstName: text})}
+        label="Postal Code"
+        value={profileData.address.postalCode}
+        onChangeText={(text) =>
+          setProfileData({
+            ...profileData,
+            address: { ...profileData.address, postalCode: text },
+          })
+        }
         style={styles.input}
       />
-      <TextInput
-        label="Last Name"
-        value={profileData.lastName}
-        onChangeText={text => setProfileData({...profileData, lastName: text})}
-        style={styles.input}
-      />
+      <Divider style={styles.divider} />
+
       <TextInput
         label="Age"
         value={profileData.age}
-        onChangeText={text => setProfileData({...profileData, age: text})}
+        onChangeText={(text) => setProfileData({ ...profileData, age: text })}
         style={styles.input}
-      />
-      <TextInput
-        label="Phone Number"
-        value={profileData.phoneNo}
-        onChangeText={text => setProfileData({...profileData, phoneNo: text})}
-        style={styles.input}
-      />
-      <TextInput
-        label="Address"
-        value={profileData.address}
-        onChangeText={text => setProfileData({...profileData, address: text})}
-        style={styles.input}
-        placeholder="Address, City, Province, Postal Code, Country"
       />
       <TextInput
         label="Occupation"
         value={profileData.occupation}
-        onChangeText={text =>
-          setProfileData({...profileData, occupation: text})
+        onChangeText={(text) =>
+          setProfileData({ ...profileData, occupation: text })
         }
         style={styles.input}
       />
       <TextInput
         label="Bio"
         value={profileData.bio}
-        onChangeText={text => setProfileData({...profileData, bio: text})}
+        onChangeText={(text) => setProfileData({ ...profileData, bio: text })}
         style={styles.input}
+        multiline={true}
+        numberOfLines={10}
       />
+      <Divider style={styles.divider} />
       <Button
         mode="contained"
         style={styles.button}
         onPress={() => {
           handleSaveProfile();
           navigation.navigate('Home');
-        }}>
+        }}
+      >
         Save Profile
       </Button>
     </View>
@@ -193,7 +325,7 @@ const Profile = ({navigation}) => {
 
   const renderPetInfo = () => (
     <View style={styles.section}>
-      {profileData.pets.map((pet, index) => (
+      {(profileData.pets || []).map((pet, index) => (
         <View key={index} style={styles.petContainer}>
           <TextInput
             label="Pet Name"
@@ -232,7 +364,10 @@ const Profile = ({navigation}) => {
         onPress={() =>
           setProfileData({
             ...profileData,
-            pets: [...profileData.pets, {name: '', type: '', age: ''}],
+            pets: [
+              ...profileData.pets,
+              { name: '', species: '', breed: '', age: '', gender: '' },
+            ],
           })
         }
         style={styles.button}>
@@ -251,22 +386,22 @@ const Profile = ({navigation}) => {
     <View style={styles.section}>
       <TextInput
         label="Favorite Hobby"
-        value={profileData.otherInfo.favoriteHobby}
+        value={profileData.otherInfo?.favoriteHobby || ''}
         onChangeText={text =>
           setProfileData({
             ...profileData,
-            otherInfo: {...profileData.otherInfo, favoriteHobby: text},
+            otherInfo: { ...profileData.otherInfo, favoriteHobby: text },
           })
         }
         style={styles.input}
       />
       <TextInput
         label="Favorite Food"
-        value={profileData.otherInfo.favoriteFood}
+        value={profileData.otherInfo?.favoriteFood || ''}
         onChangeText={text =>
           setProfileData({
             ...profileData,
-            otherInfo: {...profileData.otherInfo, favoriteFood: text},
+            otherInfo: { ...profileData.otherInfo, favoriteFood: text },
           })
         }
         style={styles.input}
@@ -282,14 +417,14 @@ const Profile = ({navigation}) => {
 
   return (
     <SafeAreaProvider>
-      <ScrollView style={styles.container}>
+      <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <SegmentedButtons
           value={selectedSegment}
           onValueChange={setSelectedSegment}
           buttons={[
-            {value: 'user', label: 'User Info'},
-            {value: 'pets', label: 'Pets'},
-            {value: 'other', label: 'Other'},
+            { value: 'user', label: 'About Me' },
+            { value: 'pets', label: 'My Pets' },
+            { value: 'other', label: 'Other Info' },
           ]}
         />
         {selectedSegment === 'user' && renderUserInfo()}
@@ -322,6 +457,19 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginVertical: 0,
   },
+  inputContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  input: {
+    width: '100%',
+    marginBottom: 8
+  },
+  divider: {
+    width: '100%',
+    marginVertical: 8,
+  },
 });
+
 
 export default Profile;

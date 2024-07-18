@@ -1,4 +1,4 @@
-import React, {useContext, createContext, useState, useEffect} from 'react';
+import React, { useContext, createContext, useState, useEffect } from 'react';
 import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
@@ -6,9 +6,9 @@ import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
 import { Alert, Platform } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
-import {useConfirmPayment} from '@stripe/stripe-react-native';
-import {useConnection, useSendbirdChat} from '@sendbird/uikit-react-native';
-import {SENDBIRD_APP_ID, SENDBIRD_API_TOKEN} from '@env';
+import { useConfirmPayment } from '@stripe/stripe-react-native';
+import { useConnection, useSendbirdChat } from '@sendbird/uikit-react-native';
+import { SENDBIRD_APP_ID, SENDBIRD_API_TOKEN } from '@env';
 import {
   GroupChannelModule,
   GroupChannelCreateParams,
@@ -17,7 +17,7 @@ import SendbirdChat from '@sendbird/chat';
 
 const UserContext = createContext();
 
-export const UserProvider = ({children}) => {
+export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingUserAds, setLoadingUserAds] = useState(true);
@@ -27,13 +27,13 @@ export const UserProvider = ({children}) => {
   const [ads, setAds] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [currentAd, setCurrentAd] = useState(null);
-  const {confirmPayment} = useConfirmPayment();
+  const { confirmPayment } = useConfirmPayment();
   const [transactionDetails, setTransactionDetails] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [fcmToken, setFcmToken] = useState(null);
-  const {connect, disconnect} = useConnection();
-  const {sdk, currentUser} = useSendbirdChat();
+  const { connect, disconnect } = useConnection();
+  const { sdk, currentUser } = useSendbirdChat();
   const [sendbirdInstance, setSendbirdInstance] = useState(null);
   //list use to show in favorite page
   const [lists, setLists] = useState([]);
@@ -189,9 +189,9 @@ export const UserProvider = ({children}) => {
 
       await connect(
         currentUser.uid,
-        {accessToken: token},
-        {nickname: nickname},
-        {profileUrl: profilePicture},
+        { accessToken: token },
+        { nickname: nickname },
+        { profileUrl: profilePicture },
       );
 
       const sendbirdUser = await currentUser;
@@ -210,8 +210,8 @@ export const UserProvider = ({children}) => {
   async function onGoogleButtonPress(navigation) {
     setLoading(true);
     try {
-      await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
-      const {idToken} = await GoogleSignin.signIn();
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      const { idToken } = await GoogleSignin.signIn();
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
       const userCredential = await auth().signInWithCredential(
         googleCredential,
@@ -493,8 +493,22 @@ export const UserProvider = ({children}) => {
       profile.firstName.trim() !== '' &&
       profile.lastName.trim() !== '' &&
       profile.phoneNo.trim() !== '' &&
-      profile.address.trim() !== ''
-    );
+      // Check if address is a non-empty string or an object with all fields filled
+      (typeof profile.address === 'string' && profile.address.trim() !== '') ||
+      (
+        typeof profile.address === 'object' &&
+        profile.address.street &&
+        profile.address.city &&
+        profile.address.province &&
+        profile.address.postalCode &&
+        profile.address.country &&
+        profile.address.street.trim() !== '' &&
+        profile.address.city.trim() !== '' &&
+        profile.address.province.trim() !== '' &&
+        profile.address.postalCode.trim() !== '' &&
+        profile.address.country.trim() !== ''
+      )
+    )
   };
 
   const createOrUpdateAd = async (adData, navigation) => {
@@ -512,7 +526,7 @@ export const UserProvider = ({children}) => {
               onPress: () => navigation.navigate('Profile'),
             },
           ],
-          {cancelable: false},
+          { cancelable: false },
         );
         return;
       }
@@ -630,7 +644,7 @@ export const UserProvider = ({children}) => {
         ? currentFavorites.filter(favId => favId !== adId)
         : [...currentFavorites, adId];
 
-      await userFavoritesRef.set({favorites: updatedFavorites}, {merge: true});
+      await userFavoritesRef.set({ favorites: updatedFavorites }, { merge: true });
       setFavorites(updatedFavorites);
     } catch (error) {
       console.error('Error adding to favorites:', error);
@@ -718,7 +732,7 @@ export const UserProvider = ({children}) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({amount, currency, description}),
+          body: JSON.stringify({ amount, currency, description }),
         },
       );
 
@@ -737,9 +751,9 @@ export const UserProvider = ({children}) => {
         transaction.currency,
         transaction.description,
       );
-      const {paymentIntent, error} = await confirmPayment(clientSecret, {
+      const { paymentIntent, error } = await confirmPayment(clientSecret, {
         type: 'Card',
-        billingDetails: {email: user.email},
+        billingDetails: { email: user.email },
       });
 
       if (error) {
@@ -794,7 +808,7 @@ export const UserProvider = ({children}) => {
 
       paymentMethods.push(paymentDetails);
 
-      await userPaymentRef.set({paymentMethods});
+      await userPaymentRef.set({ paymentMethods });
       setPaymentMethods(paymentMethods); // Update local state
       console.log('Payment details saved successfully:', paymentMethods);
     } catch (err) {
@@ -832,7 +846,7 @@ export const UserProvider = ({children}) => {
       const userPaymentRef = firestore()
         .collection('paymentMethods')
         .doc(user.uid);
-      await userPaymentRef.update({selectedPaymentMethod: methodIndex});
+      await userPaymentRef.update({ selectedPaymentMethod: methodIndex });
 
       console.log('Preferred payment method set:', methodIndex);
     } catch (err) {
@@ -851,7 +865,7 @@ export const UserProvider = ({children}) => {
         .doc(user.uid);
       paymentMethods[index] = paymentDetails;
 
-      await paymentMethodsRef.update({paymentMethods});
+      await paymentMethodsRef.update({ paymentMethods });
       await fetchPaymentMethods(); // Refresh the payment methods list
       console.log('Payment method edited successfully:', paymentDetails);
     } catch (err) {
@@ -870,7 +884,7 @@ export const UserProvider = ({children}) => {
       const updatedPaymentMethods = [...paymentMethods];
       updatedPaymentMethods.splice(index, 1);
 
-      await paymentMethodsRef.update({paymentMethods: updatedPaymentMethods});
+      await paymentMethodsRef.update({ paymentMethods: updatedPaymentMethods });
       setPaymentMethods(updatedPaymentMethods); // Update local state
       console.log('Payment method deleted successfully');
     } catch (err) {

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Alert, Image } from 'react-native';
+import { View, StyleSheet, FlatList, Alert, Image } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
-import { Card } from 'react-native-paper';
+import { Card, Text } from 'react-native-paper';
 
 const BookingScreen = () => {
   const [upcomingRequests, setUpcomingRequests] = useState([]);
