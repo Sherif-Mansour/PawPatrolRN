@@ -1,21 +1,25 @@
 import { StyleSheet } from 'react-native';
-import { Button } from 'react-native-paper';
+import { Button, useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+const MyCustomButton = ({ onPress, label }) => {
+    const { colors } = useTheme();
 
-const MyCustomButton = ({ onPress, label }) => (
-    <Button
-        mode="text"
-        onPress={onPress}
-        contentStyle={styles.buttonContent}
-        style={styles.fullWidthButton}
-        icon={({ size }) => <Icon name="chevron-right" size={size} />}
-    >
-        {label}
-    </Button>
-);
+    return (
+        <Button
+            mode="text"
+            onPress={onPress}
+            contentStyle={[styles.buttonContent, { backgroundColor: colors.background }]}
+            style={styles.fullWidthButton}
+            labelStyle={{ color: colors.onBackground }} // Set text color to onBackground color
+            icon={({ size }) => <Icon name="chevron-right" size={size} color={colors.onBackground} />}
+        >
+            {label}
+        </Button>
+    );
+};
 
-const styles=StyleSheet.create({
+const styles = StyleSheet.create({
     fullWidthButton: {
         width: '100%'
     },

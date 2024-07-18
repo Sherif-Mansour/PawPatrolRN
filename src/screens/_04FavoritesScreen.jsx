@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import {useUser} from '../../utils/UserContext';
-import {Card, Text, Button, useTheme} from 'react-native-paper';
+import { useUser } from '../../utils/UserContext';
+import { Card, Text, Button, useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const FavoritesScreen = ({navigation}) => {
+const FavoritesScreen = ({ navigation }) => {
   const theme = useTheme();
   const {
     favorites,
@@ -37,7 +37,7 @@ const FavoritesScreen = ({navigation}) => {
     }
   }, [favorites, ads]);
 
-  const renderAd = ({item}) => (
+  const renderAd = ({ item }) => (
     <Card style={styles.adContainer}
       onPress={() => navigation.navigate('AdDetails', { ad: item })}
     >
@@ -48,16 +48,16 @@ const FavoritesScreen = ({navigation}) => {
         subtitleStyle={styles.adSubtitle}
         titleStyle={styles.adTitle}
       />
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={() => handleAddToFavorites(item.id)}>
-          <Icon
-            name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
-            size={24}
-            color="#ff0000"
-          />
-        </TouchableOpacity>
-      </Card>
+      <TouchableOpacity
+        style={styles.favoriteButton}
+        onPress={() => handleAddToFavorites(item.id)}>
+        <Icon
+          name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
+          size={24}
+          color="#ff0000"
+        />
+      </TouchableOpacity>
+    </Card>
   );
 
   const styles = StyleSheet.create({
@@ -68,7 +68,6 @@ const FavoritesScreen = ({navigation}) => {
     },
     headerText: {
       fontSize: 32,
-      color: 'black',
     },
     adContainer: {
       borderWidth: 1,

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Switch, StyleSheet, Button, Alert } from 'react-native';
+import { View, Switch, StyleSheet, Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme, Text, Button } from 'react-native-paper';
 
 const PrivacySettingsScreen = () => {
+  const theme = useTheme();
   const [isPublicProfile, setIsPublicProfile] = useState(false);
   const [shareDataWithThirdParties, setShareDataWithThirdParties] = useState(false);
   const [isDataTrackingEnabled, setIsDataTrackingEnabled] = useState(false);
@@ -119,7 +121,7 @@ const PrivacySettingsScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={styles.title}>Privacy Settings</Text>
       <View style={styles.setting}>
         <Text>Public Profile</Text>

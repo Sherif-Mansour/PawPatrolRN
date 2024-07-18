@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
   RefreshControl,
   Image,
 } from 'react-native';
-import {useUser} from '../../utils/UserContext';
+import { useUser } from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
   Searchbar,
@@ -20,8 +20,8 @@ import {
   Modal,
   Portal,
 } from 'react-native-paper';
-import {FlatList, ScrollView} from 'react-native-gesture-handler';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../../components/Map';
 // Import the SaveToFavoritesModal from the components folder
 import SaveToFavoritesModal from '../../components/SaveToFavoritesModal';
@@ -36,7 +36,7 @@ const categories = [
   'Sitting',
 ];
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({ navigation }) => {
   const theme = useTheme();
   const {
     ads,
@@ -142,12 +142,12 @@ const HomeScreen = ({navigation}) => {
     </Chip>
   );
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <Card
       style={styles.adContainer}
-      onPress={() => navigation.navigate('AdDetails', {ad: item})}>
+      onPress={() => navigation.navigate('AdDetails', { ad: item })}>
       <Card.Cover
-        source={{uri: item.mainPicture || 'https://picsum.photos/id/237/200/'}}
+        source={{ uri: item.mainPicture || 'https://picsum.photos/id/237/200/' }}
         style={styles.adImage}
       />
       <Card.Title
@@ -253,17 +253,19 @@ const HomeScreen = ({navigation}) => {
         </Modal>
       </Portal>
       <View style={styles.container}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
           <Button
-            style={{backgroundColor: 'transparent'}}
+            style={{ backgroundColor: 'transparent' }}
             onPress={showMapModal}
-            icon="map-marker">
+            icon="map-marker"
+            labelStyle={{ color: theme.colors.onBackground }}
+          >
             Location
           </Button>
           <TouchableOpacity
             onPress={() => navigation.navigate('CalendarScreen')}
-            style={{marginRight: 15}}>
-            <Icon name="calendar" size={24} color={theme.colors.primary} />
+            style={{ marginRight: 15 }}>
+            <Icon name="calendar" size={24} color={theme.colors.onBackground} />
           </TouchableOpacity>
         </View>
         <Searchbar
