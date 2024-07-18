@@ -48,37 +48,14 @@ const BookingScreen = () => {
     fetchRequests();
   }, [user.uid]);
 
-  const fetchUserProfile = async (userId) => {
+  const fetchUserProfile = async userId => {
     const userProfileRef = firestore().collection('profiles').doc(userId);
     const userProfileDoc = await userProfileRef.get();
-
     if (userProfileDoc.exists) {
       return userProfileDoc.data();
-    } else {
-      return {
-        firstName: 'Unknown',
-        lastName: 'User',
-        profilePicture: '',
-      };
     }
+    return null;
   };
-
-  const handleChatNavigation = async (channelUrl) => {
-    if (channelUrl) {
-      navigation.navigate('IndividualChat', { channelUrl });
-    } else {
-      Alert.alert('Error', 'No chat channel found for this booking.');
-    }
-  };
-
-  // const fetchUserProfile = async userId => {
-  //   const userProfileRef = firestore().collection('profiles').doc(userId);
-  //   const userProfileDoc = await userProfileRef.get();
-  //   if (userProfileDoc.exists) {
-  //     return userProfileDoc.data();
-  //   }
-  //   return null;
-  // };
 
   const renderRequest = ({ item }) => (
     <Card style={styles.card}>
@@ -94,9 +71,7 @@ const BookingScreen = () => {
             style={styles.profilePicture}
           />
         )}
-        <Image source={{ uri: request.profilePicture }} style={styles.profilePicture} />
         <View style={styles.infoContainer}>
-          <Text style={styles.nameText}>{request.name}</Text>
           <Text style={styles.nameText}>
             Request with {item.otherUserProfile?.firstName} {item.otherUserProfile?.lastName}
           </Text>
@@ -166,16 +141,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  profilePicture: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  nameText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
   dateText: {
     fontSize: 16,
   },
@@ -184,15 +149,6 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 16,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 20,
-    color: '#555',
   },
 });
 
