@@ -16,6 +16,7 @@ import firestore from '@react-native-firebase/firestore';
 
 const SignInScreen = ({ navigation }) => {
   const {
+    signInWithEmailAndPass,
     onGoogleButtonPress,
     resetPassword,
     onFacebookButtonPress,
