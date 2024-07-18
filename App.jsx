@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PaperProvider, MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
 import lightColors from './assets/themes/lightColors.json';
@@ -14,9 +14,10 @@ import {
 import { MMKV } from 'react-native-mmkv';
 import { platformServices } from './utils/PlatformServices';
 import defaultLocale from './utils/defaultLocale';
-import { useState } from 'react';
 import messaging from '@react-native-firebase/messaging';
 import { handleBackgroundNotification } from './utils/NotificationHandler';
+import firebase from '@react-native-firebase/app'; 
+import analytics from '@react-native-firebase/analytics'; 
 
 const lightTheme = {
   ...MD3LightTheme,
@@ -55,6 +56,19 @@ const App = () => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       console.log('A new FCM message arrived!', remoteMessage);
     });
+
+    const initializeFirebase = async () => {
+      try {
+        await analytics().logEvent('app_opened', {
+          test_param: 'test_value'
+        });
+        console.log('Firebase initialized and event logged');
+      } catch (error) {
+        console.error('Error initializing Firebase:', error);
+      }
+    };
+
+    initializeFirebase();
 
     return () => unsubscribe();
   }, []);
