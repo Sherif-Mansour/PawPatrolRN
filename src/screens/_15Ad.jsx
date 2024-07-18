@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,12 +6,11 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
-  Share,
 } from 'react-native';
-import {Button, TextInput, useTheme, Text} from 'react-native-paper';
-import {useUser} from '../../utils/UserContext';
-import {launchImageLibrary} from 'react-native-image-picker';
-import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
+import { Button, TextInput, useTheme, Text } from 'react-native-paper';
+import { useUser } from '../../utils/UserContext';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const categories = [
   'Grooming',
@@ -27,7 +26,7 @@ const categories = [
   'Other',
 ];
 
-const Ad = ({navigation}) => {
+const Ad = ({ navigation }) => {
   const theme = useTheme();
   const {
     user,
@@ -95,7 +94,7 @@ const Ad = ({navigation}) => {
                 onPress: () => navigation.navigate('Profile'),
               },
             ],
-            {cancelable: false},
+            { cancelable: false },
           );
           return;
         }
@@ -176,16 +175,13 @@ const Ad = ({navigation}) => {
       backgroundColor: theme.colors.background,
     },
     inputsContainer: {
-      backgroundColor: theme.colors.surface,
       padding: 20,
       borderRadius: 10,
     },
     label: {
-      color: theme.colors.text,
       marginBottom: 5,
     },
     requiredLabel: {
-      color: theme.colors.text,
       marginBottom: 5,
       flexDirection: 'row',
       alignItems: 'center',
@@ -245,7 +241,6 @@ const Ad = ({navigation}) => {
     title: {
       fontSize: 24,
       fontWeight: 'bold',
-      color: theme.colors.text,
       marginBottom: 20,
     },
     rowContainer: {
@@ -304,13 +299,13 @@ const Ad = ({navigation}) => {
               placeholder="Select Pictures"
               editable={false}
             />
-            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
               {pictures.map((pic, index) => (
                 <TouchableOpacity
                   key={index}
                   onPress={() => setMainPicture(pic)}>
                   <Image
-                    source={{uri: pic}}
+                    source={{ uri: pic }}
                     style={[
                       styles.image,
                       mainPicture === pic && styles.mainImage,
@@ -372,7 +367,7 @@ const Ad = ({navigation}) => {
             <Button
               mode="contained"
               buttonColor={theme.colors.primary}
-              contentStyle={{width: '100%'}}
+              contentStyle={{ width: '100%' }}
               onPress={saveAd}
               style={styles.button}>
               Save Ad

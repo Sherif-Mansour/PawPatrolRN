@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   Image,
   ImageBackground,
@@ -9,19 +9,21 @@ import {
 } from 'react-native';
 import MyTextInput from '../../components/MyTextInput';
 import SocialMedia from '../../components/SocialMedia';
-import {Button, useTheme} from 'react-native-paper';
-import {useUser} from '../../utils/UserContext';
+import { Button, useTheme } from 'react-native-paper';
+import { useUser } from '../../utils/UserContext';
 
-const SignInScreen = ({navigation}) => {
-  const {
-    signInWithEmailAndPass,
-    onGoogleButtonPress,
-    resetPassword,
-    onFacebookButtonPress,
-  } = useUser();
+const SignInScreen = ({ navigation }) => {
+  const { signInWithEmailAndPass, resetPassword, onGoogleButtonPress, onFacebookButtonPress } = useUser();
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSignIn = async () => {
+    setLoading(true);
+    await signInWithEmailAndPass(email, password, navigation);
+    setLoading(false);
+  };
 
   const handlePasswordReset = () => {
     if (email) {
@@ -62,23 +64,20 @@ const SignInScreen = ({navigation}) => {
             <Text style={styles.textLink} onPress={handlePasswordReset}>
               Forgot Password?
             </Text>
-            <Text
-              style={styles.textLink}
-              onPress={() => navigation.navigate('AdminSignIn')}>
-              Login as Admin
-            </Text>
           </View>
 
           <Text
             style={styles.textDontHave}
             onPress={() => navigation.navigate('SignUp')}>
             Don't have an account?{' '}
-            <Text style={{textDecorationLine: 'underline'}}>Sign Up</Text>
+            <Text style={{ textDecorationLine: 'underline' }}>Sign Up</Text>
           </Text>
           <Button
             mode="contained"
             buttonColor="#FFBF5D"
-            onPress={() => signInWithEmailAndPass(email, password, navigation)}>
+            onPress={handleSignIn}
+            loading={loading}
+            disabled={loading}>
             Sign In
           </Button>
           <Text style={styles.orText}>OR</Text>

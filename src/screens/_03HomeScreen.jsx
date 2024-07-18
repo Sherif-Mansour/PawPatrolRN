@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
-  Share
 } from 'react-native';
 import { useUser } from '../../utils/UserContext';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -234,16 +233,9 @@ const HomeScreen = ({ navigation }) => {
       fontSize: 14,
     },
     favoriteButton: {
-      marginRight: 10,
-    },
-    actionContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: 5,
-    },
-    shareButton: {
-      marginRight: 0,
+      position: 'absolute',
+      bottom: 10,
+      right: 10,
     },
     modalStyle: {
       backgroundColor: 'white',

@@ -82,7 +82,7 @@ const App = () => {
             chatOptions={{ localCacheStorage }}
             platformServices={platformServices}
             localization={{ stringSet: defaultLocale }}
-            userProfile={{ onCreateChannel: () => {} }}>
+            userProfile={{ onCreateChannel: () => { } }}>
             <UserProvider>
               <AppNavigator setIsDarkTheme={setIsDarkTheme} />
             </UserProvider>
