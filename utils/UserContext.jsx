@@ -1,9 +1,9 @@
 import React, { useContext, createContext, useState, useEffect } from 'react';
 import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import {LoginManager, AccessToken} from 'react-native-fbsdk-next';
-import {Alert, Platform} from 'react-native';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
+import { Alert, Platform } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import { useConfirmPayment } from '@stripe/stripe-react-native';
@@ -578,10 +578,9 @@ export const UserProvider = ({ children }) => {
   };
 
 
-
   const handleAddToFavorites = async (adId, listName = 'My Favorites') => {
     if (!user) return;
-    // Reference to the specific user's favorites list in Firebase
+
     const userFavoritesRef = firestore()
       .collection('favorites')
       .doc(user.uid)
@@ -591,52 +590,62 @@ export const UserProvider = ({ children }) => {
     try {
       const listDoc = await userFavoritesRef.get();
       const currentFavorites = listDoc.exists ? listDoc.data().favorites : [];
-      // Check if the ad is already in the favorites. If it is, remove it; otherwise, add it.
+
       const updatedFavorites = currentFavorites.includes(adId)
         ? currentFavorites.filter(favId => favId !== adId)
         : [...currentFavorites, adId];
 
       await userFavoritesRef.set({ favorites: updatedFavorites }, { merge: true });
-      setFavorites(updatedFavorites);
+      setFavorites(updatedFavorites); // 更新全局收藏状态
     } catch (error) {
       console.error('Error adding to favorites:', error);
     }
   };
 
+  const fetchUserFavorites = async (listName = 'My Favorites') => {
+    if (!user) return [];
 
+    try {
+      const listRef = firestore()
+        .collection('favorites')
+        .doc(user.uid)
+        .collection('lists')
+        .doc(listName);
 
-  const fetchUserFavorites = async () => {
-    if (!user) return;
+      const listSnapshot = await listRef.get();
 
-    const userFavoritesRef = firestore()
-      .collection('favorites')
-      .doc(user.uid)
-      .collection('lists')
-      .doc('My Favorites');
-    const userFavoritesDoc = await userFavoritesRef.get();
-
-    if (userFavoritesDoc.exists) {
-      setFavorites(userFavoritesDoc.data().favorites);
-    } else {
-      setFavorites([]);
+      if (listSnapshot.exists) {
+        const favorites = listSnapshot.data().favorites;
+        return favorites || [];
+      } else {
+        console.log('List not found:', listName);
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching list ads:', error);
+      return [];
     }
   };
 
-
-  const fetchUserLists = async () => {
+  const fetchUserLists = () => {
     if (!user) return;
 
     const userListsRef = firestore().collection('favorites').doc(user.uid).collection('lists');
-    const userListsSnapshot = await userListsRef.get();
 
-    if (!userListsSnapshot.empty) {
-      const listsData = userListsSnapshot.docs.map(doc => ({ name: doc.id, favorites: doc.data().favorites || [] }));
-      setLists(listsData);
-    } else {
-      setLists([{ name: 'My Favorites', favorites: [] }]);
-    }
+    const unsubscribe = userListsRef.onSnapshot((snapshot) => {
+      if (!snapshot.empty) {
+        const listsData = snapshot.docs.map(doc => ({
+          name: doc.id,
+          ...doc.data(),
+        }));
+        setLists(listsData);
+      } else {
+        setLists([{ name: 'My Favorites', description: '', favorites: [] }]);
+      }
+    });
+
+    return unsubscribe;
   };
-
 
   useEffect(() => {
     if (user) {
@@ -644,9 +653,6 @@ export const UserProvider = ({ children }) => {
       fetchUserLists();
     }
   }, [user]);
-
-
-
 
   const signOut = async navigation => {
     try {

@@ -23,7 +23,6 @@ import {
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../../components/Map';
-import MapContainer from '../../components/MapContainer';
 // Import the SaveToFavoritesModal from the components folder
 import SaveToFavoritesModal from '../../components/SaveToFavoritesModal';
 
@@ -55,7 +54,7 @@ const HomeScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
   const [adsFetched, setAdsFetched] = useState(false);
-  
+
   // State to control the visibility of the SaveToFavoritesModal
   const [isFavoritesModalVisible, setIsFavoritesModalVisible] = useState(false);
 
@@ -156,21 +155,21 @@ const HomeScreen = ({ navigation }) => {
         subtitleStyle={styles.adSubtitle}
         titleStyle={styles.adTitle}
       />
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          // press to show the modal
-          onPress={() => {
-            // Set the ad id to the state
-            showFavoritesModal(item.id);
-          }}
-        >
-          <Icon
-            name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
-            size={24}
-            color="#ff0000"
-          />
-        </TouchableOpacity>
-      </Card>
+      <TouchableOpacity
+        style={styles.favoriteButton}
+        // press to show the modal
+        onPress={() => {
+          // Set the ad id to the state
+          showFavoritesModal(item.id);
+        }}
+      >
+        <Icon
+          name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
+          size={24}
+          color="#ff0000"
+        />
+      </TouchableOpacity>
+    </Card>
   );
 
   const styles = StyleSheet.create({
