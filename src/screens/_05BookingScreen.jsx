@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Image } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '../../utils/UserContext';
 import { Card } from 'react-native-paper';
@@ -23,7 +23,7 @@ const BookingScreen = ({ navigation }) => {
 
         const fetchedRequests = {};
 
-        requestsSnapshot.docs.forEach(doc => {
+        for (const doc of requestsSnapshot.docs) {
           const requestData = doc.data();
           const date = requestData.date; // Assuming requestData.date is in YYYY-MM-DD format
 
@@ -31,11 +31,19 @@ const BookingScreen = ({ navigation }) => {
             fetchedRequests[date] = [];
           }
 
+          // Fetch user profile from chat participants
+          const otherParticipantId = requestData.participants.find(participantId => participantId !== user.uid);
+          const userProfile = await fetchUserProfile(otherParticipantId);
+
           fetchedRequests[date].push({
             id: doc.id,
             ...requestData,
+            profilePicture: userProfile.profilePicture,
+            name: `${userProfile.firstName} ${userProfile.lastName}`,
+            otherParticipantId: otherParticipantId, // Add other participant ID for navigation
+            channelUrl: requestData.channelUrl, // Assuming channelUrl is stored in requestData
           });
-        });
+        }
 
         setRequests(fetchedRequests);
       } catch (error) {
@@ -49,10 +57,35 @@ const BookingScreen = ({ navigation }) => {
     fetchRequests();
   }, [user.uid]);
 
+  const fetchUserProfile = async (userId) => {
+    const userProfileRef = firestore().collection('profiles').doc(userId);
+    const userProfileDoc = await userProfileRef.get();
+
+    if (userProfileDoc.exists) {
+      return userProfileDoc.data();
+    } else {
+      return {
+        firstName: 'Unknown',
+        lastName: 'User',
+        profilePicture: '',
+      };
+    }
+  };
+
+  const handleChatNavigation = async (channelUrl) => {
+    if (channelUrl) {
+      navigation.navigate('IndividualChat', { channelUrl });
+    } else {
+      Alert.alert('Error', 'No chat channel found for this booking.');
+    }
+  };
+
   const renderRequest = (request) => (
-    <Card style={styles.card} onPress={() => navigation.navigate('BookingDetailsScreen', { request })}>
+    <Card style={styles.card} onPress={() => handleChatNavigation(request.channelUrl)}>
       <View style={styles.cardContent}>
+        <Image source={{ uri: request.profilePicture }} style={styles.profilePicture} />
         <View style={styles.infoContainer}>
+          <Text style={styles.nameText}>{request.name}</Text>
           <Text style={styles.dateText}>Date: {request.date}</Text>
           <Text style={styles.timeText}>Time: {request.time}</Text>
           <Text style={styles.locationText}>Location: {request.location}</Text>
@@ -66,18 +99,18 @@ const BookingScreen = ({ navigation }) => {
     <View style={styles.container}>
       {loading ? (
         <Text>Loading...</Text> // Display loading indicator while fetching data
-      ) : Object.keys(requests).length === 0 ? (
-        <Text>No bookings found for this date.</Text> // Display message if no bookings found
       ) : (
         <Agenda
           items={requests}
           selected={selectedDate}
           renderItem={(item) => renderRequest(item)}
-          renderEmptyDate={() => (
-            <View style={styles.emptyDate}>
-              <Text>No bookings on this date.</Text>
-            </View>
-          )}
+          renderEmptyData={() => {
+            return (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No Booking on this day</Text>
+              </View>
+            );
+          }}
           rowHasChanged={(r1, r2) => r1.id !== r2.id}
           onDayPress={(day) => setSelectedDate(day.dateString)}
           markingType={'multi-dot'}
@@ -114,6 +147,16 @@ const styles = StyleSheet.create({
   infoContainer: {
     flex: 1,
   },
+  profilePicture: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  nameText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
   dateText: {
     fontSize: 16,
   },
@@ -126,11 +169,14 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 16,
   },
-  emptyDate: {
-    height: 15,
+  emptyContainer: {
     flex: 1,
-    paddingTop: 30,
-    paddingLeft: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 20,
+    color: '#555',
   },
 });
 

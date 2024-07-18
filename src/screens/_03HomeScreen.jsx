@@ -38,6 +38,7 @@ const categories = [
 ];
 
 const HomeScreen = ({ navigation }) => {
+ 
   const theme = useTheme();
   const {
     ads,
@@ -64,6 +65,7 @@ const HomeScreen = ({ navigation }) => {
     if (user) {
       const loadFavorites = async () => {
         await fetchUserFavorites();
+        console.log(await analytics().logEvent('cool_event',{eventpayload:12}));
       };
       loadFavorites();
     }
