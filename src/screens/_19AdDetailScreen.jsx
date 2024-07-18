@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, TextInput, Alert, FlatList } from 'react-native';
-import { useTheme, Card, Button, Divider, Avatar } from 'react-native-paper';
+import { View, StyleSheet, Image, TouchableOpacity, Modal, TextInput, Alert, FlatList } from 'react-native';
+import { useTheme, Card, Button, Divider, Avatar, Text } from 'react-native-paper';
 import { useUser } from '../../utils/UserContext';
 import { useSendbirdChat } from '@sendbird/uikit-react-native';
 import firestore from '@react-native-firebase/firestore';
@@ -217,7 +217,7 @@ const AdDetails = ({ navigation, route }) => {
   return (
     <FlatList
       ListHeaderComponent={
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
           <Card style={styles.adContainer}>
             {ad.pictures && ad.pictures.length > 0 && (
               <View style={styles.imageContainer}>
@@ -256,7 +256,7 @@ const AdDetails = ({ navigation, route }) => {
                       mode='outlined'
                       compact={true}
                       onPress={() => navigation.navigate('View Profile', { profile: adUserProfile })}
-                      contentStyle={{}}
+                      labelStyle={{ color: theme.colors.onBackground }}
                     >
                       View Profile
                     </Button>
@@ -316,12 +316,9 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-    backgroundColor: 'white',
   },
   adContainer: {
     borderWidth: 1,
-    borderColor: 'black',
-    backgroundColor: 'white',
     paddingTop: 5,
     marginBottom: 10,
     position: 'relative',
