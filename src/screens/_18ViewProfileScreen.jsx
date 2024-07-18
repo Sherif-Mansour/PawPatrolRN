@@ -41,7 +41,7 @@ const ViewProfileScreen = () => {
   };
 
   const renderButton = () => {
-    if (user && user.email === profile.email) {
+    if (user && user.uid === profile.id) {
       return (
         <Button
           mode="contained"
