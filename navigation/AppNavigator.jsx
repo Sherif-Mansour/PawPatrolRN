@@ -25,6 +25,7 @@ import BookRequestScreen from '../src/screens/_23BookRequest';
 import AccountSettings from './../src/screens/_22AccountSettings';
 import Ad from '../src/screens/_15Ad';
 import PendingApprovals from '../src/screens/_24PendingApprovals';
+import CalendarScreen from '../src/screens/_25CalendarScreen'; // Import the CalendarScreen
 import BookingDetailsScreen from '../src/screens/_26BookingDetailsScreen'; // Import the BookingDetailsScreen
 import ChatSettings from '../src/screens/_28ChatSettings';
 import AdminSignInScreen from '../src/screens/_29AdminSignScreen';
@@ -32,6 +33,7 @@ import AdminDashboard from '../src/screens/_30AdminDashboard';
 import AdminAdDetails from '../src/screens/_31AdminAdDetail';
 import UserProfileScreen from '../src/screens/_32AdminUserProfileScreen';
 import ReplyInquiryScreen from '../src/screens/_33ReplyInquiryScreen';
+import FavoriteAdsScreen from '../src/screens/_34FavoritesAdScreen';
 
 
 const Stack = createStackNavigator();
@@ -144,7 +146,12 @@ const AppNavigator = ({ setIsDarkTheme }) => {
         <Stack.Screen
           name="PendingApprovals"
           component={PendingApprovals}
-          options={{header: () => <AppHeader showBackButton={true} />}}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
+        />
+        <Stack.Screen
+          name="CalendarScreen"
+          component={CalendarScreen}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="BookingDetailsScreen"
@@ -181,7 +188,14 @@ const AppNavigator = ({ setIsDarkTheme }) => {
           component={ReplyInquiryScreen}
           options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
+        <Stack.Screen
+          name="FavoriteAdsScreen"
+          component={FavoriteAdsScreen}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
+        />
+
       </Stack.Navigator>
+
     </NavigationContainer>
   );
 };

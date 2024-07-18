@@ -1,19 +1,19 @@
 import React from 'react';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import {
   useSendbirdChat,
   createGroupChannelFragment,
 } from '@sendbird/uikit-react-native';
-import {useGroupChannel} from '@sendbird/uikit-chat-hooks';
+import { useGroupChannel } from '@sendbird/uikit-chat-hooks';
 
 const GroupChannelFragment = createGroupChannelFragment();
 
 const IndividualChatScreen = () => {
   const navigation = useNavigation();
-  const {params} = useRoute();
+  const { params } = useRoute();
 
-  const {sdk} = useSendbirdChat();
-  const {channel} = useGroupChannel(sdk, params.channelUrl);
+  const { sdk } = useSendbirdChat();
+  const { channel } = useGroupChannel(sdk, params.channelUrl);
   if (!channel) return null;
 
   return (
@@ -26,7 +26,7 @@ const IndividualChatScreen = () => {
         navigation.goBack();
       }}
       onPressHeaderRight={() => {
-        navigation.navigate('ChatSettings', {channelUrl: params.channelUrl});
+        navigation.navigate('ChatSettings', { channelUrl: params.channelUrl });
       }}
     />
   );
