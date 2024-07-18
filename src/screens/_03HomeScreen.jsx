@@ -272,6 +272,7 @@ const HomeScreen = ({ navigation }) => {
             style={{ backgroundColor: 'transparent' }}
             onPress={showModal}
             icon="map-marker"
+            labelStyle={{ color: theme.colors.onBackground }}
           >
             Location
           </Button>
