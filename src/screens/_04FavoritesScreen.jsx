@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Text } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
 import { useUser } from '../../utils/UserContext';
+import { Card, Text, Button, useTheme } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const FavoritesScreen = ({ navigation }) => {
   const { user, lists, fetchUserLists, loadingFavorites } = useUser();
