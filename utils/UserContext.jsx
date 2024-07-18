@@ -282,17 +282,24 @@ export const UserProvider = ({children}) => {
         }
 
         console.log('Email SignIn:', user);
+
         await handleUserSignIn(user, navigation);
+
+        const adminDoc = await firestore().collection('admin').doc(user.uid).get();
+        if (adminDoc.exists && adminDoc.data().isadmin) {
+          navigation.navigate('AdminDashboard');
+        } else {
+          navigation.navigate('Home');
+        }
       })
       .catch(err => {
         setLoading(false);
         console.error('Email/password sign-in error:', err);
-        Alert.alert(
-          'Sign-In Error',
-          'Invalid email or password. Please try again.',
-        );
+        Alert.alert('Sign-In Error', 'Invalid email or password. Please try again.');
       });
   };
+
+
 
   const createUserWithEmailAndPassword = async (email, password) => {
     try {
