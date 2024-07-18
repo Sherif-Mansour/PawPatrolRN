@@ -25,6 +25,7 @@ import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../../components/Map';
 import analytics from '@react-native-firebase/analytics';
+import SaveToFavoritesModal from '../../components/SaveToFavoritesModal';
 
 const categories = [
   'All',
@@ -55,10 +56,36 @@ const HomeScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
   const [adsFetched, setAdsFetched] = useState(false);
-  const [visible, setVisible] = useState(false);
 
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
+  const showMapModal = () => setIsMapModalVisible(true);
+  const hideMapModal = () => setIsMapModalVisible(false);
+
+  // State to control the visibility of the SaveToFavoritesModal
+  const [isFavoritesModalVisible, setIsFavoritesModalVisible] = useState(false);
+
+  // State to keep track of the selected ad ID when the favorite button is clicked
+  const [selectedAdId, setSelectedAdId] = useState(null);
+
+  // Change Map modal state for better readability
+  const [isMapModalVisible, setIsMapModalVisible] = useState(false);
+
+
+  // Function to show the SaveToFavoritesModal
+  // Takes the ad ID as an argument and sets it as the selected ad ID
+  // Also sets the modal visibility state to true
+  const showFavoritesModal = adId => {
+    setSelectedAdId(adId);
+    setIsFavoritesModalVisible(true);
+  };
+
+  // Function to hide the SaveToFavoritesModal
+  // Resets the modal visibility state to false and clears the selected ad ID
+  const hideFavoritesModal = () => {
+    setIsFavoritesModalVisible(false);
+    setSelectedAdId(null);
+  };
+
+
 
   useEffect(() => {
     if (user) {
@@ -163,27 +190,25 @@ const HomeScreen = ({ navigation }) => {
         subtitleStyle={styles.adSubtitle}
         titleStyle={styles.adTitle}
       />
-      <TouchableOpacity
-        style={styles.favoriteButton}
-        onPress={() => handleFavorite(item.id)}
-      >
+      <View style={styles.favoriteButton}>
         <Icon
           name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
           size={24}
           color="#ff0000"
           onPress={() => {
-            // Set the ad id to the state
-            showFavoritesModal(item.id)}}
+            showFavoritesModal(item.id)
+          }}
         />
-              < IconButton
-            icon = "share"
-            color = { theme.colors.primary }
-            size = { 24}
-            onPress = {() => shareAd(item)}
-        style={styles.shareButton}
+      </View>
+      <View style={styles.shareButton}>
+        <IconButton
+          icon="share"
+          color={theme.colors.primary}
+          size={24}
+          onPress={() => shareAd(item)}
         />
-      </TouchableOpacity>
-    </Card>
+      </View>
+    </Card >
   );
 
   const styles = StyleSheet.create({
@@ -223,8 +248,13 @@ const HomeScreen = ({ navigation }) => {
     },
     favoriteButton: {
       position: 'absolute',
-      bottom: 10,
-      right: 10,
+      bottom: 40,
+      right: 6,
+    },
+    shareButton: {
+      position: 'absolute',
+      right: -8,
+      bottom: -8
     },
     modalStyle: {
       backgroundColor: 'white',
@@ -257,8 +287,8 @@ const HomeScreen = ({ navigation }) => {
     <SafeAreaProvider>
       <Portal>
         <Modal
-          visible={visible}
-          onDismiss={hideModal}
+          visible={isMapModalVisible}
+          onDismiss={hideMapModal}
           contentContainerStyle={styles.modalStyle}
         >
           <View style={styles.modalContent}>
@@ -270,7 +300,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Button
             style={{ backgroundColor: 'transparent' }}
-            onPress={showModal}
+            onPress={showMapModal}
             icon="map-marker"
             labelStyle={{ color: theme.colors.onBackground }}
           >
@@ -316,6 +346,16 @@ const HomeScreen = ({ navigation }) => {
           }
         />
       </View>
+      {/* add SaveToFavoritesModal with the visible and onClose props.  */}
+      <SaveToFavoritesModal
+        visible={isFavoritesModalVisible}
+        onClose={hideFavoritesModal}
+        // Pass the selected ad ID
+        adId={selectedAdId}
+        onSave={() => {
+          console.log('Ad added to list');
+        }}
+      />
     </SafeAreaProvider>
   );
 };
