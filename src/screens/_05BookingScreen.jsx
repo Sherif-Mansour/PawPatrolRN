@@ -71,14 +71,14 @@ const BookingScreen = () => {
     }
   };
 
-  const fetchUserProfile = async userId => {
-    const userProfileRef = firestore().collection('profiles').doc(userId);
-    const userProfileDoc = await userProfileRef.get();
-    if (userProfileDoc.exists) {
-      return userProfileDoc.data();
-    }
-    return null;
-  };
+  // const fetchUserProfile = async userId => {
+  //   const userProfileRef = firestore().collection('profiles').doc(userId);
+  //   const userProfileDoc = await userProfileRef.get();
+  //   if (userProfileDoc.exists) {
+  //     return userProfileDoc.data();
+  //   }
+  //   return null;
+  // };
 
   const renderRequest = ({ item }) => (
     <Card style={styles.card}>
