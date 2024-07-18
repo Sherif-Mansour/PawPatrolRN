@@ -11,16 +11,9 @@ import MyTextInput from '../../components/MyTextInput';
 import SocialMedia from '../../components/SocialMedia';
 import { Button, useTheme } from 'react-native-paper';
 import { useUser } from '../../utils/UserContext';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
 
 const SignInScreen = ({ navigation }) => {
-  const {
-    signInWithEmailAndPass,
-    onGoogleButtonPress,
-    resetPassword,
-    onFacebookButtonPress,
-  } = useUser();
+  const { signInWithEmailAndPass, resetPassword, onGoogleButtonPress, onFacebookButtonPress } = useUser();
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,42 +21,8 @@ const SignInScreen = ({ navigation }) => {
 
   const handleSignIn = async () => {
     setLoading(true);
-    try {
-      const userCredential = await auth().signInWithEmailAndPassword(email, password);
-      const user = userCredential.user;
-
-      if (!user) {
-        throw new Error('User is not properly signed in');
-      }
-
-      console.log('Email SignIn:', user);
-
-      // Check Firestore admin collection
-      const adminDoc = await firestore()
-        .collection('admin')
-        .doc(user.uid)
-        .get();
-
-      if (adminDoc.exists) {
-        const adminData = adminDoc.data();
-        console.log('Admin Data:', adminData);
-        if (adminData.isadmin) {
-          console.log('Admin user verified');
-          navigation.navigate('AdminDashboard');
-        } else {
-          console.log('User is not an admin');
-          navigation.navigate('Home'); // or 'UserHome' depending on your route structure
-        }
-      } else {
-        console.log(`Admin document not found for user UID: ${user.uid}`);
-        navigation.navigate('Home'); // or 'UserHome' depending on your route structure
-      }
-    } catch (err) {
-      console.error('Error during sign-in:', err);
-      Alert.alert('Sign-In Error', err.message);
-    } finally {
-      setLoading(false);
-    }
+    await signInWithEmailAndPass(email, password, navigation);
+    setLoading(false);
   };
 
   const handlePasswordReset = () => {
