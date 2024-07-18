@@ -37,6 +37,7 @@ const categories = [
 ];
 
 const HomeScreen = ({ navigation }) => {
+
   const theme = useTheme();
   const {
     ads,
@@ -63,6 +64,7 @@ const HomeScreen = ({ navigation }) => {
     if (user) {
       const loadFavorites = async () => {
         await fetchUserFavorites();
+        console.log(await analytics().logEvent('cool_event', { eventpayload: 12 }));
       };
       loadFavorites();
     }
@@ -133,7 +135,7 @@ const HomeScreen = ({ navigation }) => {
         } else {
           console.log('Ad shared successfully');
         }
-        await analytics().logEvent('ad_share', { ad_id: ad.id }); 
+        await analytics().logEvent('ad_share', { ad_id: ad.id });
       } else if (result.action === Share.dismissedAction) {
         console.log('Share dismissed');
       }
@@ -144,61 +146,50 @@ const HomeScreen = ({ navigation }) => {
 
   const handleFavorite = async (adId) => {
     await handleAddToFavorites(adId);
-    await analytics().logEvent('ad_favorite', { ad_id: adId }); 
+    await analytics().logEvent('ad_favorite', { ad_id: adId });
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.adTouchableContainer}>
+    <Card
+      style={styles.adContainer}
+      onPress={() => navigation.navigate('AdDetails', { ad: item })}>
+      <Card.Cover
+        source={{ uri: item.mainPicture || 'https://picsum.photos/id/237/200/' }}
+        style={styles.adImage}
+      />
+      <Card.Title
+        title={item.title}
+        subtitle={`Price: ${item.price}`}
+        subtitleStyle={styles.adSubtitle}
+        titleStyle={styles.adTitle}
+      />
       <TouchableOpacity
-        onPress={() => {
-          analytics().logEvent('ad_tap', { ad_id: item.id }); 
-          navigation.navigate('AdDetails', { ad: item });
-        }}
+        style={styles.favoriteButton}
+        onPress={() => handleFavorite(item.id)}
       >
-        <Card style={styles.adContainer}>
-          {item.mainPicture ? (
-            <Card.Cover source={{ uri: item.mainPicture }} style={styles.adImage} />
-          ) : (
-            <Image
-              source={require('../../assets/images/OIP.jpeg')}
-              style={styles.adImage}
-            />
-          )}
-          <Card.Title
-            titleStyle={styles.adTitle}
-            title={item.title}
-            subtitle={`Price: ${item.price}`}
-            subtitleStyle={styles.adTitle}
-          />
-        </Card>
-      </TouchableOpacity>
-      <View style={styles.actionContainer}>
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={() => handleFavorite(item.id)}
-        >
-          <Icon
-            name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
-            size={24}
-            color="#ff0000"
-          />
-        </TouchableOpacity>
-        <IconButton
-          icon="share"
-          color={theme.colors.primary}
+        <Icon
+          name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
           size={24}
-          onPress={() => shareAd(item)}
-          style={styles.shareButton}
+          color="#ff0000"
+          onPress={() => {
+            // Set the ad id to the state
+            showFavoritesModal(item.id)}}
         />
-      </View>
-    </View>
+              < IconButton
+            icon = "share"
+            color = { theme.colors.primary }
+            size = { 24}
+            onPress = {() => shareAd(item)}
+        style={styles.shareButton}
+        />
+      </TouchableOpacity>
+    </Card>
   );
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       padding: 10,
-      backgroundColor: '#FFF3D6',
     },
     categoryChip: {
       marginRight: 10,
@@ -214,11 +205,11 @@ const HomeScreen = ({ navigation }) => {
     },
     adContainer: {
       borderWidth: 1,
-      borderColor: theme.colors.primary,
-      paddingTop: 5,
+      borderColor: '#ddd',
       marginBottom: 10,
       position: 'relative',
-      backgroundColor: theme.colors.secondaryContainer,
+      width: '46%',
+      margin: '2%',
     },
     adImage: {
       height: 150,
@@ -281,6 +272,7 @@ const HomeScreen = ({ navigation }) => {
             style={{ backgroundColor: 'transparent' }}
             onPress={showModal}
             icon="map-marker"
+            labelStyle={{ color: theme.colors.onBackground }}
           >
             Location
           </Button>
@@ -313,7 +305,7 @@ const HomeScreen = ({ navigation }) => {
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           numColumns={2}
-          key={selectedCategory} 
+          key={selectedCategory}
           ListEmptyComponent={<Text>No ads found.</Text>}
           refreshControl={
             <RefreshControl
