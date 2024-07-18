@@ -19,7 +19,7 @@ import {
   Text,
   Modal,
   Portal,
-} from 'react-native-paper';
+} from 'react-native-paper'; 
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Map from '../../components/Map';
