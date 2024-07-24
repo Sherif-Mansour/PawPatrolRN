@@ -162,7 +162,7 @@ const PaymentSettingsScreen = ({navigation}) => {
     <KeyboardAvoidingView
       style={{flex: 1}}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.container}>
+      <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
         <Text variant="titleLarge" style={styles.title}>
           Payment Settings
         </Text>
