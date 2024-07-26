@@ -4,6 +4,7 @@ import { useTheme, Card, Button, Divider, Avatar, Text } from 'react-native-pape
 import { useUser } from '../../utils/UserContext';
 import { useSendbirdChat } from '@sendbird/uikit-react-native';
 import firestore from '@react-native-firebase/firestore';
+import analytics from '@react-native-firebase/analytics';
 
 const AdDetails = ({ navigation, route }) => {
   const theme = useTheme();
@@ -118,6 +119,7 @@ const AdDetails = ({ navigation, route }) => {
       });
       const channelUrl = await createChat(user.uid, ad.userId);
       if (channelUrl) {
+        await analytics().logEvent('ad_contact', { ad_id: ad.id });
         navigation.navigate('IndividualChat', { channelUrl });
       } else {
         Alert.alert(
@@ -415,7 +417,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingLeft: 50,
     paddingRight: 50,
-    marginTop: 8
+    marginTop: 8,
   },
   buttonGroup: {
     flexDirection: 'row',
