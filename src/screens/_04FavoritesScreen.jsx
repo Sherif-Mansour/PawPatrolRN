@@ -58,6 +58,7 @@ const FavoritesScreen = ({ navigation }) => {
         renderItem={renderList}
         keyExtractor={item => item.name}
       />
+      <Button>Edit</Button>
     </View>
   );
 };
