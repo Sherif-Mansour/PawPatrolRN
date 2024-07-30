@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Image, Alert, ScrollView } from 'react-native';
-import { Text, Button, ActivityIndicator } from 'react-native-paper';
+import { View, StyleSheet, Image, ScrollView } from 'react-native';
+import { Text, ActivityIndicator, Card, Title, Paragraph } from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
 
-const UserProfileScreen = ({ route, navigation }) => {
+const UserProfileScreen = ({ route }) => {
   const { userId } = route.params;
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,29 +23,6 @@ const UserProfileScreen = ({ route, navigation }) => {
     fetchUser();
   }, [userId]);
 
-  const handleDeleteUser = async () => {
-    try {
-      await firestore().collection('profiles').doc(userId).delete();
-      Alert.alert('Success', 'User deleted successfully.');
-      navigation.goBack();
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      Alert.alert('Error', 'There was an error deleting the user.');
-    }
-  };
-
-  const handleBlockUser = async () => {
-    try {
-      await firestore().collection('profiles').doc(userId).delete();
-      await firestore().collection('blockedEmails').doc(user.email).set({ blocked: true });
-      Alert.alert('Success', 'User blocked successfully.');
-      navigation.goBack();
-    } catch (error) {
-      console.error('Error blocking user:', error);
-      Alert.alert('Error', 'There was an error blocking the user.');
-    }
-  };
-
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
@@ -60,36 +37,39 @@ const UserProfileScreen = ({ route, navigation }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image source={{ uri: user.profilePicture }} style={styles.profileImage} />
-      <Text style={styles.userName}>{user.firstName} {user.lastName}</Text>
-      <Text style={styles.userEmail}>{user.email}</Text>
-      <Text style={styles.userDetails}>Phone: {user.phoneNo}</Text>
-      {user.address && (
-        <Text style={styles.userDetails}>
-          Address: {user.address.street}, {user.address.city}, {user.address.province}, {user.address.country}, {user.address.postalCode}
-        </Text>
-      )}
-      <Text style={styles.userDetails}>Age: {user.age}</Text>
-      <Text style={styles.userDetails}>Occupation: {user.occupation}</Text>
-      <Text style={styles.userDetails}>Bio: {user.bio}</Text>
-      <Text style={styles.userDetails}>Favorite Food: {user.favoriteFood}</Text>
-      <Text style={styles.userDetails}>Favorite Hobby: {user.favoriteHobby}</Text>
-      <Text style={styles.userDetails}>Pets:</Text>
-      {user.pets && user.pets.map((pet, index) => (
-        <View key={index} style={styles.petContainer}>
-          <Text style={styles.petDetails}>Name: {pet.name}</Text>
-          <Text style={styles.petDetails}>Species: {pet.species}</Text>
-          <Text style={styles.petDetails}>Breed: {pet.breed}</Text>
-          <Text style={styles.petDetails}>Gender: {pet.gender}</Text>
-          <Text style={styles.petDetails}>Age: {pet.age}</Text>
-        </View>
-      ))}
-      <Button mode="contained" onPress={handleDeleteUser} style={styles.deleteButton}>
-        Delete User
-      </Button>
-      <Button mode="contained" onPress={handleBlockUser} style={styles.blockButton}>
-        Block User
-      </Button>
+      <Card style={styles.card}>
+        <Card.Content style={styles.cardContent}>
+          <Image
+            source={user.profilePicture ? { uri: user.profilePicture } : require('../../assets/images/default-profile.jpg')}
+            style={styles.profileImage}
+          />
+          <Title style={styles.userName}>{user.firstName} {user.lastName}</Title>
+          <Paragraph style={styles.userEmail}>{user.email}</Paragraph>
+          <Paragraph style={styles.userDetails}>Phone: {user.phoneNo}</Paragraph>
+          {user.address && (
+            <Paragraph style={styles.userDetails}>
+              Address: {user.address.street}, {user.address.city}, {user.address.province}, {user.address.country}, {user.address.postalCode}
+            </Paragraph>
+          )}
+          <Paragraph style={styles.userDetails}>Age: {user.age}</Paragraph>
+          <Paragraph style={styles.userDetails}>Occupation: {user.occupation}</Paragraph>
+          <Paragraph style={styles.userDetails}>Bio: {user.bio}</Paragraph>
+          <Paragraph style={styles.userDetails}>Favorite Food: {user.favoriteFood}</Paragraph>
+          <Paragraph style={styles.userDetails}>Favorite Hobby: {user.favoriteHobby}</Paragraph>
+          <Title style={styles.sectionTitle}>Pets:</Title>
+          {user.pets && user.pets.map((pet, index) => (
+            <Card key={index} style={styles.petCard}>
+              <Card.Content>
+                <Title style={styles.petName}>{pet.name}</Title>
+                <Paragraph style={styles.petDetails}>Species: {pet.species}</Paragraph>
+                <Paragraph style={styles.petDetails}>Breed: {pet.breed}</Paragraph>
+                <Paragraph style={styles.petDetails}>Gender: {pet.gender}</Paragraph>
+                <Paragraph style={styles.petDetails}>Age: {pet.age}</Paragraph>
+              </Card.Content>
+            </Card>
+          ))}
+        </Card.Content>
+      </Card>
     </ScrollView>
   );
 };
@@ -102,6 +82,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  card: {
+    width: '100%',
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    padding: 20,
+    marginBottom: 20,
+  },
+  cardContent: {
+    alignItems: 'center',
   },
   profileImage: {
     width: 100,
@@ -117,29 +108,36 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: 18,
     color: '#777',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   userDetails: {
     fontSize: 16,
     color: '#555',
     marginBottom: 10,
+    textAlign: 'center',
   },
-  petContainer: {
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  petCard: {
+    width: '100%',
     marginBottom: 10,
     padding: 10,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#e0e0e0',
     borderRadius: 10,
-    width: '100%',
+  },
+  petName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
   petDetails: {
     fontSize: 14,
     color: '#333',
-  },
-  deleteButton: {
-    backgroundColor: '#ff0000',
-    marginBottom: 10,
-  },
-  blockButton: {
-    backgroundColor: '#ff8800',
+    marginBottom: 5,
   },
 });

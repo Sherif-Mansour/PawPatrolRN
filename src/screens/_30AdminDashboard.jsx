@@ -226,15 +226,15 @@ const AdminDashboard = ({ navigation }) => {
       <View style={styles.contentContainer}>{renderSection()}</View>
       <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton} onPress={() => setCurrentSection('ads')}>
-          <Icon name="images-outline" size={24} color="#007BFF" />
+          <Icon name="images-outline" size={24} color="rgb(255, 255, 255)" />
           <Text style={styles.footerButtonText}>Ads</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerButton} onPress={() => setCurrentSection('users')}>
-          <Icon name="people-outline" size={24} color="#007BFF" />
+          <Icon name="people-outline" size={24} color="rgb(255, 255, 255)" />
           <Text style={styles.footerButtonText}>Users</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerButton} onPress={() => setCurrentSection('inquiries')}>
-          <Icon name="chatbubbles-outline" size={24} color="#007BFF" />
+          <Icon name="chatbubbles-outline" size={24} color="rgb(255, 255, 255)" />
           <Text style={styles.footerButtonText}>Inquiries</Text>
         </TouchableOpacity>
       </View>
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderTopWidth: 1,
     borderTopColor: '#ccc',
-    backgroundColor: '#fff', // Added background color to the footer
+    backgroundColor: "rgb(0, 104, 123)", // Added background color to the footer
     width: '100%', // Make footer take full width
   },
   footerButton: {
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   },
   footerButtonText: {
     fontSize: 16,
-    color: '#007BFF',
+    color: "rgb(255, 255, 255)",
     marginTop: 5,
   },
 });

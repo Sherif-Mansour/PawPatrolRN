@@ -56,6 +56,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sendButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: "rgb(0, 104, 123)",
   },
 });

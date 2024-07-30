@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import { Alert } from 'react-native';
 
-const AdminHeader = () => {
+const AdminHeader = ({showBackButton}) => {
   const theme = useTheme();
   const navigation = useNavigation();
 
@@ -22,6 +22,12 @@ const AdminHeader = () => {
 
   return (
     <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+        {showBackButton && (
+        <Appbar.BackAction
+          color={theme.colors.onPrimary}
+          onPress={() => navigation.goBack()}
+        />
+      )}
       <Appbar.Content
         title="PetPal Admin Dashboard"
         titleStyle={{ textAlign: 'left', marginLeft: 10, color: theme.colors.onPrimary }}

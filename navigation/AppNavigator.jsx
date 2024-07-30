@@ -177,17 +177,17 @@ const AppNavigator = ({ setIsDarkTheme }) => {
         <Stack.Screen
           name="AdminAdDetails"
           component={AdminAdDetails}
-          options={{ header: () => <AppHeader showBackButton={true} /> }}
+          options={{ header: () => <AdminHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="UserProfileScreen"
           component={UserProfileScreen}
-          options={{ header: () => <AppHeader showBackButton={true} /> }}
+          options={{ header: () => <AdminHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="ReplyInquiryScreen"
           component={ReplyInquiryScreen}
-          options={{ header: () => <AppHeader showBackButton={true} /> }}
+          options={{ header: () => <AdminHeader showBackButton={true} /> }}
         />
         <Stack.Screen
           name="FavoriteAdsScreen"
