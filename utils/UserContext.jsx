@@ -676,28 +676,6 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // const fetchUserFavorites = async () => {
-  //   setLoadingFavorites(true);
-  //   const allFavorites = [];
-  //   try {
-  //     const listsSnapshot = await firestore()
-  //       .collection('favorites')
-  //       .doc(user.uid)
-  //       .collection('lists')
-  //       .get();
-
-  //     listsSnapshot.forEach((doc) => {
-  //       const favorites = doc.data().favorites || [];
-  //       allFavorites.push(...favorites);
-  //     });
-
-  //     setUserFavorites([...new Set(allFavorites)]);
-  //   } catch (error) {
-  //     console.error('Error fetching all user favorites:', error);
-  //   }
-  //   setLoadingFavorites(false);
-  // };
-
   const fetchUserLists = () => {
     if (!user) return;
 
