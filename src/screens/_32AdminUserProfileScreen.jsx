@@ -64,7 +64,11 @@ const UserProfileScreen = ({ route, navigation }) => {
       <Text style={styles.userName}>{user.firstName} {user.lastName}</Text>
       <Text style={styles.userEmail}>{user.email}</Text>
       <Text style={styles.userDetails}>Phone: {user.phoneNo}</Text>
-      <Text style={styles.userDetails}>Address: {user.address}</Text>
+      {user.address && (
+        <Text style={styles.userDetails}>
+          Address: {user.address.street}, {user.address.city}, {user.address.province}, {user.address.country}, {user.address.postalCode}
+        </Text>
+      )}
       <Text style={styles.userDetails}>Age: {user.age}</Text>
       <Text style={styles.userDetails}>Occupation: {user.occupation}</Text>
       <Text style={styles.userDetails}>Bio: {user.bio}</Text>

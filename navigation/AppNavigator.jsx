@@ -14,6 +14,7 @@ import PaymentSettingsScreen from '../src/screens/_12PaymentSettingsScreen';
 import BookingSettingsScreen from '../src/screens/_13BookingSettingsScreen';
 import UserAdsScreen from '../src/screens/_16EditDeleteAd';
 import AppHeader from '../components/Header';
+import AdminHeader from '../components/AdminHeader';
 import BottomTabNavigator from './BottomTabNavigator';
 import ViewProfileScreen from '../src/screens/_18ViewProfileScreen';
 import AdDetailsScreen from '../src/screens/_19AdDetailScreen';
@@ -170,7 +171,7 @@ const AppNavigator = ({ setIsDarkTheme }) => {
         <Stack.Screen
           name="AdminDashboard"
           component={AdminDashboard}
-          options={{ header: () => <AppHeader showBackButton={true} /> }}
+          options={{ header: () => <AdminHeader showBackButton={false} /> }}
         />
         <Stack.Screen
           name="AdminAdDetails"
