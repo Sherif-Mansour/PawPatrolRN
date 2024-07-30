@@ -676,6 +676,28 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  // const fetchUserFavorites = async () => {
+  //   setLoadingFavorites(true);
+  //   const allFavorites = [];
+  //   try {
+  //     const listsSnapshot = await firestore()
+  //       .collection('favorites')
+  //       .doc(user.uid)
+  //       .collection('lists')
+  //       .get();
+
+  //     listsSnapshot.forEach((doc) => {
+  //       const favorites = doc.data().favorites || [];
+  //       allFavorites.push(...favorites);
+  //     });
+
+  //     setUserFavorites([...new Set(allFavorites)]);
+  //   } catch (error) {
+  //     console.error('Error fetching all user favorites:', error);
+  //   }
+  //   setLoadingFavorites(false);
+  // };
+
   const fetchUserLists = () => {
     if (!user) return;
 
@@ -702,6 +724,24 @@ export const UserProvider = ({ children }) => {
       fetchUserLists();
     }
   }, [user]);
+
+  const handleDeleteList = async (listName) => {
+    if (!user) return;
+
+    try {
+      await firestore()
+        .collection('favorites')
+        .doc(user.uid)
+        .collection('lists')
+        .doc(listName)
+        .delete();
+
+      fetchUserLists();
+      fetchUserFavorites(); // Refresh global favorites after deletion
+    } catch (error) {
+      console.error('Error deleting list:', error);
+    }
+  };
 
   const signOut = async navigation => {
     try {
@@ -964,6 +1004,7 @@ export const UserProvider = ({ children }) => {
         createChat,
         sendbirdInstance,
         resetPassword,
+        handleDeleteList,
       }}>
       {children}
     </UserContext.Provider>
