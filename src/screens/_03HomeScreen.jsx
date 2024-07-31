@@ -121,12 +121,17 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const handleFavorite = async adId => {
-    await handleAddToFavorites(adId);
-    await analytics().logEvent('ad_favourite', {
-      ad_id: adId,
-      user_id: user.uid,
-    });
+  // const handleFavorite = async adId => {
+  //   await handleAddToFavorites(adId);
+  //   await analytics().logEvent('ad_favourite', {
+  //     ad_id: adId,
+  //     user_id: user.uid,
+  //   });
+  // };
+
+  const handleFavorite = adId => {
+    setSelectedAdId(adId);
+    showFavoritesModal(adId);  // just call create favorite modal, not calling handleAddToFavorites
   };
 
   const renderItem = ({ item }) => (
@@ -148,6 +153,7 @@ const HomeScreen = ({ navigation }) => {
       <Card.Title title={item.title} subtitle={`Price: ${item.price}`} subtitleStyle={styles.adSubtitle} titleStyle={styles.adTitle} />
       <View style={styles.favoriteButton}>
         <Icon name={favorites.includes(item.id) ? 'heart' : 'heart-outline'} size={24} color="#ff0000" onPress={() => {
+
           showFavoritesModal(item.id);
           handleFavorite(item.id);
         }} />

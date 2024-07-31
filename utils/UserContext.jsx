@@ -627,7 +627,7 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  const handleAddToFavorites = async (adId, listName = 'My Favorites') => {
+  const handleAddToFavorites = async (adId, listName) => {
     if (!user) return;
 
     const userFavoritesRef = firestore()
@@ -640,12 +640,18 @@ export const UserProvider = ({ children }) => {
       const listDoc = await userFavoritesRef.get();
       const currentFavorites = listDoc.exists ? listDoc.data().favorites : [];
 
-      const updatedFavorites = currentFavorites.includes(adId)
-        ? currentFavorites.filter(favId => favId !== adId)
-        : [...currentFavorites, adId];
+      let updatedFavorites;
+      if (currentFavorites.includes(adId)) {
+        updatedFavorites = currentFavorites.filter(favId => favId !== adId);
+      } else {
+        updatedFavorites = [...currentFavorites, adId];
+      }
 
-      await userFavoritesRef.set({ favorites: updatedFavorites }, { merge: true });
-      setFavorites(updatedFavorites);
+      if (updatedFavorites.length === 0) {
+        await userFavoritesRef.delete();
+      } else {
+        await userFavoritesRef.set({ favorites: updatedFavorites }, { merge: true });
+      }
     } catch (error) {
       console.error('Error adding to favorites:', error);
     }
@@ -681,7 +687,7 @@ export const UserProvider = ({ children }) => {
 
     const userListsRef = firestore().collection('favorites').doc(user.uid).collection('lists');
 
-    const unsubscribe = userListsRef.onSnapshot((snapshot) => {
+    const unsubscribe = userListsRef.onSnapshot(async (snapshot) => {
       if (!snapshot.empty) {
         const listsData = snapshot.docs.map(doc => ({
           name: doc.id,
@@ -689,12 +695,15 @@ export const UserProvider = ({ children }) => {
         }));
         setLists(listsData);
       } else {
+        // if there is no list, build "My Favorites" list
+        await userListsRef.doc('My Favorites').set({ description: '', favorites: [] });
         setLists([{ name: 'My Favorites', description: '', favorites: [] }]);
       }
     });
 
     return unsubscribe;
   };
+
 
   useEffect(() => {
     if (user) {
@@ -703,6 +712,7 @@ export const UserProvider = ({ children }) => {
     }
   }, [user]);
 
+  // add delete list method
   const handleDeleteList = async (listName) => {
     if (!user) return;
 
