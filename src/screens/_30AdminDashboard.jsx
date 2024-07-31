@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import {
   View, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Alert, RefreshControl
 } from 'react-native';
-import { Button, Card, Text } from 'react-native-paper';
+import { Card, Text } from 'react-native-paper';
 import { FlatList } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons';
-import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
 const AdminDashboard = ({ navigation }) => {
@@ -63,15 +62,6 @@ const AdminDashboard = ({ navigation }) => {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await auth().signOut();
-      navigation.navigate('SignIn'); 
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
   const handleDeleteAd = async (adId, userId) => {
     try {
       const adDoc = firestore().collection('ads').doc(userId).collection('userAds').doc(adId);
@@ -125,7 +115,7 @@ const AdminDashboard = ({ navigation }) => {
         style={styles.favoriteButton}
         onPress={() => handleDeleteAd(item.id, item.userId)}
       >
-        <Icon name="trash" size={24} color="#ff0000" />
+        <Icon name="trash-outline" size={24} color="#ff0000" />
       </TouchableOpacity>
     </Card>
   );
@@ -153,7 +143,7 @@ const AdminDashboard = ({ navigation }) => {
         style={styles.favoriteButton}
         onPress={() => handleDeleteUser(item.id)}
       >
-        <Icon name="trash" size={24} color="#ff0000" />
+        <Icon name="trash-outline" size={24} color="#ff0000" />
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -181,7 +171,7 @@ const AdminDashboard = ({ navigation }) => {
             style={styles.favoriteButton}
             onPress={() => handleDeleteInquiry(item.id)}
           >
-            <Icon name="trash" size={24} color="#ff0000" />
+            <Icon name="trash-outline" size={24} color="#ff0000" />
           </TouchableOpacity>
         </Card.Actions>
       </Card>
@@ -233,28 +223,21 @@ const AdminDashboard = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.welcomeText}>Welcome to the Admin Dashboard</Text>
-      <Button mode="contained" onPress={handleSignOut} style={styles.signOutButton}>
-        Sign Out
-      </Button>
-      {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
-        <>
-          <View style={styles.contentContainer}>{renderSection()}</View>
-          <View style={styles.footer}>
-            <TouchableOpacity style={styles.footerButton} onPress={() => setCurrentSection('ads')}>
-              <Text style={styles.footerButtonText}>Ads</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.footerButton} onPress={() => setCurrentSection('users')}>
-              <Text style={styles.footerButtonText}>Users</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.footerButton} onPress={() => setCurrentSection('inquiries')}>
-              <Text style={styles.footerButtonText}>Inquiries</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
+      <View style={styles.contentContainer}>{renderSection()}</View>
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.footerButton} onPress={() => setCurrentSection('ads')}>
+          <Icon name="images-outline" size={24} color="rgb(255, 255, 255)" />
+          <Text style={styles.footerButtonText}>Ads</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton} onPress={() => setCurrentSection('users')}>
+          <Icon name="people-outline" size={24} color="rgb(255, 255, 255)" />
+          <Text style={styles.footerButtonText}>Users</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton} onPress={() => setCurrentSection('inquiries')}>
+          <Icon name="chatbubbles-outline" size={24} color="rgb(255, 255, 255)" />
+          <Text style={styles.footerButtonText}>Inquiries</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -267,13 +250,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
-  },
-  welcomeText: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-  signOutButton: {
-    marginBottom: 20,
   },
   contentContainer: {
     flex: 1,
@@ -358,12 +334,15 @@ const styles = StyleSheet.create({
     padding: 10,
     borderTopWidth: 1,
     borderTopColor: '#ccc',
+    backgroundColor: "rgb(0, 104, 123)", // Added background color to the footer
+    width: '100%', // Make footer take full width
   },
   footerButton: {
-    padding: 10,
+    alignItems: 'center',
   },
   footerButtonText: {
     fontSize: 16,
-    color: '#007BFF',
+    color: "rgb(255, 255, 255)",
+    marginTop: 5,
   },
 });
