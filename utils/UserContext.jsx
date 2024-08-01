@@ -652,33 +652,32 @@ export const UserProvider = ({ children }) => {
       } else {
         await userFavoritesRef.set({ favorites: updatedFavorites }, { merge: true });
       }
+      fetchUserFavorites();
     } catch (error) {
       console.error('Error adding to favorites:', error);
     }
   };
 
-  const fetchUserFavorites = async (listName = 'My Favorites') => {
-    if (!user) return [];
+  const fetchUserFavorites = async () => {
+    if (!user) return;
 
     try {
-      const listRef = firestore()
+      const listsRef = firestore()
         .collection('favorites')
         .doc(user.uid)
-        .collection('lists')
-        .doc(listName);
+        .collection('lists');
 
-      const listSnapshot = await listRef.get();
+      const listsSnapshot = await listsRef.get();
 
-      if (listSnapshot.exists) {
-        const favorites = listSnapshot.data().favorites;
-        return favorites || [];
-      } else {
-        console.log('List not found:', listName);
-        return [];
-      }
+      const favoritesData = {};
+
+      listsSnapshot.forEach(doc => {
+        favoritesData[doc.id] = doc.data().favorites || [];
+      });
+
+      setFavorites(favoritesData);
     } catch (error) {
-      console.error('Error fetching list ads:', error);
-      return [];
+      console.error('Error fetching lists:', error);
     }
   };
 

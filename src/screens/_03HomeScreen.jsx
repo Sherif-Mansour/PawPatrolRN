@@ -122,7 +122,7 @@ const HomeScreen = ({ navigation }) => {
   };
 
   // const handleFavorite = async adId => {
-  //   await handleAddToFavorites(adId);
+  //   // await handleAddToFavorites(adId);
   //   await analytics().logEvent('ad_favourite', {
   //     ad_id: adId,
   //     user_id: user.uid,
@@ -132,6 +132,11 @@ const HomeScreen = ({ navigation }) => {
   const handleFavorite = adId => {
     setSelectedAdId(adId);
     showFavoritesModal(adId);  // just call create favorite modal, not calling handleAddToFavorites
+  };
+
+  //Function to check if a given ad is favorited
+  const isAdFavorited = adId => {
+    return Object.values(favorites).some(list => list.includes(adId));
   };
 
   const renderItem = ({ item }) => (
@@ -152,9 +157,8 @@ const HomeScreen = ({ navigation }) => {
       <Card.Cover source={{ uri: item.mainPicture || 'https://picsum.photos/id/237/200/' }} style={styles.adImage} />
       <Card.Title title={item.title} subtitle={`Price: ${item.price}`} subtitleStyle={styles.adSubtitle} titleStyle={styles.adTitle} />
       <View style={styles.favoriteButton}>
-        <Icon name={favorites.includes(item.id) ? 'heart' : 'heart-outline'} size={24} color="#ff0000" onPress={() => {
+        <Icon name={isAdFavorited(item.id) ? 'heart' : 'heart-outline'} size={24} color="#ff0000" onPress={() => {
 
-          showFavoritesModal(item.id);
           handleFavorite(item.id);
         }} />
       </View>
