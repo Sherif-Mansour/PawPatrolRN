@@ -52,9 +52,9 @@ const FavoriteAdsScreen = ({ route, navigation }) => {
             />
             <TouchableOpacity
                 style={styles.favoriteButton}
-                onPress={() => handleAddToFavorites(item.id)}>
+                onPress={() => handleAddToFavorites(item.id, list.name)}>
                 <Icon
-                    name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
+                    name={list.favorites.includes(item.id) ? 'heart' : 'heart-outline'}
                     size={24}
                     color="#ff0000"
                 />
