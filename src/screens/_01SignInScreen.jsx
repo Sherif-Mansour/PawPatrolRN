@@ -11,6 +11,7 @@ import MyTextInput from '../../components/MyTextInput';
 import SocialMedia from '../../components/SocialMedia';
 import { Button, useTheme } from 'react-native-paper';
 import { useUser } from '../../utils/UserContext';
+import firestore from '@react-native-firebase/firestore';
 
 const SignInScreen = ({ navigation }) => {
   const { signInWithEmailAndPass, resetPassword, onGoogleButtonPress, onFacebookButtonPress } = useUser();
@@ -21,8 +22,35 @@ const SignInScreen = ({ navigation }) => {
 
   const handleSignIn = async () => {
     setLoading(true);
-    await signInWithEmailAndPass(email, password, navigation);
-    setLoading(false);
+    try {
+      const user = await signInWithEmailAndPass(email, password);
+
+      // Check Firestore admin collection
+      const adminDoc = await firestore()
+        .collection('admin')
+        .doc(user.uid)
+        .get();
+
+      if (adminDoc.exists) {
+        const adminData = adminDoc.data();
+        console.log('Admin Data:', adminData);
+        if (adminData.isadmin) {
+          console.log('Admin user verified');
+          navigation.navigate('AdminDashboard');
+        } else {
+          console.log('User is not an admin');
+          navigation.navigate('Home'); // or 'UserHome' depending on your route structure
+        }
+      } else {
+        console.log(`Admin document not found for user UID: ${user.uid}`);
+        navigation.navigate('Home'); // or 'UserHome' depending on your route structure
+      }
+    } catch (err) {
+      console.error('Error during sign-in:', err);
+      Alert.alert('Sign-In Error', err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePasswordReset = () => {
