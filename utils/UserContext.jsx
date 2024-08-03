@@ -270,9 +270,9 @@ export const UserProvider = ({ children }) => {
     }
   }
 
-  const signInWithEmailAndPass = (email, password, navigation) => {
+  const signInWithEmailAndPass = (email, password) => {
     setLoading(true);
-    auth()
+    return auth()
       .signInWithEmailAndPassword(email, password)
       .then(async res => {
         const user = res.user;
@@ -283,22 +283,16 @@ export const UserProvider = ({ children }) => {
 
         console.log('Email SignIn:', user);
 
-        await handleUserSignIn(user, navigation);
-
-        const adminDoc = await firestore().collection('admin').doc(user.uid).get();
-        if (adminDoc.exists && adminDoc.data().isadmin) {
-          navigation.navigate('AdminDashboard');
-        } else {
-          navigation.navigate('Home');
-        }
+        await handleUserSignIn(user);
+        return user;
       })
       .catch(err => {
         setLoading(false);
         console.error('Email/password sign-in error:', err);
         Alert.alert('Sign-In Error', 'Invalid email or password. Please try again.');
+        throw err;
       });
   };
-
 
 
   const createUserWithEmailAndPassword = async (email, password) => {
@@ -627,7 +621,7 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  const handleAddToFavorites = async (adId, listName = 'My Favorites') => {
+  const handleAddToFavorites = async (adId, listName) => {
     if (!user) return;
 
     const userFavoritesRef = firestore()
@@ -640,39 +634,44 @@ export const UserProvider = ({ children }) => {
       const listDoc = await userFavoritesRef.get();
       const currentFavorites = listDoc.exists ? listDoc.data().favorites : [];
 
-      const updatedFavorites = currentFavorites.includes(adId)
-        ? currentFavorites.filter(favId => favId !== adId)
-        : [...currentFavorites, adId];
+      let updatedFavorites;
+      if (currentFavorites.includes(adId)) {
+        updatedFavorites = currentFavorites.filter(favId => favId !== adId);
+      } else {
+        updatedFavorites = [...currentFavorites, adId];
+      }
 
-      await userFavoritesRef.set({ favorites: updatedFavorites }, { merge: true });
-      setFavorites(updatedFavorites);
+      if (updatedFavorites.length === 0) {
+        await userFavoritesRef.delete();
+      } else {
+        await userFavoritesRef.set({ favorites: updatedFavorites }, { merge: true });
+      }
+      fetchUserFavorites();
     } catch (error) {
       console.error('Error adding to favorites:', error);
     }
   };
 
-  const fetchUserFavorites = async (listName = 'My Favorites') => {
-    if (!user) return [];
+  const fetchUserFavorites = async () => {
+    if (!user) return;
 
     try {
-      const listRef = firestore()
+      const listsRef = firestore()
         .collection('favorites')
         .doc(user.uid)
-        .collection('lists')
-        .doc(listName);
+        .collection('lists');
 
-      const listSnapshot = await listRef.get();
+      const listsSnapshot = await listsRef.get();
 
-      if (listSnapshot.exists) {
-        const favorites = listSnapshot.data().favorites;
-        return favorites || [];
-      } else {
-        console.log('List not found:', listName);
-        return [];
-      }
+      const favoritesData = {};
+
+      listsSnapshot.forEach(doc => {
+        favoritesData[doc.id] = doc.data().favorites || [];
+      });
+
+      setFavorites(favoritesData);
     } catch (error) {
-      console.error('Error fetching list ads:', error);
-      return [];
+      console.error('Error fetching lists:', error);
     }
   };
 
@@ -681,7 +680,7 @@ export const UserProvider = ({ children }) => {
 
     const userListsRef = firestore().collection('favorites').doc(user.uid).collection('lists');
 
-    const unsubscribe = userListsRef.onSnapshot((snapshot) => {
+    const unsubscribe = userListsRef.onSnapshot(async (snapshot) => {
       if (!snapshot.empty) {
         const listsData = snapshot.docs.map(doc => ({
           name: doc.id,
@@ -689,6 +688,8 @@ export const UserProvider = ({ children }) => {
         }));
         setLists(listsData);
       } else {
+        // if there is no list, build "My Favorites" list
+        await userListsRef.doc('My Favorites').set({ description: '', favorites: [] });
         setLists([{ name: 'My Favorites', description: '', favorites: [] }]);
       }
     });
@@ -696,12 +697,32 @@ export const UserProvider = ({ children }) => {
     return unsubscribe;
   };
 
+
   useEffect(() => {
     if (user) {
       fetchUserFavorites();
       fetchUserLists();
     }
   }, [user]);
+
+  // add delete list method
+  const handleDeleteList = async (listName) => {
+    if (!user) return;
+
+    try {
+      await firestore()
+        .collection('favorites')
+        .doc(user.uid)
+        .collection('lists')
+        .doc(listName)
+        .delete();
+
+      fetchUserLists();
+      fetchUserFavorites(); // Refresh global favorites after deletion
+    } catch (error) {
+      console.error('Error deleting list:', error);
+    }
+  };
 
   const signOut = async navigation => {
     try {
@@ -964,6 +985,7 @@ export const UserProvider = ({ children }) => {
         createChat,
         sendbirdInstance,
         resetPassword,
+        handleDeleteList,
       }}>
       {children}
     </UserContext.Provider>
