@@ -91,7 +91,7 @@ const AccountSettings = ({ navigation }) => {
                 />
                 <Card.Actions>
                   <MyCustomButton
-                    onPress={() => navigation.navigate('View Profile', { profile: profile })}
+                    onPress={() => navigation.navigate('My Profile', { profile: profile })}
                     label="View Profile"
                   />
                 </Card.Actions>
@@ -119,13 +119,6 @@ const AccountSettings = ({ navigation }) => {
               <MyCustomButton
                 onPress={() => navigation.navigate('BookingSettings')}
                 label="Booking Settings"
-              />
-              <Divider style={styles.divider} />
-            </View>
-            <View style={styles.optionContainer}>
-              <MyCustomButton
-                onPress={() => navigation.navigate('UserAds')}
-                label="My Ads"
               />
               <Divider style={styles.divider} />
             </View>
