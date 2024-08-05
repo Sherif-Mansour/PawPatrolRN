@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Button, Alert, FlatList } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert, FlatList } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
+import { Button } from 'react-native-paper';
 
 const InquirySubmissionScreen = () => {
   const [inquirySubject, setInquirySubject] = useState('');
@@ -92,7 +93,14 @@ const InquirySubmissionScreen = () => {
         onChangeText={setContactInfo}
         placeholder="Contact Information"
       />
-      <Button title="Submit Inquiry" onPress={handleSubmitInquiry} />
+      <Button
+        mode="contained"
+        onPress={handleSubmitInquiry}
+        style={styles.button}
+        contentStyle={styles.buttonContent}
+      >
+        Submit Inquiry
+      </Button>
 
       <Text style={styles.title}>Your Inquiries</Text>
       <FlatList
@@ -134,6 +142,12 @@ const styles = StyleSheet.create({
   },
   list: {
     marginTop: 20,
+  },
+  button: {
+    marginBottom: 10,
+  },
+  buttonContent: {
+    paddingVertical: 5,
   },
 });
 
