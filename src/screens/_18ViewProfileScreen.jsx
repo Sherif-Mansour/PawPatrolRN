@@ -10,7 +10,7 @@ const ViewProfileScreen = () => {
   const theme = useTheme()
   const route = useRoute();
   const navigation = useNavigation();
-  const { user, fetchUserProfile, isProfileComplete, fetchChatUserProfile, createChat } = useUser();
+  const { user } = useUser();
   const [selectedSegment, setSelectedSegment] = useState('user');
   const { profile } = route.params;
   const [listings, setListings] = useState([]);
@@ -41,16 +41,7 @@ const ViewProfileScreen = () => {
   };
 
   const renderButton = () => {
-    if (user && user.userId === profile.id) {
-      return (
-        <Button
-          mode="contained"
-          onPress={() => navigation.navigate('Profile')}
-        >
-          Edit Profile
-        </Button>
-      );
-    } else {
+    if (user) {
       return (
         <Button
           mode="contained"

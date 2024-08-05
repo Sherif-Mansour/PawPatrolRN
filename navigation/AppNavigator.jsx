@@ -35,6 +35,7 @@ import AdminAdDetails from '../src/screens/_31AdminAdDetail';
 import UserProfileScreen from '../src/screens/_32AdminUserProfileScreen';
 import ReplyInquiryScreen from '../src/screens/_33ReplyInquiryScreen';
 import FavoriteAdsScreen from '../src/screens/_34FavoritesAdScreen';
+import ViewMyProfile from '../src/screens/_07MyProfileScreen';
 
 
 const Stack = createStackNavigator();
@@ -66,6 +67,11 @@ const AppNavigator = ({ setIsDarkTheme }) => {
         <Stack.Screen
           name="Profile"
           component={Profile}
+          options={{ header: () => <AppHeader showBackButton={true} /> }}
+        />
+        <Stack.Screen
+          name="My Profile"
+          component={ViewMyProfile}
           options={{ header: () => <AppHeader showBackButton={true} /> }}
         />
         <Stack.Screen

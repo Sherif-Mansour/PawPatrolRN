@@ -81,6 +81,15 @@ const Profile = ({ navigation }) => {
                 favoriteFood: '',
               };
             }
+            if (!userProfile.address) {
+              userProfile.address = {
+                street: '',
+                city: '',
+                province: '',
+                postalCode: '',
+                country: '',
+              };
+            }
             console.log('Fetched user profile:', userProfile);
             setProfileData(userProfile);
           } else {
