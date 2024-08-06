@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Switch, StyleSheet, Alert } from 'react-native';
+import { View, Switch, StyleSheet, Alert, ScrollView } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
@@ -121,7 +121,7 @@ const PrivacySettingsScreen = () => {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={styles.title}>Privacy Settings</Text>
       <View style={styles.setting}>
         <Text>Public Profile</Text>
@@ -166,15 +166,16 @@ const PrivacySettingsScreen = () => {
         />
       </View>
       <View style={styles.inquiryContainer}>
-        <Button
-          title="Submit Inquiry"
-          onPress={() => navigation.navigate('InquirySubmission')}
-        />
+        <Button mode="contained" onPress={() => navigation.navigate('InquirySubmission')}>
+          Submit Inquiry
+        </Button>
       </View>
       <View style={styles.buttonContainer}>
-        <Button title="Delete Account" onPress={handleDeleteAccount} />
+        <Button mode="contained" onPress={handleDeleteAccount}>
+          Delete Account
+        </Button>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
