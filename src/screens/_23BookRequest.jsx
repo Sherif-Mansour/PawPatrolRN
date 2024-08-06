@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, TextInput, StyleSheet, Button, Alert} from 'react-native';
+import {View, StyleSheet, Alert} from 'react-native';
+import {TextInput, Button, Text, useTheme} from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import {useNavigation, useRoute} from '@react-navigation/native';
@@ -16,6 +17,7 @@ const BookRequestScreen = () => {
   const {channelUrl} = route.params;
   const user = auth().currentUser;
   const {sdk} = useSendbirdChat();
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchParticipants = async () => {
@@ -62,34 +64,49 @@ const BookRequestScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, {backgroundColor: theme.colors.background}]}>
       <Text style={styles.title}>Book Request</Text>
       <TextInput
-        style={styles.input}
+        label="Date (YYYY-MM-DD)"
         value={date}
         onChangeText={setDate}
-        placeholder="Date (YYYY-MM-DD)"
+        style={styles.input}
+        mode="outlined"
+        placeholder="Enter Date"
       />
       <TextInput
-        style={styles.input}
+        label="Time (HH:MM)"
         value={time}
         onChangeText={setTime}
-        placeholder="Time (HH:MM)"
+        style={styles.input}
+        mode="outlined"
+        placeholder="Enter Time"
       />
       <TextInput
-        style={styles.input}
+        label="Location"
         value={location}
         onChangeText={setLocation}
-        placeholder="Location"
+        style={styles.input}
+        mode="outlined"
+        placeholder="Enter Location"
       />
       <TextInput
-        style={styles.input}
+        label="Price"
         value={price}
         onChangeText={setPrice}
-        placeholder="Price"
+        style={styles.input}
         keyboardType="numeric"
+        mode="outlined"
+        placeholder="Enter Price"
       />
-      <Button title="Submit" onPress={handleSubmit} />
+      <Button
+        mode="contained"
+        style={styles.button}
+        onPress={handleSubmit}
+        buttonColor="#009B7D">
+        Submit
+      </Button>
     </View>
   );
 };
@@ -98,16 +115,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-    borderRadius: 5,
     marginBottom: 10,
+  },
+  button: {
+    marginTop: 20,
   },
 });
 
