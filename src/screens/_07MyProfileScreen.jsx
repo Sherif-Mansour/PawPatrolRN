@@ -55,14 +55,16 @@ const ViewMyProfile = ({ navigation }) => {
     };
 
     const renderUserInfo = () => (
-        <View style={styles.section}>
-            <Text>Age: {profile.age}</Text>
-            <Text>Occupation: {profile.occupation}</Text>
-            <Text>Bio: {profile.bio}</Text>
-            <Divider style={styles.divider} />
-            <Text>My Listings</Text>
+        <>
+            <View style={styles.section}>
+                <Text>Age: {profile.age}</Text>
+                <Text>Occupation: {profile.occupation}</Text>
+                <Text>Bio: {profile.bio}</Text>
+                <Divider style={styles.divider} />
+                <Text>My Listings</Text>
+            </View>
             {renderAds()}
-        </View>
+        </>
     );
 
     const renderPetInfo = () => (

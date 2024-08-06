@@ -54,14 +54,16 @@ const ViewProfileScreen = () => {
   };
 
   const renderUserInfo = () => (
-    <View style={styles.section}>
-      <Text>Age: {profile.age}</Text>
-      <Text>Occupation: {profile.occupation}</Text>
-      <Text>Bio: {profile.bio}</Text>
-      <Divider style={styles.divider} />
-      <Text>{profile.firstName}'s Listings</Text>
+    <>
+      <View style={styles.section}>
+        <Text>Age: {profile.age}</Text>
+        <Text>Occupation: {profile.occupation}</Text>
+        <Text>Bio: {profile.bio}</Text>
+        <Divider style={styles.divider} />
+        <Text>{profile.firstName}'s Listings</Text>
+      </View>
       {renderAds()}
-    </View>
+    </>
   );
 
   const renderPetInfo = () => (
