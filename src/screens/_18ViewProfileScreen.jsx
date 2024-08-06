@@ -194,15 +194,28 @@ const styles = StyleSheet.create({
     margin: '2%',
   },
   adImage: {
-    height: 200,
+    height: 150,
     width: '100%',
+    alignSelf: 'center',
   },
   adTitle: {
     fontWeight: 'bold',
+    color: '#000', // Use a default color instead of theme.colors
+    fontSize: 14,
   },
   adSubtitle: {
     fontSize: 14,
     color: '#666',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    bottom: 40,
+    right: 6,
+  },
+  shareButton: {
+    position: 'absolute',
+    right: -8,
+    bottom: -8
   },
   renderButtonContainer: {
     position: 'absolute',

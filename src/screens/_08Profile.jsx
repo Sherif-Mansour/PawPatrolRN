@@ -28,6 +28,7 @@ const Profile = ({ navigation }) => {
   const [selectedSegment, setSelectedSegment] = useState('user');
   const [selectedPetIndex, setSelectedPetIndex] = useState(0);
   const [profileData, setProfileData] = useState({
+    uid: user.uid,
     email: user.email,
     firstName: '',
     lastName: '',
@@ -95,6 +96,7 @@ const Profile = ({ navigation }) => {
           } else {
             console.log('No user profile found, using default profile data');
             setProfileData({
+              uid: user.uid,
               email: user.email,
               firstName: '',
               lastName: '',
@@ -134,6 +136,7 @@ const Profile = ({ navigation }) => {
   }, [user]);
 
   const handleSaveProfile = async () => {
+    const profileWithUID = { ...profileData, uid: user.uid };
     await createOrUpdateProfile(profileData);
   };
 

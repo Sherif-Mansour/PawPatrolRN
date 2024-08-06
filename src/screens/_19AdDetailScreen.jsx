@@ -40,45 +40,45 @@ const AdDetails = ({ navigation, route }) => {
     checkProfileCompletion();
   }, [user, fetchUserProfile, isProfileComplete, navigation]);
 
-  useEffect(() => {
-    const fetchAdUserProfile = async () => {
-      try {
-        const userProfile = await fetchUserProfile(ad.userId);
-        setAdUserProfile(userProfile);
-      } catch (error) {
-        console.error('Error fetching ad user profile:', error);
-      }
-    };
+useEffect(() => {
+  const fetchAdUserProfile = async () => {
+    try {
+      const userProfile = await fetchUserProfile(ad.userId);
+      setAdUserProfile(userProfile);
+    } catch (error) {
+      console.error('Error fetching ad user profile:', error);
+    }
+  };
 
-    const fetchReviews = async () => {
-      try {
-        const reviewsSnapshot = await firestore()
-          .collection('RatingReviews')
-          .doc(ad.id)
-          .collection('ratingsReviews')
-          .get();
+  const fetchReviews = async () => {
+    try {
+      const reviewsSnapshot = await firestore()
+        .collection('RatingReviews')
+        .doc(ad.id)
+        .collection('ratingsReviews')
+        .get();
 
-        const fetchedReviews = await Promise.all(
-          reviewsSnapshot.docs.map(async doc => {
-            const reviewData = doc.data();
-            const userProfile = await fetchUserProfile(reviewData.userId);
-            return {
-              id: doc.id,
-              ...reviewData,
-              userProfile,
-            };
-          })
-        );
+      const fetchedReviews = await Promise.all(
+        reviewsSnapshot.docs.map(async doc => {
+          const reviewData = doc.data();
+          const userProfile = await fetchUserProfile(reviewData.userId);
+          return {
+            id: doc.id,
+            ...reviewData,
+            userProfile,
+          };
+        })
+      );
 
-        fetchAdUserProfile();
-        setReviews(fetchedReviews);
-      } catch (error) {
-        console.error('Error fetching reviews:', error);
-      }
-    };
+      fetchAdUserProfile();
+      setReviews(fetchedReviews);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
 
-    fetchReviews();
-  }, [ad.id, ad.userId, fetchUserProfile]);
+  fetchReviews();
+}, [ad.id, ad.userId, fetchUserProfile]);
 
   const handleContactPress = async () => {
     if (!user || !ad.userId) {
